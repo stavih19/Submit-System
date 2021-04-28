@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ApprovalService } from 'src/app/approval.service';
 
 @Component({
   selector: 'app-nav-home',
@@ -6,10 +7,14 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./nav-home.component.css']
 })
 export class NavHomeComponent implements OnInit {
+  userName: string;
 
-  constructor() { }
+  constructor(
+    private appService: ApprovalService
+  ) {}
 
   ngOnInit() {
+    this.appService.userNameStorage.subscribe(userName => this.userName = userName);
   }
   
   isExpanded = false;
