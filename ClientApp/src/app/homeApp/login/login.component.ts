@@ -36,6 +36,7 @@ export class LoginComponent implements OnInit {
     //let response = this.httpClient.get('http://localhost:3000/Home/login', {params: params}); // TODO
     this.appService.updateLoginStatus(true);
     this.appService.updateUserName(this.checkoutForm.value.userName);
+    //this.appService.updateToken();  // TODO
 
     this.checkoutForm.reset();
   }

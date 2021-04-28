@@ -17,6 +17,10 @@ import { NavHomeComponent } from './homeApp/nav-home/nav-home.component';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 
+import { StudentComponent } from './homeApp/student/student.component';
+import { CheckerComponent } from './homeApp/checker/checker.component';
+import { TeacherComponent } from './homeApp/teacher/teacher.component';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -26,15 +30,18 @@ import { MatButtonModule } from '@angular/material/button';
     FetchDataComponent,
     LoginComponent,
     HomeComponentComponent,
-    NavHomeComponent
+    NavHomeComponent,
+    StudentComponent,
+    CheckerComponent,
+    TeacherComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
     HttpClientModule,
     RouterModule.forRoot([
-      { path: '', component: HomeComponent, pathMatch: 'full' },
-      { path: 'counter', component: CounterComponent },
-      { path: 'fetch-data', component: FetchDataComponent },
+      { path: 'homeApp/student', component: StudentComponent, pathMatch: 'full' },
+      { path: 'homeApp/checker', component: CheckerComponent },
+      { path: 'homeApp/teacher', component: TeacherComponent },
     ]),
     FormsModule,
     BrowserAnimationsModule,

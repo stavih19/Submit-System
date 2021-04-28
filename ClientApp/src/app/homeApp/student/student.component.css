@@ -1,0 +1,25 @@
+.studentGeneral {
+    background: #eee;
+    height: 500px;
+    width: 100%;
+}
+
+.headersLine {
+    height: 35px;
+}
+
+.coursesList {
+    height: 465px;
+    width: 100%;
+    border-style: solid;
+}
+
+.exeToSubmitContent {
+    height: 215px;
+    border-style: 
+}
+
+.gradeContent {
+    height: 215px;
+    border-style: solid;
+}

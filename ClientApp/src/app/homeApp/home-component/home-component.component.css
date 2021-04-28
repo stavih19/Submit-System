@@ -5,3 +5,8 @@
 .loginContent {
     text-align: center;
 }
+
+.container {
+    direction: rtl;
+    height: 100%;
+}
