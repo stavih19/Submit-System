@@ -1,0 +1,35 @@
+<header>
+    <nav
+      class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3"
+    >
+
+    <a class="navbar-brand">שלום {{ userName }}</a>
+      <div class="container">
+        <div
+          class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse"
+          [ngClass]="{ show: isExpanded }"
+        >
+          <ul class="navbar-nav flex-grow">
+            <li
+              class="nav-item"
+              [routerLinkActive]="['link-active']"
+              [routerLinkActiveOptions]="{ exact: true }"
+            >
+              <a class="nav-link text-dark" [routerLink]="['/homeApp/student']">סטודנט</a>
+            </li>
+            <li class="nav-item" [routerLinkActive]="['link-active']">
+              <a class="nav-link text-dark" [routerLink]="['/homeApp/checker']"
+                >בודק</a
+              >
+            </li>
+            <li class="nav-item" [routerLinkActive]="['link-active']">
+              <a class="nav-link text-dark" [routerLink]="['/homeApp/teacher']"
+                >מתרגל</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+  
