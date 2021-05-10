@@ -13,9 +13,14 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { LoginComponent } from './homeApp/login/login.component';
 import { HomeComponentComponent } from './homeApp/home-component/home-component.component';
 import { NavHomeComponent } from './homeApp/nav-home/nav-home.component';
+import { HomeSubmitionExeComponent } from './homeApp/student/home-submition-exe/home-submition-exe.component';
+import { AfterSubmitionExeComponent } from './homeApp/student/after-submition-exe/after-submition-exe.component';
+import { MeanwhileSubmitionExeComponent } from './homeApp/student/meanwhile-submition-exe/meanwhile-submition-exe.component';
+import { BeforeSubmitionExeComponent } from './homeApp/student/before-submition-exe/before-submition-exe.component';
 
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { MatTableModule } from '@angular/material/table';
 
 import { StudentComponent } from './homeApp/student/student.component';
 import { CheckerComponent } from './homeApp/checker/checker.component';
@@ -33,7 +38,11 @@ import { TeacherComponent } from './homeApp/teacher/teacher.component';
     NavHomeComponent,
     StudentComponent,
     CheckerComponent,
-    TeacherComponent
+    TeacherComponent,
+    HomeSubmitionExeComponent,
+    AfterSubmitionExeComponent,
+    MeanwhileSubmitionExeComponent,
+    BeforeSubmitionExeComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -47,6 +56,7 @@ import { TeacherComponent } from './homeApp/teacher/teacher.component';
     BrowserAnimationsModule,
     MatInputModule,
     MatButtonModule,
+    MatTableModule,
     ReactiveFormsModule
   ],
   providers: [],

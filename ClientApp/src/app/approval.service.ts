@@ -9,10 +9,12 @@ export class ApprovalService {
   private logedIn = new BehaviorSubject(false);
   private userName = new BehaviorSubject("");
   private token = new BehaviorSubject("");
+  private exeStatus = new BehaviorSubject("");
 
   logedInStorage = this.logedIn.asObservable();
   userNameStorage = this.userName.asObservable();
   tokenStorage = this.token.asObservable();
+  exeStatusStorage = this.exeStatus.asObservable();
 
   constructor() { }
 
@@ -26,5 +28,9 @@ export class ApprovalService {
 
   updateToken(token: string): void {
     this.token.next(token);
+  }
+
+  updateExeStatus(status: string): void {
+    this.exeStatus.next(status);
   }
 }

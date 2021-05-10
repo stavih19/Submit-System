@@ -52,7 +52,7 @@
                     </ng-container>
                     <tr mat-header-row *matHeaderRowDef="submitionColumns"></tr>
                     <tr mat-row *matRowDef="let row; columns: submitionColumns;"
-                        (click)="getExe(row)">
+                        (click)="getBeforeEXE(row)">
                     </tr>
                 </table>              
             </div>
@@ -82,7 +82,7 @@
                     </ng-container>
                     <tr mat-header-row *matHeaderRowDef="gradeColumns"></tr>
                     <tr mat-row *matRowDef="let row; columns: gradeColumns;"
-                        (click)="getExe(row)">
+                        (click)="getAfterEXE(row)">
                     </tr>
                 </table>     
             </div>

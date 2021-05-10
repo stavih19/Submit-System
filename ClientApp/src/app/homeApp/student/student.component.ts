@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Course } from 'src/app/Course';
+import { Course } from 'src/Modules/Course';
 import { Router } from '@angular/router';
 import { ApprovalService } from 'src/app/approval.service';
 
@@ -86,7 +86,11 @@ export class StudentComponent implements OnInit {
     this.gradeDataSource = GRADE_DATA;
   }
 
-  getExe() {
+  getBeforeEXE() {
     this.appService.updateExeStatus("before");
+  }
+
+  getAfterEXE() {
+    this.appService.updateExeStatus("after");
   }
 }
