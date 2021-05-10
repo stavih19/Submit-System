@@ -94,3 +94,15 @@ input {
 table {
     width: 100%;
 }
+
+.rowTable {
+    cursor: pointer;
+}
+
+.rowTable:hover {
+    background-color: #eee;
+}
+
+table {
+    text-align: right;
+}
