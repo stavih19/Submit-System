@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
+using System.IO;
 namespace Submit_System {
     public enum CourseRole { Student, Teacher }
     public class DatabaseAccess {
@@ -10,7 +12,7 @@ namespace Submit_System {
             return FakeDatabase.CourseList;
         }
         public List<ExerciseLabel> GetCourseExercises(string courseId) {
-            var fullExes = FakeDatabase.ExcerciseList;
+            var fullExes = FakeDatabase.ExerciseList;
             var a = new List<ExerciseLabel>();
             foreach(var ex in fullExes)
             {
@@ -32,7 +34,7 @@ namespace Submit_System {
         }   
         public List<ExerciseGradeDisplay> GetStudentGrades(string id) {
             var grades = new List<ExerciseGradeDisplay>();
-            var exes = FakeDatabase.ExcerciseList;
+            var exes = FakeDatabase.ExerciseList;
             foreach(var ex in exes)
             {
                 var newGrade = new ExerciseGradeDisplay {
@@ -48,7 +50,7 @@ namespace Submit_System {
         }
 
         public List<ExerciseDateDisplay> GetExcercisesDates(string userId) {
-            var fullEx = FakeDatabase.ExcerciseList[1];
+            var fullEx = FakeDatabase.ExerciseList[1];
             var ex = new ExerciseDateDisplay {
                 ID = fullEx.ID,
                 Name = fullEx.Name,
@@ -59,6 +61,60 @@ namespace Submit_System {
             };
             return new List<ExerciseDateDisplay> {ex};
         }
-        public void SubmitExercise(FullSubmission data) {}
+        public StudentExInfo GetStudentSubmission(string studentId, string exId)
+        {
+            var sub = FakeDatabase.Submissions[0];
+            var ex = FakeDatabase.ExerciseList[0];
+            var x = new StudentExInfo {
+                ExName = ex.Name,
+                SubmissionID = sub.ID,
+                TotalGrade = sub.TotalGrade,
+                ManualGrade = sub.ManualGrade,
+                StyleGrade = sub.StyleGrade,
+                AutoGrade = sub.AutoGrade,
+                Dates = ex.Dates,
+                Submitters = sub.Submitters,
+                AppealChat = sub.AppealChat,
+                ExtensionChat = sub.ExtensionChat,
+                IsMultipleSubmission = ex.IsMultipleSubmission,
+                MaxSubmitters = ex.MaxSubmitters,
+                ExID = ex.ID
+            };
+            return x;
+        }
+        public void SubmitExercise(string userId, string exId, SubmissionUpload data) {
+            // string path = $"Courses/{CourseId}/Exercises/{exId}/Submissions/{newId}/";
+            string path = "/";
+            foreach (IFormFile file in data.files) {
+            if (file.Length > 0) {
+                string filePath = Path.Combine(path, file.FileName);
+                using (Stream fileStream = new FileStream(filePath, FileMode.Create)) {
+                    file.CopyTo(fileStream);
+                }
+            }
+        }
+
+        }
+        public List<Message> GetMesssages(string userId, string chatId)
+        {
+            var msg = FakeDatabase.Msg;
+            return new List<Message> { msg };
+        }
+        public void InsertMessage(string userId, string chatId, string text) {
+            var msg = new Message {
+                Body = text,
+                SenderID = userId,
+                ChatID = chatId,
+                ID = "b",
+                Date = DateTime.Now
+            };
+        }
+        public string GetSubmissionPath(string userId, string submissionId) {
+            return "path/";
+        }
+        public string GetExercisePath(string userId, string exerciseId) {
+            return "path/";
+        }
+
     }
 }

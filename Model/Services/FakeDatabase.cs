@@ -22,7 +22,7 @@ namespace Submit_System {
                 ID = "C-89112-2021"
             }
         };
-        public static readonly List<ExerciseFull> ExcerciseList = new List<ExerciseFull>
+        public static readonly List<ExerciseFull> ExerciseList = new List<ExerciseFull>
         {
             new ExerciseFull
             {
@@ -34,8 +34,7 @@ namespace Submit_System {
                         ID = "a"
                     }
                 },
-                ExFolderPath = "path"
-                
+                MaxSubmitters = 1
             },
             new ExerciseFull
             {
@@ -47,7 +46,7 @@ namespace Submit_System {
                         ID = "b"
                     }
                 },
-                ExFolderPath = "path"
+                MaxSubmitters = 1
             }
         };
         public static readonly List<FullSubmission> Submissions = new List<FullSubmission>
@@ -58,6 +57,7 @@ namespace Submit_System {
                 ManualGrade = 100,
                 AutoGrade = 100,
                 StyleGrade = 100,
+                DateSubmitted = DateTime.Now,
                 Submitters = new List<Student>
                 {
                     new Student
@@ -73,6 +73,7 @@ namespace Submit_System {
                 ManualGrade = 100,
                 AutoGrade = 100,
                 StyleGrade = 100,
+                DateSubmitted = DateTime.Now,
                 Submitters = new List<Student>
                 {
                     new Student
@@ -86,10 +87,9 @@ namespace Submit_System {
         public static Message Msg = new Message {
             ID = "1",
             SenderID = "111111111",
-            SenderName = "avi avi",
-            Position = 1,
-            SenderRole = CourseRole.Student,
+            Date = DateTime.Now,
             Body = "שלום"
+            
         };
 
     }
