@@ -1,11 +1,10 @@
-CREATE DATABASE Submit01;
+CREATE DATABASE Submit02;
 GO
-USE Submit01;
+USE Submit02;
 CREATE TABLE Users (
     user_id varchar(32),
     password_hash varchar(32),
-    first_name varchar(32),
-    last_name varchar(32),
+    name varchar(32),
     email varchar(64)
 );
 CREATE TABLE Courses (
