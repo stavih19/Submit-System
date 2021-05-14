@@ -7,5 +7,6 @@ namespace Submit_System {
         public int Grade { get; set; }
         public string CourseName {get; set; }
         public int CourseNumber {get; set; }
+        public string CourseID {get; set; }
     }
 }

@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="3.1.7" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
     <!--<PackageReference Include="System.IdentityModel" Version="4.5.0" />-->
   </ItemGroup>
 
