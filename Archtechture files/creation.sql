@@ -9,7 +9,7 @@ CREATE TABLE Users (
 );
 CREATE TABLE Courses (
     course_id varchar(32),
-    course_number varchar(32),
+    course_number int,
     course_name varchar(32),
     year int,
     semester int 
