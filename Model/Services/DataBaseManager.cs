@@ -1,5 +1,6 @@
 using System;
 using System.Data.SqlClient;
+using System.Collections.Generic;
 
 namespace Submit_System
 {
@@ -110,8 +111,95 @@ namespace Submit_System
         }
 
 
+        public static (bool,int,string) IsStudentInCourse(string course_id,string student_id){
+            SqlConnection cnn  = new SqlConnection(connetionString);
+            try{cnn.Open();} catch {return (false,3,"Connection failed");}
+            String sql = "SELECT * FROM Student_Course WHERE course_id = @CID AND user_id = @UID;";
+            SqlCommand command = new SqlCommand(sql,cnn);
+            command.Parameters.Add("@UID",System.Data.SqlDbType.VarChar);
+            command.Parameters.Add("@CID",System.Data.SqlDbType.VarChar);
+            command.Parameters["@UID"].Value = student_id;
+            command.Parameters["@CID"].Value = course_id;
+            try{
+                SqlDataReader dataReader = command.ExecuteReader();
+                if(!dataReader.Read()){
+                    return (false,0,"OK");
+                }
+            } catch {
+                try{cnn.Close();}catch{}
+                return (false,3,"Connection failed");
+            }
+            try{cnn.Close();} catch{return (true,4,"Connection close failed");}
+            return (true,0,"OK"); 
+        }
 
+        public static (int,string) AddStudentToCourse(string course_id,string student_id){
+            (bool exist,int err,String s) = DataBaseManager.IsStudentInCourse(course_id,student_id);
+            if(exist){
+                return (1,"The Student is already in the course");
+            }
+            if(err == 3){
+                return (err,s);
+            }
+            SqlConnection cnn  = new SqlConnection(connetionString);
+            try{cnn.Open();} catch {return (3,"Connection failed");}
+            String sql = "INSERT INTO Student_Course VALUES (@UID, @CID);";
+            SqlCommand command = new SqlCommand(sql,cnn);
+            command.Parameters.Add("@UID",System.Data.SqlDbType.VarChar);
+            command.Parameters.Add("@CID",System.Data.SqlDbType.VarChar);
+            command.Parameters["@UID"].Value = student_id;
+            command.Parameters["@CID"].Value = course_id;
+            try{
+                command.ExecuteReader();
+            } catch {
+                try{cnn.Close();}catch{}
+                return (2,"Addittion failed");
+            }
+            try{cnn.Close();} catch{return (4,"Connection close failed");}
+            return (0,"OK");
+        }
 
+        public static (List<string>,int,string) ReadCoursesIdOfStudent(string student_id){
+            List<string> lst = new List<string>();
+            SqlConnection cnn  = new SqlConnection(connetionString);
+            try{cnn.Open();} catch {return (null,3,"Connection failed");}
+            String sql = "SELECT course_id FROM Student_Course WHERE user_id = @ID;";
+            SqlCommand command = new SqlCommand(sql,cnn);
+            command.Parameters.Add("@ID",System.Data.SqlDbType.VarChar);
+            command.Parameters["@ID"].Value = student_id;
+            try{
+                SqlDataReader dataReader = command.ExecuteReader();
+                while(dataReader.Read()){
+                    lst.Add(dataReader.GetValue(0).ToString());
+                }
+            } catch {
+                try{cnn.Close();}catch{}
+                return (null,3,"Connection failed");
+            }
+            try{cnn.Close();} catch{return (lst,4,"Connection close failed");}
+            return (lst,0,"OK");   
+        }
+
+        public static (List<string>,int,string) ReadStudentsIdOfCourse(string course_id){
+            List<string> lst = new List<string>();
+            SqlConnection cnn  = new SqlConnection(connetionString);
+            try{cnn.Open();} catch {return (null,3,"Connection failed");}
+            String sql = "SELECT user_id FROM Student_Course WHERE course_id = @ID;";
+            SqlCommand command = new SqlCommand(sql,cnn);
+            command.Parameters.Add("@ID",System.Data.SqlDbType.VarChar);
+            command.Parameters["@ID"].Value = course_id;
+            try{
+                SqlDataReader dataReader = command.ExecuteReader();
+                while(dataReader.Read()){
+                    lst.Add(dataReader.GetValue(0).ToString());
+                }
+            } catch {
+                try{cnn.Close();}catch{}
+                return (null,3,"Connection failed");
+            }
+            try{cnn.Close();} catch{return (lst,4,"Connection close failed");}
+            return (lst,0,"OK");   
+        }
 
         
     }
