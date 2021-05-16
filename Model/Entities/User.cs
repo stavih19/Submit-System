@@ -12,7 +12,7 @@ namespace Submit_System {
         public string EMAIL{get;set;}
 
         public static bool IsValidID(string id){
-            return (id.Length <= 32) && int.TryParse(id,out _);
+            return (id.Length <= 10);
         }
     }
 }
