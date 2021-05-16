@@ -14,7 +14,7 @@ CREATE TABLE Courses (
     year int,
     semester int 
 );
-CREATE TABLE Studend_Course(
+CREATE TABLE Student_Course(
     user_id varchar(32),
     course_id varchar(32)
 );
