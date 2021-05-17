@@ -45,7 +45,7 @@
     cursor: pointer;
     position: relative;
     left: 0;
-    background-color: #EEE;
+    background-color: #eee;
     margin: .5em;
     padding: .3em 0;
     height: 3.2em;
@@ -93,4 +93,16 @@ input {
 
 table {
     width: 100%;
+}
+
+.rowTable {
+    cursor: pointer;
+}
+
+.rowTable:hover {
+    background-color: #eee;
+}
+
+table {
+    text-align: right;
 }

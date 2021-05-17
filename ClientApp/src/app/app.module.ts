@@ -21,6 +21,7 @@ import { BeforeSubmitionExeComponent } from './homeApp/student/before-submition-
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 
 import { StudentComponent } from './homeApp/student/student.component';
 import { CheckerComponent } from './homeApp/checker/checker.component';
@@ -57,6 +58,7 @@ import { TeacherComponent } from './homeApp/teacher/teacher.component';
     MatInputModule,
     MatButtonModule,
     MatTableModule,
+    DragDropModule,
     ReactiveFormsModule
   ],
   providers: [],

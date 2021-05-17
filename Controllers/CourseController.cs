@@ -22,7 +22,7 @@ namespace Submit_System.Controllers
             _access = new DatabaseAccess();
         }
 
-        [Route("Student/CourseList")]
+        [Route("Student/")]
         [HttpGet]
         public ActionResult<List<Course>> CourseList(string token)
         { 

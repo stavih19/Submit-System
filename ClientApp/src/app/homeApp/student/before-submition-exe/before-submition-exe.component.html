@@ -1,1 +1,131 @@
-<p>before-submition-exe works!</p>
+<div *ngIf="isToShowAlert" class="alert alert-danger" role="alert"
+ id="alertEle" style="text-align:right">
+    This is a danger alert—check it out!
+</div>
+<form [formGroup]="checkoutForm" class="example-form" (ngSubmit)="onSubmit()">
+    <div class="row headersLine">{{ selectExe.courseName }}</div>
+    <div class="row exeGeneral">
+        <div class="col-3">
+            <div class="row exeList">
+                <ul class="exeEelemnts">
+                    <li *ngFor="let exe of exeList"
+                        [class.selected]="exe === selectedExe"
+                        class="exe" (click)="onSelect(exe)">
+                        <div class="badge">
+                            <div class="exeName">
+                                {{ exe.name }}
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-9 exeContent">
+            <div class="row firstRow">
+                <div class="col-3">
+                    <div class="exeNameLabel">
+                        <div class="exNameHeader">
+                            שם התרגיל:
+                        </div>
+                        &nbsp;
+                        <div class="exeNameText" *ngIf="selectedExeInfo">
+                            {{ selectedExeInfo.exName }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-6">
+                    <div class="submitStatusLabel">
+                        <div class="statusLabel">
+                            סטטוס הגשה:&nbsp;&nbsp;
+                        </div>
+                        <diV class="statusText">
+                            טרם הוגש
+                        </diV>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="extenstionButton">
+                        <label class="btn btn-primary" color="primary" type="button">
+                            בקש הארכה
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="row secondRow">
+                <div class="col-3">
+                    <div class="moreSubmitersLabel">
+                            מגישים נוספים:
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div *ngIf="isMultipleSubmission; else multipleSubmission">
+                        <div class="noMultipleSubmission">
+                            הגשה ביחידים
+                        </div>
+                    </div>
+                    <ng-template #multipleSubmission>
+                        <mat-form-field class="example-full-width">
+                            <input matInput placeholder="example: id1, id2" value=""
+                            formControlName="additionalSubmitors" #additionalSubmitors>
+                        </mat-form-field>
+                    </ng-template>
+                </div>
+                <div class="col-3"></div>
+            </div>
+            <div class="row thirdRow">
+                <div class="col-3">
+                    <div class="uploadFilesLabel">
+                        קבצים שהועלו:
+                    </div>
+                </div>
+                <div class="col-6 fileUploadBox" #fileUploadBox
+                    (dragover)="onDragOver($event)"
+                    (dragleave)="onDragLeave($event)"
+                    (drop)="onDrop($event)">
+                    <div class="row fileUploadText">
+                        <div *ngFor="let file of uploadFileList">
+                            <div>
+                                <span class="close times"
+                                (click)="eraseUploadFile(file)" style="cursor: pointer;">x&nbsp;&nbsp;</span>
+                                <span>{{ file.name }}</span>
+                                <br>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="fileUploadButton">
+                            <input type="file" name="file-1[]" (change)="onFileChoose($event)"
+                            id="file-1" class="inputfile inputfile-1" style="visibility: hidden;">
+                            <label for="file-1" class="btn btn-primary" type="button" color="primary">בחר קבצים</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="resultsButton">
+                        <label class="btn btn-primary" style="width: 100px;" color="primary" type="button">תוצאות ריצה</label>                                
+                    </div>
+                </div>
+            </div>
+            <div class="row forthRow">
+                <div class="col-3"></div>
+                <div class="col-6">
+                    <div class="submitDate">
+                        <div class="submitDateLabel">
+                            תאריך הגשה:
+                        </div>
+                        &nbsp;&nbsp;
+                        <div class="submitDateText" *ngIf="selectedExeInfo">
+                            {{ selectedExeInfo.dates[0].date.substring(0, 10) }}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="submitButton">
+                        <button mat-raised-button class="btn btn-primary" style="width: 100px;" color="primary" type="submit">הגש</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
