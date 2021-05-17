@@ -41,6 +41,7 @@ namespace Submit_System {
                     Grade = 100,
                     ExID = ex.ID,
                     ExName = ex.Name,
+                    CourseID = "89111-2021",
                     CourseName = "תכנות מתקדם 1",
                     CourseNumber = 89111
                 };
@@ -55,6 +56,8 @@ namespace Submit_System {
                 ID = fullEx.ID,
                 Name = fullEx.Name,
                 Date = fullEx.Dates[0].date,
+                TeacherName = "Yosi Yosi",
+                CourseID = "89111-2021",
                 CourseName = "תכנות מתקדם 1",
                 CourseNumer = 89111
                 
