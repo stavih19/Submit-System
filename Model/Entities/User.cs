@@ -1,5 +1,5 @@
 namespace Submit_System {
-    class User{
+    public class User{
         public User(string id,string password_hash,string name,string email){
             this.ID = id;
             this.PASSWORD_HASH = password_hash;
@@ -12,7 +12,7 @@ namespace Submit_System {
         public string EMAIL{get;set;}
 
         public static bool IsValidID(string id){
-            return (id.Length <= 32) && int.TryParse(id,out _);
+            return (id.Length <= 10);
         }
     }
 }
