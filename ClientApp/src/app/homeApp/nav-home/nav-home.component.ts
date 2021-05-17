@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ApprovalService } from 'src/app/approval.service';
 
 @Component({
@@ -6,8 +6,10 @@ import { ApprovalService } from 'src/app/approval.service';
   templateUrl: './nav-home.component.html',
   styleUrls: ['./nav-home.component.css']
 })
-export class NavHomeComponent implements OnInit {
+export class NavHomeComponent implements OnInit, AfterViewInit {
   userName: string;
+
+  @ViewChild("tabs", {static: false}) tabs: ElementRef;
 
   constructor(
     private appService: ApprovalService
@@ -15,6 +17,10 @@ export class NavHomeComponent implements OnInit {
 
   ngOnInit() {
     this.appService.userNameStorage.subscribe(userName => this.userName = userName);
+  }
+
+  ngAfterViewInit(): void {
+    this.tabs.nativeElement.firstChild.firstChild.click();
   }
   
   isExpanded = false;
@@ -25,5 +31,14 @@ export class NavHomeComponent implements OnInit {
 
   toggle() {
     this.isExpanded = !this.isExpanded;
+  }
+
+  onClick(id) {
+    document.getElementById('student').style.backgroundColor = "";
+    document.getElementById('checker').style.backgroundColor = "";
+    document.getElementById('teacher').style.backgroundColor = "";
+
+    document.getElementById(id).style.backgroundColor = "#eee";
+    this.appService.updateExeStatus("");
   }
 }

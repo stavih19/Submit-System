@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { ApprovalService } from 'src/app/approval.service';
 
 @Component({
@@ -9,6 +9,8 @@ import { ApprovalService } from 'src/app/approval.service';
 
 export class HomeSubmitionExeComponent implements OnInit {
   exeStatus: string;
+
+  @Input() selectExe: any;
 
   constructor(
     private appService: ApprovalService,

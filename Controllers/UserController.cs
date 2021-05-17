@@ -11,7 +11,7 @@ namespace Submit_System
         // GET api/values  
         [HttpPost]  
         public ActionResult<string> Login([FromBody]LoginData user)  
-        {  
+        {
             if (user == null)  
             {  
                 return BadRequest("Invalid request");  

@@ -1,10 +1,11 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { Observable, throwError } from 'rxjs';
 import { catchError, retry } from 'rxjs/operators';
 import { HomeComponentComponent } from 'src/app/homeApp/home-component/home-component.component';
 import { ApprovalService } from "src/app/approval.service";
+import { error } from 'selenium-webdriver';
 
 @Component({
   selector: 'app-login',
@@ -26,18 +27,26 @@ export class LoginComponent implements OnInit {
 
   ngOnInit() {}
 
-  onSubmit(): void {
-    console.warn('Your order has been submitted', this.checkoutForm.value);
-    
-    let params = new HttpParams();
-    params = params.append('user', this.checkoutForm.value.userName);
-    params = params.append('password', this.checkoutForm.value.password);
+  onSubmit(): void {    
+    let params = { 
+      "Username": this.checkoutForm.value.userName,
+      "Password": this.checkoutForm.value.password,
+    };
+    console.log(params);
 
-    //let response = this.httpClient.get('http://localhost:3000/Home/login', {params: params}); // TODO
-    this.appService.updateLoginStatus(true);
-    this.appService.updateUserName(this.checkoutForm.value.userName);
-    //this.appService.updateToken();  // TODO
+    this.httpClient.post('https://localhost:5001/User/Login', params, 
+    {responseType: 'text'}).toPromise().then(
+      data => {
+        console.log(data);
 
-    this.checkoutForm.reset();
+        this.appService.updateLoginStatus(true);
+        this.appService.updateUserName(this.checkoutForm.value.userName);
+        this.appService.updateToken(data);
+
+        this.checkoutForm.reset();
+      }, error => {
+        console.log(error);
+      }
+    )
   }
 }

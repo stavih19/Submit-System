@@ -1,5 +1,7 @@
 <div *ngIf="exeStatus==='before'">
-    <app-before-submition-exe></app-before-submition-exe>
+    <app-before-submition-exe [selectExe]="selectExe">
+
+    </app-before-submition-exe>
 </div>
 <div *ngIf="exeStatus==='meanWhile'">
     <app-meanwhile-submition-exe></app-meanwhile-submition-exe>
