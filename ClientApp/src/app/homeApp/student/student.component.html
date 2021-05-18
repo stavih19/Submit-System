@@ -1,0 +1,94 @@
+<div *ngIf="exeStatus===''; else exeDisplay">
+    <div class="row studentGeneral">
+        <div class="col-6">
+            <div class="row headersLine">
+                <div class="col-2">
+                    <h4>קורסים</h4>
+                </div>
+                <div class="col-10"></div>
+            </div>
+            <div class="row coursesList">
+                <ul class="coursesEelemnts">
+                    <li *ngFor="let course of coursesList"
+                        [class.selected]="course === selectedCourse"
+                        class="course" (click)="onSelect(course)">
+                        <div class="badge">
+                            <div class="courseName">
+                                {{ course.name }}
+                            </div>
+                            <div class="gap"></div>
+                            <div class="courseId">
+                                {{ course.courseId }}
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="row headersLine">
+                <div class="col-4">
+                    <h4>תרגילים להגשה</h4>
+                </div>
+                <div class="col-8"></div>
+            </div>
+            <div class="row exeToSubmitContent">
+                <table mat-table [dataSource]="submitionDataSource" class="mat-elevation-z8">
+                    <ng-container matColumnDef="courseName">
+                      <th mat-header-cell *matHeaderCellDef>שם הקורס</th>
+                      <td mat-cell *matCellDef="let element"> {{element.courseName}} </td>
+                    </ng-container>
+                    <ng-container matColumnDef="courseNumber">
+                      <th mat-header-cell *matHeaderCellDef>מס' הקורס</th>
+                      <td mat-cell *matCellDef="let element"> {{element.courseNumber}} </td>
+                    </ng-container>
+                    <ng-container matColumnDef="exeName">
+                      <th mat-header-cell *matHeaderCellDef>שם התרגיל</th>
+                      <td mat-cell *matCellDef="let element"> {{element.exeName}} </td>
+                    </ng-container>
+                    <ng-container matColumnDef="teacherName">
+                      <th mat-header-cell *matHeaderCellDef>שם מתרגל</th>
+                      <td mat-cell *matCellDef="let element"> {{element.teacherName}} </td>
+                    </ng-container>
+                    <tr mat-header-row *matHeaderRowDef="submitionColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: submitionColumns;"
+                        (click)="getBeforeEXE(row)">
+                    </tr>
+                </table>              
+            </div>
+            <div class="row headersLine">
+                <div class="col-4">
+                    <h4>ציוני תרגילים</h4>
+                </div>
+                <div class="col-8"></div>
+            </div>
+            <div class="row gradeContent">
+                <table mat-table [dataSource]="gradeDataSource" class="mat-elevation-z8">
+                    <ng-container matColumnDef="courseName" class="courseNameCell">
+                      <th mat-header-cell *matHeaderCellDef style="direction: rtl;">שם הקורס</th>
+                      <td mat-cell *matCellDef="let element"> {{element.courseName}} </td>
+                    </ng-container>
+                    <ng-container matColumnDef="courseNumber">
+                      <th mat-header-cell *matHeaderCellDef>מס' הקורס</th>
+                      <td mat-cell *matCellDef="let element"> {{element.courseNumber}} </td>
+                    </ng-container>
+                    <ng-container matColumnDef="exeName">
+                      <th mat-header-cell *matHeaderCellDef>שם התרגיל</th>
+                      <td mat-cell *matCellDef="let element"> {{element.exeName}} </td>
+                    </ng-container>
+                    <ng-container matColumnDef="gradeNumber">
+                      <th mat-header-cell *matHeaderCellDef>ציון</th>
+                      <td mat-cell *matCellDef="let element"> {{element.gradeNumber}} </td>
+                    </ng-container>
+                    <tr mat-header-row *matHeaderRowDef="gradeColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: gradeColumns;"
+                        (click)="getAfterEXE(row)">
+                    </tr>
+                </table>     
+            </div>
+        </div>
+    </div>
+</div>
+<ng-template #exeDisplay>
+    <app-home-submition-exe></app-home-submition-exe>
+</ng-template>

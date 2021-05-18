@@ -1,0 +1,20 @@
+<div class="container">
+    <div class="login" *ngIf="!logedIn; else navHome">
+        <div class="row topSpace">
+            <div class="col-4"></div>
+            <div class="col-4"></div>
+            <div class="col-4"></div>
+        </div>
+        <div class="row">
+            <div class="col-4"></div>
+            <div class="col-4 loginContent">
+                <app-login></app-login>
+            </div>
+            <div class="col-4"></div>
+        </div>
+    </div>
+    <ng-template #navHome>
+        <app-nav-home></app-nav-home>
+        <router-outlet></router-outlet>
+    </ng-template>
+</div>

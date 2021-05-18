@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 namespace Submit_System {
     public class SubmissionUpload {
         
-        public List<IFormFile> files {get; set;}
-        public List<Student> Submitters {get; set; }
+        public List<IFormFile> Files {get; set;}
+        public List<string> Submitters {get; set; }
     }
 }

@@ -49,15 +49,17 @@ namespace Submit_System {
                 MaxSubmitters = 1
             }
         };
-        public static readonly List<FullSubmission> Submissions = new List<FullSubmission>
+        public static readonly List<SubmissionData> Submissions = new List<SubmissionData>
         {
-            new FullSubmission {
+            new SubmissionData {
                 ID = "89111-2021-1-111111111",
                 TotalGrade = 100,
                 ManualGrade = 100,
                 AutoGrade = 100,
                 StyleGrade = 100,
                 DateSubmitted = DateTime.Now,
+                Folder = SubmitFile.Create("Submissions/"),
+                State = SubmissionState.Checked,
                 Submitters = new List<Student>
                 {
                     new Student
@@ -67,13 +69,14 @@ namespace Submit_System {
                     }
                 }
             },
-            new FullSubmission {
+            new SubmissionData {
                 ID = "89111-2021-2-111111111",
-                TotalGrade = 100,
-                ManualGrade = 100,
-                AutoGrade = 100,
-                StyleGrade = 100,
+                TotalGrade = -1,
+                ManualGrade = -1,
+                AutoGrade = -1,
+                StyleGrade = -1,
                 DateSubmitted = DateTime.Now,
+                State = SubmissionState.Unchecked,
                 Submitters = new List<Student>
                 {
                     new Student
@@ -84,11 +87,12 @@ namespace Submit_System {
                 }
             }
         };
-        public static Message Msg = new Message {
+        public static readonly Message Msg = new Message {
             ID = "1",
             SenderID = "111111111",
             Date = DateTime.Now,
-            Body = "שלום"
+            Body = "שלום",
+            ChatID = "1"
             
         };
 

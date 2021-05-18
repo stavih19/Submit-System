@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
-using System;
+using Microsoft.AspNetCore.Http;
 
 namespace Submit_System
 {
@@ -74,5 +74,18 @@ namespace Submit_System
             return folder + '/' + GetFileName(file);
         }
 
+        public static void StoreFiles(string path, List<IFormFile> files)
+        {
+            foreach(var file in files)
+            {
+                if (file.Length > 0) {
+                    string filePath = Path.Combine(path, file.FileName);
+                    using (Stream fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        file.CopyTo(fileStream);
+                    }
+                }
+            }  
+        }
     }
 }
