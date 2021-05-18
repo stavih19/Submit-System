@@ -20,7 +20,7 @@ namespace Submit_System.Controllers
             _access = new DatabaseAccess();
         }
 
-        [Route("Student/CourseList")]
+        [Route("Student/")]
         [HttpGet]
         public ActionResult<List<Course>> StudentCourses(string userid)
         { 
