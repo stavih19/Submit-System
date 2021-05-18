@@ -9,7 +9,8 @@ namespace Submit_System.Controllers
 {
     //[ApiController]
     //[Route("[controller]")]
-    public class ExerciseController : ControllerBase
+    [ServiceFilter(typeof(AuthFilter))]
+    public class ExerciseController : AbstractController
     {
 
         private readonly ILogger<ExerciseController> _logger;
@@ -23,16 +24,23 @@ namespace Submit_System.Controllers
 
         [HttpGet]
         [Route("Student/ExerciseLabels")]
-        public ActionResult<List<ExerciseLabel>> ExerciseList(string token, string courseId)
+        public ActionResult<List<ExerciseLabel>> ExerciseList(string userid, string courseId)
         {
             return _access.GetCourseExercises(courseId);
         }
         [Route("Student/ExerciseList")]
         [HttpGet]
-        public ActionResult<List<ExerciseDateDisplay>> ExerciseDates(string token)
+        public ActionResult<List<ExerciseDateDisplay>> ExerciseDates(string userid)
         {
-            return _access.GetExcercisesDates(token);
+            return _access.GetExcercisesDates(userid);
         }
+        [HttpGet]
+        [Route("Checker/ExerciseList")]
+        public ActionResult<List<CheckerExInfo>> GetCheckerExercises(string userid)
+        {
+            return _access.GetExercises(userid);
+        }
+        
     }
 }
 

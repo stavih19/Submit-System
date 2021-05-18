@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using System.IO;
+using System.Diagnostics;
 namespace Submit_System {
     public enum CourseRole { Student, Teacher }
     public class DatabaseAccess {
@@ -24,7 +25,28 @@ namespace Submit_System {
             };
             return a;
         }
-        public List<FullSubmission> GetSubmissions(string exId=null, string studentId=null)
+
+        public List<CheckerExInfo> GetExercises(string userid)
+        {
+            var exes = FakeDatabase.ExerciseList;
+            var ExInfos = new List<CheckerExInfo>();
+            foreach(var ex in exes)
+            {
+                var newInfo = new CheckerExInfo {
+                    
+                    ExID = ex.ID,
+                    ExName = ex.Name,
+                    CourseID = "89111-2021",
+                    CourseName = "תכנות מתקדם 1",
+                    CourseNumber = 89111,
+                    NumOfSubmissions = 1,
+                    NumOfAppeals = 10
+                };
+                ExInfos.Add(newInfo);
+            };
+            return ExInfos;
+        }
+        public List<SubmissionData> GetSubmissions(string exId=null, string studentId=null)
         {
             if(exId == null && studentId == null)
             {
@@ -84,19 +106,6 @@ namespace Submit_System {
                 ExID = ex.ID
             };
             return x;
-        }
-        public void SubmitExercise(string userId, string exId, SubmissionUpload data) {
-            // string path = $"Courses/{CourseId}/Exercises/{exId}/Submissions/{newId}/";
-            string path = "/";
-            foreach (IFormFile file in data.files) {
-            if (file.Length > 0) {
-                string filePath = Path.Combine(path, file.FileName);
-                using (Stream fileStream = new FileStream(filePath, FileMode.Create)) {
-                    file.CopyTo(fileStream);
-                }
-            }
-        }
-
         }
         public List<Message> GetMesssages(string userId, string chatId)
         {

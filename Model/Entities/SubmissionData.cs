@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
 namespace Submit_System {
-    public class FullSubmission {
+    public enum SubmissionState { Unchecked, Checked, Appeal }
+    public class SubmissionData {
         
         public string ID { get; set; }
         public int TotalGrade { get; set; }
@@ -12,5 +13,8 @@ namespace Submit_System {
         public Chat ExtensionChat { get; set; } = null;
         public Chat AppealChat { get; set; } = null;
         public List<Student> Submitters {get; set; }
+        public SubmitFile Folder {get; set;}
+
+        public SubmissionState State {get; set;}
     }
 }
