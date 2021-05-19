@@ -8,19 +8,14 @@ namespace Submit_System
     public class Token
     {
         public string tokenID { get; set; }
-        public DateTime EntryDate { get; set; }
+        public DateTime LastEntry { get; set; }
         public string UserID { get; set; }
         public bool IsAdmin { get; set; } = false;
-
-        public Token()
-        {
-            EntryDate = DateTime.Now.AddHours(-2);
-        }
 
         public Token(string userName, string id)
         {
             this.tokenID = id;
-            this.EntryDate = DateTime.Now;
+            this.LastEntry = DateTime.Now;
             this.UserID = userName;
         }
 
