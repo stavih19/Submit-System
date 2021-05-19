@@ -5,7 +5,8 @@ using System.Collections.Generic;
 namespace Submit_System
 {
     public class DataBaseManager{
-        private static string connetionString = "Data Source=127.0.0.1;Initial Catalog=submit02;User ID=SA;Password=HKCGHFKJ,GKG56fvfviW";
+        private static string connetionString = "Server=127.0.0.1;Database=submit02;User Id=sa;Password=paSSwordius$;";
+        // ;
 
         public static (User,int,string) ReadUser(string id) {
             if(!User.IsValidID(id)){

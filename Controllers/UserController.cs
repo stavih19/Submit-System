@@ -19,16 +19,16 @@ namespace Submit_System
         [Route("User/Login")]
         public ActionResult<List<string>> Login([FromBody]LoginData login)  
         {  
-            if (login == null)  
+            if (login == null || login?.Username == null || login?.Password == null)  
             {  
-                return BadRequest();  
+                return BadRequest();
             }
             var hash = CryptoUtils.Hash(login.Password);
             //var readResult = DataBaseManager.ReadUser(login.Username);
             if(login.Username == "Yosi" && login.Password == "password") {
                 string ID = _storage.CreateToken(login.Username);
                 string name = "Yosi Yosi";
-                return new List<string> { ID, name };
+                return new List<string> {ID, name};
             }
             return NotFound();
         }
@@ -41,12 +41,22 @@ namespace Submit_System
             //Logout(token);
             return Ok();
         }
-        [HttpGet]
+        [HttpDelete]
+        [Route("User/Logout")]
         public IActionResult Logout(string token) {
             _storage.RemoveToken(token);
             return Ok();
         }
-
+        [HttpHead]
+        [Route("User/CheckToken")]
+        public IActionResult CheckToken(string token)
+        {
+            if(_storage.TryGetUserID(token, out _))
+            {
+                return Ok();
+            }
+            return NotFound();
+        }
         [HttpPut]
         [Route("User/Unlock")]
         public IActionResult TurnOff()

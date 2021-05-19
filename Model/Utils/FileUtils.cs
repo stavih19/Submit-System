@@ -76,9 +76,14 @@ namespace Submit_System
 
         public static void StoreFiles(string path, List<IFormFile> files)
         {
+            if(!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
             foreach(var file in files)
             {
-                if (file.Length > 0) {
+                if (file.Length > 0)
+                {
                     string filePath = Path.Combine(path, file.FileName);
                     using (Stream fileStream = new FileStream(filePath, FileMode.Create))
                     {

@@ -63,13 +63,14 @@ namespace Submit_System.Controllers
         [HttpPost]        
         public IActionResult Submit(string userid, string exerciseId, [FromForm] SubmissionUpload upload)
         {
-            if(upload == null) {
-                return BadRequest("No form");
-            }
-            else if(upload.Files == null) {
+            if(upload == null || upload?.Files == null) {
                 return BadRequest("No files");
             }
-            string path = "./Submissions/";
+            if(exerciseId == null || exerciseId == "")
+            {
+                return BadRequest("No exercise ID");
+            }
+            string path = $"./Exercises/{exerciseId}/Submissions/{userid}";
             try
             {
                 FileUtils.StoreFiles(path, upload.Files);

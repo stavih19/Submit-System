@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Linq;
+using System.Text;
 namespace Submit_System
 {
     public class CryptoUtils
@@ -9,27 +10,39 @@ namespace Submit_System
         private const int HASH_LEN = 20;
         private const int SALT_START = HASH_LEN + sizeof(int);
         private const int SALT_LEN = 8;
-        private const int ITER = 1000;
+        private const int ITER = 1;
+        private const int MULT = 1000;
+        private const string SEP = "$";
+        private const string FORMAT = "{0}" + SEP + "{1}" + SEP +"{2}";
         /// <summary>
         /// Hashes the given password with PBKDR2
         /// </summary>
         /// <param name="password">The password to hash</param>
         /// <returns>
-        /// [20 bytes representing hash of password][4 bytes representing number of iterations][The salt (8 bytes by default)]
+        /// Format: {Password hash}${Salt}${Number of iterations in thousands}
         /// </returns>
-        public static byte[] Hash(string password, byte[] salt=null, int iter=ITER)
+        private static string Hash(string password, byte[] salt, int iterThousands)
         {
             if(salt == null) {
                 salt = GetRandomBytes(SALT_LEN);
             }
-            var result = new byte[SALT_START + salt.Length];
-            using (var hasher = new Rfc2898DeriveBytes(password, salt, iter))
+            byte[] hash;
+            using (var hasher = new Rfc2898DeriveBytes(password, salt, iterThousands*MULT))
             {
-                hasher.GetBytes(HASH_LEN).CopyTo(result, 0);
-                hasher.Salt.CopyTo(result, SALT_START);
+                hash = hasher.GetBytes(HASH_LEN);
             }
-            BitConverter.GetBytes(iter).CopyTo(result, HASH_LEN);
-            return result;
+            return String.Format(FORMAT, Convert.ToBase64String(hash), Convert.ToBase64String(salt), iterThousands.ToString());
+        }
+        /// <summary>
+        /// Overload. Gets Salt length.
+        /// </summary>
+        /// <param name="passsword"></param>
+        /// <param name="saltLength"></param>
+        /// <param name="iterThousands"></param>
+        /// <returns></returns>
+         public static string Hash(string passsword, int saltLength=SALT_LEN, int iterThousands=ITER)
+        {
+            return Hash(passsword, GetRandomBytes(saltLength), iterThousands);
         }
         public static byte[] GetRandomBytes(int len)
         {
@@ -46,11 +59,11 @@ namespace Submit_System
         /// <param name="password">The input password</param>
         /// <param name="storedHash">The database hash</param>
         /// <returns>True if they equal, false otherwise</returns>
-        public static bool Compare(string password, byte[] storedHash)
+        public static bool Verify(string password, string storedHash)
         {
-            int iter = BitConverter.ToInt32(storedHash[HASH_LEN..SALT_START]);
-            byte[] inputHash = Hash(password, storedHash[SALT_START..storedHash.Length], iter);
-            return Enumerable.SequenceEqual(inputHash, storedHash);
+            string[] components = storedHash.Split(SEP);
+            string inputHash = Hash(password, Convert.FromBase64String(components[1]), Int32.Parse(components[2]));
+            return inputHash == storedHash;
         }
         /// <summary>
         /// Generate random password for testing purposes
@@ -83,16 +96,17 @@ namespace Submit_System
             {
                 string pass = GeneratePassword();
                 string fakePass = GeneratePassword();
-                var salt = GetRandomBytes(r.Next(8, 16));
-                var iter = 500000; //r.Next(500, 1500);
+                var salt = GetRandomBytes(8);
+                var iter = 5;
                 var hash = Hash(pass, salt, iter);
-                // if(Compare(pass, hash))
-                // {
-                //     count++;
-                // }
-                // if(!Compare(fakePass, hash)) {
-                //     count2++;
-                // }
+                Trace.WriteLine(hash);
+                if(Verify(pass, hash))
+                {
+                    count++;
+                }
+                if(!Verify(fakePass, hash)) {
+                    count2++;
+                }
             }
             stop.Stop();
             Trace.WriteLine($"Matches: {count}/{num} | Mismatches: {count2}/{num} | Elapsed: {stop.Elapsed}");

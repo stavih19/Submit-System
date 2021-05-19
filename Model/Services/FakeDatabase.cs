@@ -28,8 +28,10 @@ namespace Submit_System {
             {
                 ID = "89-111-2020-1",
                 Name = "Ex1",
-                Dates = new List<SubmitDate> {
-                    new SubmitDate {
+                Dates = new List<SubmitDate>
+                {
+                    new SubmitDate
+                    {
                         date = DateTime.Now.Date,
                         ID = "a"
                     }
@@ -40,7 +42,8 @@ namespace Submit_System {
             {
                 ID = "89-111-2020-2",
                 Name = "Ex2",
-                Dates = new List<SubmitDate> {
+                Dates = new List<SubmitDate>
+                {
                     new SubmitDate {
                         date = DateTime.Now.Date,
                         ID = "b"
@@ -51,7 +54,8 @@ namespace Submit_System {
         };
         public static readonly List<SubmissionData> Submissions = new List<SubmissionData>
         {
-            new SubmissionData {
+            new SubmissionData
+            {
                 ID = "89111-2021-1-111111111",
                 TotalGrade = 100,
                 ManualGrade = 100,
@@ -69,7 +73,8 @@ namespace Submit_System {
                     }
                 }
             },
-            new SubmissionData {
+            new SubmissionData
+            {
                 ID = "89111-2021-2-111111111",
                 TotalGrade = -1,
                 ManualGrade = -1,
@@ -87,7 +92,8 @@ namespace Submit_System {
                 }
             }
         };
-        public static readonly Message Msg = new Message {
+        public static readonly Message Msg = new Message
+        {
             ID = "1",
             SenderID = "111111111",
             Date = DateTime.Now,
