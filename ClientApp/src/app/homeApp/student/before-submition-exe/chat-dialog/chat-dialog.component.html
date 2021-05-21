@@ -1,0 +1,34 @@
+<div class="row ExtenstionModal">
+    <div class="col-1"></div>
+    <div class="col-10">
+        <div class="row headerRow">
+            <h2 class="extenstioHeader">בקשת הארכה:&nbsp;&nbsp;</h2>
+            <h2 class="exeName">{{ exeName }}</h2>
+        </div>
+        <div class="row spaceRow">
+            <h6 class="extenstioHeader">אל המתרגל/ת:&nbsp;&nbsp;</h6>
+            <h6 class="exeName">{{ teacherName }}</h6>
+        </div>
+        <div class="row mesasgeConverstion" #mesasgeConverstion>
+
+        </div>
+        <br>
+        <div class="row spaceRow">
+            כתוב הודעה:
+        </div>
+        <div class="row newMessage">
+            <textarea #textMessage class="textMessage"
+                (input)="enableButton()"></textarea>
+        </div>
+        <div class="row spaceRow"></div>
+        <div class="row">
+            <button mat-raised-button class="sendButton" color="primary" type="submit"
+                [disabled]="!isThereMessage" (click)="sendMessage">
+                <h5>
+                    שלח
+                </h5>
+            </button>
+        </div>
+    </div>
+    <div class="col-1"></div>
+</div>

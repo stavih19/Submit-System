@@ -1,0 +1,41 @@
+.ExtenstionModal {
+    height: 730px;
+    width: 1000px;
+}
+
+.extenstioHeader, .exeName {
+    display: inline-block;
+    position: center;
+    direction: rtl;
+}
+
+.headerRow, .teacherHeader, .spaceRow {
+    direction: rtl;
+}
+
+.spaceRow {
+    height: 7%;
+}
+
+.mesasgeConverstion {
+    border-style: ridge;
+}
+
+.mesasgeConverstion {
+    height: 50%;
+}
+
+.newMessage {
+    height: 100px
+}
+
+.sendButton {
+    left: 45%;
+    padding: 10px 20px 6px 20px;
+}
+
+.textMessage {
+    width: 100%;
+    height: 100%;
+    resize: none;
+}

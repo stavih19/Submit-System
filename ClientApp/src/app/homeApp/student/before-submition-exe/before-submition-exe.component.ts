@@ -1,10 +1,13 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild ,DoCheck, KeyValueDiffers, KeyValueDiffer} from '@angular/core';
 import { ApprovalService } from 'src/app/approval.service';
 import { ExerciseLabel } from 'src/Modules/ExerciseLabel';
 import { FormBuilder } from '@angular/forms';
 import { ElementRef } from '@angular/core';
 import { SubmissionUpload } from 'src/Modules/SubmissionUpload';
+import { StudentExInfo } from 'src/Modules/StudentExInfo';
+import { MatDialog } from '@angular/material/dialog';
+import { ChatDialogComponent } from './chat-dialog/chat-dialog.component';
 
 @Component({
   selector: 'app-before-submition-exe',
@@ -12,11 +15,11 @@ import { SubmissionUpload } from 'src/Modules/SubmissionUpload';
   styleUrls: ['./before-submition-exe.component.css']
 })
 export class BeforeSubmitionExeComponent implements OnInit {
-  isToShowAlert: boolean = false;
-  exeList: ExerciseLabel[];
   selectedExe: ExerciseLabel;
-  selectedExeInfo: any;
+  selectedExeInfo: StudentExInfo;
   uploadFileList: any[] = [];
+  modalRef: any;
+  isToCloseModal: boolean = false;
   checkoutForm = this.formBuilder.group({
     additionalSubmitors: [''],
     uploadFiles: ['']
@@ -25,6 +28,13 @@ export class BeforeSubmitionExeComponent implements OnInit {
   token: string;
 
   @Input() selectExe: any;
+  @Input() teacherName: string;
+  @Output() isToShowAlert = new EventEmitter<boolean>();
+
+  updateShowAlert(value: boolean) {
+    this.isToShowAlert.emit(value); // ???
+  }
+
   @ViewChild('fileUploadBox', {static: false}) fileUploadBox: ElementRef;
   @ViewChild('fileUploadText', {static: false}) fileUploadText: ElementRef;
   @ViewChild('additionalSubmitors', {static: false}) additionalSubmitors: ElementRef;
@@ -33,17 +43,13 @@ export class BeforeSubmitionExeComponent implements OnInit {
     private httpClient: HttpClient,
     private appService: ApprovalService,
     private formBuilder: FormBuilder,
+    public dialog: MatDialog,
   ) { 
     this.appService.tokenStorage.subscribe(token => this.token = token);
   }
 
   ngOnInit() {
     console.log(this.selectExe);
-    this.getExeLists(this.selectExe.courseID);
-    setTimeout(() => {
-      this.onSelect(this.exeList[0]); // TODO
-    }, 0);
-
   }
 
   onSubmit() {
@@ -60,16 +66,7 @@ export class BeforeSubmitionExeComponent implements OnInit {
       data => {
         console.log(inputSubmition);
       }, error => {
-        console.log(error);
-
-        this.isToShowAlert = true;
-        setTimeout(() => {
-          const message = "קוד שגיאה:&nbsp;" + error.status + "&nbsp;&nbsp;נסה מאוחר יותר";
-          document.getElementById("alertEle").innerHTML = message;
-        }, 0);
-        setTimeout(() => {
-          this.isToShowAlert = false;
-        }, 5000);
+        this.errorMessage(error.status);
       }
     )
   }
@@ -87,14 +84,7 @@ export class BeforeSubmitionExeComponent implements OnInit {
         this.fileSubmittersValue();
         console.log(this.selectedExeInfo);
       }, error => {
-        console.log(error);
-
-        this.isToShowAlert = true;
-        const message = error.status + "   try again";
-        document.getElementById("alertEle").innerHTML = message;
-        setTimeout(() => {
-          this.isToShowAlert = false;
-        }, 5000);
+        this.errorMessage(error.status);
       }
     )
   }
@@ -108,31 +98,6 @@ export class BeforeSubmitionExeComponent implements OnInit {
         this.additionalSubmitors.nativeElement.value += submitter.id;
       }
     });
-  }
-
-  getExeLists(courseID) {
-    let url = 'https://localhost:5001/Student/ExerciseLabels?token=' + this.token + '&coursed=' + courseID;
-    this.httpClient.get(url, 
-    {responseType: 'text'}).toPromise().then(
-      data => {
-        this.exeList = JSON.parse(data);
-      }, error => {
-        console.log(error);
-
-        this.exeList = [
-          {id: "123456789", name: "ex 3"},
-          {id: "123456789", name: "ex 2"},
-          {id: "123456789", name: "ex 1"},
-        ];
-
-        this.isToShowAlert = true;
-        const message = error.status + "   try again";
-        document.getElementById("alertEle").innerHTML = message;
-        setTimeout(() => {
-          this.isToShowAlert = false;
-        }, 5000);
-      }
-    )
   }
 
   onDragOver(event) {
@@ -170,5 +135,43 @@ export class BeforeSubmitionExeComponent implements OnInit {
     if(index > -1) {
       this.uploadFileList.splice(index, 1);
     }
+  }
+
+  askForExtenstion() {
+    let extensionChat = this.selectedExeInfo.extensionChat;
+    if(extensionChat === null) { this.displayConverstion([]); return; }
+    let url = 'https://localhost:5001/Student/MessageList?token=' + this.token + '&chatId=' + extensionChat.id;
+    this.httpClient.get(url, 
+    {responseType: 'text'}).toPromise().then(
+      data => {
+        data = JSON.parse(data);
+        this.displayConverstion(data);
+      }, error => {
+        this.errorMessage(error.status);
+      }
+    )   
+  }
+
+  displayConverstion(data: any) {
+    const modalRef =  this.dialog.open(ChatDialogComponent);
+    this.modalRef = modalRef;
+
+    modalRef.componentInstance.chatID = this.selectedExeInfo.extensionChat;
+    modalRef.componentInstance.teacherName = this.teacherName;
+    modalRef.componentInstance.exeName = this.selectExe.name;
+  }
+
+  closeModal() {
+    //const change = this.isToCloseModal.diff(this);
+    this.modalRef.close();
+  }
+
+  errorMessage(error: string) {
+    this.updateShowAlert(true);
+    const message = error + "   try again";
+    document.getElementById("alertEle").innerHTML = message;
+    setTimeout(() => {
+      this.updateShowAlert(false);
+    }, 5000);
   }
 }
