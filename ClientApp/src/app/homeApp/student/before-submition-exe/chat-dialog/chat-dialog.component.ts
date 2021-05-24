@@ -18,7 +18,7 @@ export class ChatDialogComponent implements OnInit, AfterContentInit {
   isThereMessage: boolean = false;
   textMessage: string;
   fileList: any[] = [];
-  messageList: Message[];
+  messageList: Message[] = [];
   token: string;
   id: string;
 
@@ -55,15 +55,14 @@ export class ChatDialogComponent implements OnInit, AfterContentInit {
     this.textMessage = this.textMessageRef.nativeElement.value;
     if(this.textMessage !== "" || this.fileList.length) {
       this.isThereMessage = true;
-      console.log(this.isThereMessage);
     } else {
       this.isThereMessage = false;
-      console.log(this.isThereMessage);
     }
   }
 
   fillConverstionMessages() {
-    let url = 'https://localhost:5001/Student/MessageList?token=' + this.token + '&chatId=' + this.chatID
+    let url = 'https://localhost:5001/Student/MessageList?token=' + this.token + '&chatId=' + this.chatID.id
+    console.log(url);
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {
@@ -76,8 +75,29 @@ export class ChatDialogComponent implements OnInit, AfterContentInit {
   }
 
   sendMessage() {
-    if(confirm("Send this message")) {
+    if(confirm("Send this message?")) {
       this.updateCloseModal(true);
+
+      const params = {
+        msg: this.textMessage
+      }
+
+      this.httpClient.post('https://localhost:5001/Student/MessageList?token=' + this.token + '&chatId=' + this.chatID.id, params,
+      {responseType: 'text'}).toPromise().then(
+        data => {
+          console.log(data);
+          const message = {
+            id: "",
+            senderID: "",
+            date: new Date(),
+            body: this.textMessage,
+            isTeacher: false
+          }
+          this.messageList.push(message);
+        }, error => {
+          this.errorMessage(error.status);
+        }
+      )
     }
   }
 

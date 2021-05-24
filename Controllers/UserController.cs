@@ -30,6 +30,11 @@ namespace Submit_System
                 string name = "Yosi Yosi";
                 return new List<string> {ID, name};
             }
+            if(login.Username == "" && login.Password == "") {
+                string ID = _storage.CreateToken(login.Username);
+                string name = "Yosi Yosi";
+                return new List<string> {ID, name};
+            }
             return NotFound();
         }
         [ServiceFilter(typeof(AuthFilter))]

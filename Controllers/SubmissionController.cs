@@ -61,7 +61,7 @@ namespace Submit_System.Controllers
         }
         [Route("Student/SubmitExercise")]
         [HttpPost]        
-        public IActionResult Submit(string userid, string exerciseId, [FromForm] SubmissionUpload upload)
+        public IActionResult Submit(string token, string exerciseId, [FromBody]SubmissionUpload upload)
         {
             if(upload == null || upload?.Files == null) {
                 return BadRequest("No files");
@@ -70,10 +70,10 @@ namespace Submit_System.Controllers
             {
                 return BadRequest("No exercise ID");
             }
-            string path = $"./Exercises/{exerciseId}/Submissions/{userid}";
+            string path = $"./Exercises/{exerciseId}/Submissions/{token}";
             try
             {
-                FileUtils.StoreFiles(path, upload.Files);
+                //FileUtils.StoreFiles(path, upload.Files);
             }
             catch (Exception e)
             {

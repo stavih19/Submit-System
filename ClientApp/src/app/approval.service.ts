@@ -7,7 +7,7 @@ import { BehaviorSubject } from 'rxjs';
 
 export class ApprovalService {
   private logedIn = new BehaviorSubject(false);
-  private userName = new BehaviorSubject("");
+  private userName = new BehaviorSubject(["", ""]);
   private token = new BehaviorSubject("");
   private exeStatus = new BehaviorSubject("");
 
@@ -22,10 +22,10 @@ export class ApprovalService {
     this.logedIn.next(status);
   }
 
-  updateUserName(userName: string): void {
+  updateUserName(userName: string[]): void {
     this.userName.next(userName);
   }
-
+  
   updateToken(token: string): void {
     this.token.next(token);
   }

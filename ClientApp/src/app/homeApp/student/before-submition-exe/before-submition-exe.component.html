@@ -1,4 +1,4 @@
-<form [formGroup]="checkoutForm" class="example-form" (ngSubmit)="onSubmit()">
+<form [formGroup]="checkoutForm" class="example-form" (ngSubmit)="onSubmit(true)">
     <div class="row firstRow">
         <div class="col-3">
             <div class="exeNameLabel">
@@ -17,7 +17,7 @@
                     סטטוס הגשה:&nbsp;&nbsp;
                 </div>
                 <diV class="statusText">
-                    טרם הוגש
+                    {{ exeStatus}}
                 </diV>
             </div>
         </div>
@@ -25,7 +25,7 @@
             <div class="extenstionButton">
                 <label class="btn btn-primary" color="primary" type="button"
                     (click)="askForExtenstion()">
-                    בקש הארכה
+                    {{ converstionTarget }}
                 </label>
             </div>
         </div>
@@ -45,7 +45,8 @@
             <ng-template #multipleSubmission>
                 <mat-form-field class="example-full-width">
                     <input matInput placeholder="example: id1, id2" value=""
-                    formControlName="additionalSubmitors" #additionalSubmitors>
+                    formControlName="additionalSubmitors" #additionalSubmitors
+                    [disabled]="exeStatus === 'ממתתין לבדיקה'">
                 </mat-form-field>
             </ng-template>
         </div>
@@ -74,14 +75,29 @@
             <div class="row">
                 <div class="fileUploadButton">
                     <input type="file" name="file-1[]" (change)="onFileChoose($event)"
-                    id="file-1" class="inputfile inputfile-1" style="visibility: hidden;">
-                    <label for="file-1" class="btn btn-primary" type="button" color="primary">בחר קבצים</label>
+                    id="file-1" class="inputfile inputfile-1" style="visibility: hidden;"
+                    #file1 [disabled]="exeStatus === 'ממתתין לבדיקה'"><!--???-->
+                    <label for="file-1" class="btn btn-primary" type="button" color="primary">
+                        בחר קבצים
+                    </label>
                 </div>
             </div>
         </div>
         <div class="col-3">
             <div class="resultsButton">
-                <label class="btn btn-primary" style="width: 100px;" color="primary" type="button">תוצאות ריצה</label>                                
+                <button mat-raised-button class="btn btn-primary" style="width: 100px;"
+                    color="primary" type="button" (click)="lastFileRun()"
+                    [disabled]="!isSubmitSuccess">
+                    תוצאות ריצה
+                </button>                                
+            </div>
+            <div class="row" class="resultsButton"></div>
+            <div class="resultsButton">
+                <button mat-raised-button class="btn btn-primary" style="width: 100px;"
+                    color="primary" type="button" (click)="onSubmit(false)"
+                    [disabled]="!isSubmitCheck && exeStatus === 'ממתתין לבדיקה'">
+                    ניסיון הרצה
+                </button>                                
             </div>
         </div>
     </div>
@@ -100,7 +116,11 @@
         </div>
         <div class="col-3">
             <div class="submitButton">
-                <button mat-raised-button class="btn btn-primary" style="width: 100px;" color="primary" type="submit">הגש</button>
+                <button mat-raised-button class="btn btn-primary" 
+                style="width: 100px;" color="primary" type="submit"
+                [disabled]="exeStatus === 'ממתתין לבדיקה'">
+                הגש
+                </button>
             </div>
         </div>
     </div>
