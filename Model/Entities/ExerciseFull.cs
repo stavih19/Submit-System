@@ -15,5 +15,6 @@ namespace Submit_System {
         public int AutoGradeWeight { get; set; }
         public bool IsActive { get; set; }
         public int MaxSubmitters { get; set; }
+        public string CourseID { get; set; }
     }
 }

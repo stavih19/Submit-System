@@ -5,14 +5,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using System.IO;
 using System.Net;
 using System.Diagnostics;
+using System.Net.Mime;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace Submit_System.Controllers
 {
-    [ApiController]
-    [Route("")]
     [ServiceFilter(typeof(AuthFilter))]
     public class SubmissionController : AbstractController
     {
@@ -21,10 +20,10 @@ namespace Submit_System.Controllers
 
         private readonly DatabaseAccess _access;
 
-        public SubmissionController(ILogger<ExerciseController> logger)
+        public SubmissionController(ILogger<ExerciseController> logger, DatabaseAccess access)
         {
             _logger = logger;
-            _access = new DatabaseAccess();
+            _access = access;
         }
 
         [Route("Student/GradesList")]
@@ -35,9 +34,14 @@ namespace Submit_System.Controllers
         }
         [Route("Student/SubmissionDetails")]
         [HttpGet]
-        public ActionResult<StudentExInfo> GetSubmission(string userid, string Sub)
+        public ActionResult<StudentExInfo> GetSubmission(string userid, string exerciseId)
         {
-            return _access.GetStudentSubmission(userid, "a");
+            var a = _access.GetStudentSubmission(userid, exerciseId);
+            if(a == null)
+            {
+                return NotFound("Exercise Not found");
+;           }
+            return a;
         }
         [Route("Student/MessageList")]
         [HttpGet]
@@ -50,7 +54,7 @@ namespace Submit_System.Controllers
         [HttpGet]
         public ActionResult<string> RunExercise(string userid, string submitId)
         {
-            return "this is the result";
+            return "Exercise Submitted successfully.";
         }
         [Route("Student/NewMessage")]
         [HttpPost]        
@@ -61,27 +65,53 @@ namespace Submit_System.Controllers
         }
         [Route("Student/SubmitExercise")]
         [HttpPost]        
-        public IActionResult Submit(string userid, string exerciseId, [FromForm] SubmissionUpload upload)
+        public ActionResult<SubmitResult> Submit(string userid, string exerciseId, [FromBody] List<UploadedFile> files)
         {
-            if(upload == null || upload?.Files == null) {
+            if(files == null) {
                 return BadRequest("No files");
+            }
+            if(!files.Any())
+            {
+                return BadRequest("No files");
+            }
+            foreach(var file in files)
+            {
+                if(file == null || file?.Name == null || file?.Content == null)
+                {
+                    return BadRequest("No files");
+                }
             }
             if(exerciseId == null || exerciseId == "")
             {
                 return BadRequest("No exercise ID");
             }
-            string path = $"./Exercises/{exerciseId}/Submissions/{userid}";
+            string path = _access.CreateDirectoryPath(userid, exerciseId);
+            if(path == null)
+            {
+                return NotFound("Exercise not found");
+            }
             try
             {
-                FileUtils.StoreFiles(path, upload.Files);
+                FileUtils.StoreFiles(files, path);
+            }
+            catch(ArgumentException e)
+            {
+                return BadRequest(e.Message);
             }
             catch (Exception e)
             {
                 Trace.WriteLine(e.ToString());
-                return ReturnResult(HttpStatusCode.InternalServerError, "There was an issue with uploading the files");
+                return ServerError("There was an issue with uploading the files");
             }
-            // string path = _access.CreateSubmissionPath();
-            return Ok();
+            var filenames = System.IO.Directory.GetFiles(path, "*", System.IO.SearchOption.AllDirectories);
+            for(int i = 0; i < filenames.Length; i++)
+            {
+                filenames[i] = FileUtils.GetRelativePath(filenames[i], path);
+            }
+            return new SubmitResult {
+                Message = $"Exercise Submitted successfully.\n Date Submitted: {DateTime.Now.ToString("m/dd/yyyy")}",
+                Files = filenames
+            };
         }
         [HttpGet]
         [Route("Checker/SubmissionListToCheck")]
@@ -100,6 +130,53 @@ namespace Submit_System.Controllers
         public ActionResult<List<SubmissionData>> GetAppealSubmissions(string userid, string exerciseId)
         {
             return FakeDatabase.Submissions;
+        }
+
+        [HttpPost]
+        [Route("Student/ValidateSubmitters")]
+        public ActionResult<Dictionary<string, bool>> Validate(string userid, string exerciseId, [FromBody] List<string> studentIdList)
+        {
+            var result =  new Dictionary<string, bool>();
+            foreach(var id in studentIdList)
+            {
+                result[id] = true;
+            }
+            return result;
+        }
+        [HttpGet]
+        [Route("Student/GetFile")]
+        public ActionResult GetFile(string userid, string submissionId, [FromBody] string file)
+        {
+            string ct;
+            string submitDirectory = _access.GetDirectory(userid, submissionId);
+            if(submitDirectory == null)
+            {
+                return NotFound("Submisison not found");
+            }
+            string fullPath;
+            if(!FileUtils.TryGetValidPath(file, submitDirectory, out fullPath))
+            {
+                return BadRequest();
+            }
+            var IsTypeKnown = new FileExtensionContentTypeProvider().TryGetContentType(file, out ct);
+            if(!IsTypeKnown)
+            {
+                ct = "application/octet-stream";
+            }
+            byte[] res = System.IO.File.ReadAllBytes(fullPath);
+            return File(res, ct);
+        }
+        [HttpGet]
+        [Route("Student/Download")]
+        public ActionResult Download(string userid, string submissionId)//, [FromBody] string path) 
+        {
+            string file = _access.GetDirectory(userid, submissionId);
+            if(file == null)
+            {
+                return NotFound("Submission not found");
+            }
+            var archive = FileUtils.ToArchiveBytes(file);
+            return File(archive, "application/zip", "ex.zip");
         }
     }
 }
