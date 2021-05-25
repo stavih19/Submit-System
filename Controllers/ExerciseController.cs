@@ -7,8 +7,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Submit_System.Controllers
 {
-    //[ApiController]
-    //[Route("[controller]")]
     [ServiceFilter(typeof(AuthFilter))]
     public class ExerciseController : AbstractController
     {
@@ -16,17 +14,23 @@ namespace Submit_System.Controllers
         private readonly ILogger<ExerciseController> _logger;
 
         private readonly DatabaseAccess _access;
-        public ExerciseController(ILogger<ExerciseController> logger)
+
+        public ExerciseController(ILogger<ExerciseController> logger, DatabaseAccess access)
         {
             _logger = logger;
-            _access = new DatabaseAccess();
+            _access = access;
         }
 
         [HttpGet]
         [Route("Student/ExerciseLabels")]
         public ActionResult<List<ExerciseLabel>> ExerciseList(string userid, string courseId)
         {
-            return _access.GetCourseExercises(courseId);
+            var a = _access.GetCourseExercises(courseId);
+            if(a == null)
+            {
+                return NotFound("Course not found.");
+            }
+            return a;
         }
         [Route("Student/ExerciseList")]
         [HttpGet]

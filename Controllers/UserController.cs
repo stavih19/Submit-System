@@ -5,8 +5,6 @@ using System.Security;
 using System.Collections.Generic;
 namespace Submit_System
 {
-    [Route("")] 
-    [ApiController]  
     public class UserController : AbstractController 
     {  
         private readonly TokenStorage _storage;
@@ -23,12 +21,16 @@ namespace Submit_System
             {  
                 return BadRequest();
             }
-            var hash = CryptoUtils.Hash(login.Password);
-            //var readResult = DataBaseManager.ReadUser(login.Username);
-            if(login.Username == "Yosi" && login.Password == "password") {
+            string passwordHash = CryptoUtils.Hash("password"); // Hash result for "password"
+            // var readResult = DataBaseManager.ReadUser(login.Username);
+            // if(IsDatabaseError(readResult))
+            // {
+            //     return HandleDatabaseOutput(readResult);
+            // }
+            //User user = readResult.Item1;
+            if(login.Username == "Yosi" && CryptoUtils.Verify(login.Password, passwordHash)) {
                 string ID = _storage.CreateToken(login.Username);
-                string name = "Yosi Yosi";
-                return new List<string> {ID, name};
+                return new List<string> {ID, "Yosi"};
             }
             if(login.Username == "" && login.Password == "") {
                 string ID = _storage.CreateToken(login.Username);

@@ -17,5 +17,7 @@ namespace Submit_System {
         public List<SubmitDate> Dates {get; set; }
         public DateTime DateSubmitted { get; set; }
         public bool IsMultipleSubmission { get; set; }
+        public List<string> filenames {get; set; } = null;
+        public SubmissionState State {get; set; }
     }
 }

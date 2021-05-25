@@ -1,28 +1,58 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Http;
 using System.IO;
 using System.Diagnostics;
 namespace Submit_System {
-    public enum CourseRole { Student, Teacher }
+     public enum Role { Student, Checker, Teacher }
+    public enum ResourceType { Course, Exercise, Submission, Chat }
     public class DatabaseAccess {
 
-        private readonly string[] _tableMapper = new string[2] {"Student", "Teacher"};
-        private const string ALL_SUBMITTERS = "";
-        public List<Course> GetCourses(string UserId, CourseRole role) {
+        public string GetDirectory(string userid, string submisisonId)
+        {
+            foreach(var a in FakeDatabase.Submissions)
+            {
+                if(a.ID == submisisonId && Directory.Exists(a.Folder))
+                {
+                    return a.Folder;
+                }
+            }
+            return null;
+        }
+        public string CreateDirectoryPath(string userid, string exerciseId)
+        {
+           foreach(var a in FakeDatabase.Submissions)
+            {
+                if(a.ExID == exerciseId)
+                {
+                    return a.Folder;
+                }
+            }
+            return null;
+        }
+        public List<Course> GetCourses(string UserId, Role role) {
             return FakeDatabase.CourseList;
         }
         public List<ExerciseLabel> GetCourseExercises(string courseId) {
             var fullExes = FakeDatabase.ExerciseList;
             var a = new List<ExerciseLabel>();
+            if(courseId != FakeDatabase.C2ID && courseId != FakeDatabase.C1ID)
+            {
+                return null;
+            }
             foreach(var ex in fullExes)
             {
-                var newEx = new ExerciseLabel {
-                    ID = ex.ID,
-                    Name = ex.Name,
-                };
-                a.Add(newEx);
-            };
+                if(ex.CourseID == courseId)
+                {
+                    var newEx = new ExerciseLabel {
+                        ID = ex.ID,
+                        Name = ex.Name
+                    };
+                     a.Add(newEx);
+
+                } 
+            }
             return a;
         }
 
@@ -78,7 +108,7 @@ namespace Submit_System {
                 ID = fullEx.ID,
                 Name = fullEx.Name,
                 Date = fullEx.Dates[0].date,
-                TeacherName = "Yosi Yosi",
+                TeacherName = "Avi Avi",
                 CourseID = "89111-2021",
                 CourseName = "תכנות מתקדם 1",
                 CourseNumer = 89111
@@ -88,29 +118,49 @@ namespace Submit_System {
         }
         public StudentExInfo GetStudentSubmission(string studentId, string exId)
         {
-            var sub = FakeDatabase.Submissions[0];
-            var ex = FakeDatabase.ExerciseList[0];
-            var x = new StudentExInfo {
-                ExName = ex.Name,
-                SubmissionID = sub.ID,
-                TotalGrade = sub.TotalGrade,
-                ManualGrade = sub.ManualGrade,
-                StyleGrade = sub.StyleGrade,
-                AutoGrade = sub.AutoGrade,
-                Dates = ex.Dates,
-                Submitters = sub.Submitters,
-                AppealChat = sub.AppealChat,
-                ExtensionChat = sub.ExtensionChat,
-                IsMultipleSubmission = ex.IsMultipleSubmission,
-                MaxSubmitters = ex.MaxSubmitters,
-                ExID = ex.ID
-            };
-            return x;
+            var subs = FakeDatabase.Submissions;
+            var exs = FakeDatabase.ExerciseList;
+            StudentExInfo info = new StudentExInfo();
+            bool found = false;
+            foreach(var ex in exs)
+            {
+                if(exId == ex.ID)
+                {
+                    info.ExID = ex.ID;
+                    info.ExName = ex.Name;
+                    info.MaxSubmitters = ex.MaxSubmitters;
+                    info.Dates = ex.Dates;
+                    info.IsMultipleSubmission = ex.IsMultipleSubmission;
+                    found = true;
+                }
+            }
+             foreach(var sub in subs)
+            {
+                if(exId == sub.ExID)
+                {
+                    info.ManualGrade = sub.ManualGrade;
+                    info.SubmissionID = sub.ID;
+                    info.AutoGrade = sub.AutoGrade;
+                    info.StyleGrade = sub.StyleGrade;
+                    info.AutoGrade = sub.AutoGrade;
+                    info.TotalGrade = sub.TotalGrade;
+                    info.AppealChat = sub.AppealChat;
+                    info.ExtensionChat = sub.ExtensionChat;
+                    info.filenames = new List<string>();
+                    info.filenames = FileUtils.GetRelativePaths(sub.Folder);
+                    info.State = sub.State;
+                    info.Submitters = sub.Submitters;
+                }
+            }
+            if(!found)
+            {
+                return null;
+            }
+            return info;
         }
         public List<Message> GetMesssages(string userId, string chatId)
         {
-            var msg = FakeDatabase.Msg;
-            return new List<Message> { msg };
+            return new List<Message> { FakeDatabase.Msg, FakeDatabase.Msg2 };
         }
         public void InsertMessage(string userId, string chatId, string text) {
             var msg = new Message {
@@ -118,7 +168,8 @@ namespace Submit_System {
                 SenderID = userId,
                 ChatID = chatId,
                 ID = "b",
-                Date = DateTime.Now
+                Date = DateTime.Now,
+                IsTeacher = false
             };
         }
         public string GetSubmissionPath(string userId, string submissionId) {
