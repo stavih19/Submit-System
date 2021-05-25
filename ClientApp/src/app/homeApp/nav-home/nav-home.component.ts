@@ -7,7 +7,7 @@ import { ApprovalService } from 'src/app/approval.service';
   styleUrls: ['./nav-home.component.css']
 })
 export class NavHomeComponent implements OnInit, AfterViewInit {
-  userName: string;
+  userName: string[];
 
   @ViewChild("tabs", {static: false}) tabs: ElementRef;
 

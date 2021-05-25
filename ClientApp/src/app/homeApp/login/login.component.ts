@@ -32,16 +32,17 @@ export class LoginComponent implements OnInit {
       "Username": this.checkoutForm.value.userName,
       "Password": this.checkoutForm.value.password,
     };
-    console.log(params);
 
-    this.httpClient.post('https://localhost:5001/User/Login', params, 
+
+    this.httpClient.post('https://localhost:5001/User/Login', params,
     {responseType: 'text'}).toPromise().then(
       data => {
+        data = JSON.parse(data);
         console.log(data);
 
         this.appService.updateLoginStatus(true);
-        this.appService.updateUserName(this.checkoutForm.value.userName);
-        this.appService.updateToken(data);
+        this.appService.updateUserName([data[0], data[1]]);
+        this.appService.updateToken(data[0]);
 
         this.checkoutForm.reset();
       }, error => {

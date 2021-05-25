@@ -1,11 +1,38 @@
-<div *ngIf="exeStatus==='before'">
-    <app-before-submition-exe [selectExe]="selectExe">
-
-    </app-before-submition-exe>
+<div *ngIf="isToShowAlert" #alert class="alert" role="alert"
+ id="alertEle">
+    {{ errorMessage }}
 </div>
-<div *ngIf="exeStatus==='meanWhile'">
-    <app-meanwhile-submition-exe></app-meanwhile-submition-exe>
-</div>
-<div *ngIf="exeStatus==='after'">
-    <app-after-submition-exe></app-after-submition-exe>
+<div class="row headersLine">{{ selectExe.courseName }}</div>
+<div class="row exeGeneral">
+    <div class="col-3">
+        <div class="row exeList">
+            <ul class="exeEelemnts">
+                <li *ngFor="let exe of exeList"
+                    [class.selected]="exe === selectedExe"
+                    class="exe" (click)="onSelect(exe)">
+                    <div class="badge">
+                        <div class="exeName">
+                            {{ exe.name }}
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="col-9">
+        <div *ngIf="exeStatus==='before'" class="exeContent">
+            <app-before-submition-exe [selectExe]="selectExe"
+                [teacherName]="teacherName"
+                (isToShowAlert)="changeIsToShowAlert($event)"
+                (color)="changeColorAlert($event)"
+                (errorMessageText)="changeMessageAlert($event)">
+            </app-before-submition-exe>
+        </div>
+        <div *ngIf="exeStatus==='meanWhile'" class="exeContent">
+            <app-meanwhile-submition-exe></app-meanwhile-submition-exe>
+        </div>
+        <div *ngIf="exeStatus==='after'" class="exeContent">
+            <app-after-submition-exe></app-after-submition-exe>
+        </div>
+    </div>
 </div>

@@ -22,10 +22,12 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
 import { DragDropModule } from '@angular/cdk/drag-drop';
+import { MatDialogModule } from '@angular/material/dialog';
 
 import { StudentComponent } from './homeApp/student/student.component';
 import { CheckerComponent } from './homeApp/checker/checker.component';
 import { TeacherComponent } from './homeApp/teacher/teacher.component';
+import { ChatDialogComponent } from './homeApp/student/before-submition-exe/chat-dialog/chat-dialog.component';
 
 @NgModule({
   declarations: [
@@ -43,7 +45,11 @@ import { TeacherComponent } from './homeApp/teacher/teacher.component';
     HomeSubmitionExeComponent,
     AfterSubmitionExeComponent,
     MeanwhileSubmitionExeComponent,
-    BeforeSubmitionExeComponent
+    BeforeSubmitionExeComponent,
+    ChatDialogComponent
+  ],
+  entryComponents: [
+    ChatDialogComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -59,6 +65,7 @@ import { TeacherComponent } from './homeApp/teacher/teacher.component';
     MatButtonModule,
     MatTableModule,
     DragDropModule,
+    MatDialogModule,
     ReactiveFormsModule
   ],
   providers: [],
