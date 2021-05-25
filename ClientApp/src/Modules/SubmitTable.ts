@@ -1,6 +1,9 @@
 export class SubmitTable {
-    courseName: string;
-    courseNumber: string;
-    exeName: string;
-    teacherName: string;
-  }
+  courseID: string;  
+  courseName: string;
+  courseNumber: number;
+  date: Date;
+  id: string;
+  name: string;
+  teacherName: string;
+}

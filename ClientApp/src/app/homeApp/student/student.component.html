@@ -18,7 +18,7 @@
                             </div>
                             <div class="gap"></div>
                             <div class="courseId">
-                                {{ course.courseId }}
+                                {{ course.courseID }}
                             </div>
                         </div>
                     </li>
@@ -50,7 +50,7 @@
                                 <div class="col-3"></div>
                             </div>  
                         </th>
-                      <td mat-cell *matCellDef="let element"> {{element.courseNumber}} </td>
+                      <td mat-cell *matCellDef="let element"> {{element.courseNumer}} </td>
                     </ng-container>
                     <ng-container matColumnDef="exeName">
                       <th mat-header-cell *matHeaderCellDef>
@@ -59,7 +59,7 @@
                                 <div class="col-4"></div>
                             </div>    
                         </th>
-                      <td mat-cell *matCellDef="let element"> {{element.exeName}} </td>
+                      <td mat-cell *matCellDef="let element"> {{element.name}} </td>
                     </ng-container>
                     <ng-container matColumnDef="teacherName">
                       <th mat-header-cell *matHeaderCellDef>
@@ -109,7 +109,7 @@
                             <div class="col-4"></div>
                         </div> 
                       </th>
-                      <td mat-cell *matCellDef="let element"> {{element.exeName}} </td>
+                      <td mat-cell *matCellDef="let element"> {{element.exName}} </td>
                     </ng-container>
                     <ng-container matColumnDef="gradeNumber">
                       <th mat-header-cell *matHeaderCellDef>
@@ -118,7 +118,7 @@
                             <div class="col-4"></div>
                         </div> 
                       </th>
-                      <td mat-cell *matCellDef="let element"> {{element.gradeNumber}} </td>
+                      <td mat-cell *matCellDef="let element"> {{element.grade}} </td>
                     </ng-container>
                     <tr mat-header-row *matHeaderRowDef="gradeColumns"></tr>
                     <tr mat-row *matRowDef="let row; columns: gradeColumns;"
@@ -130,6 +130,6 @@
     </div>
 </div>
 <ng-template #exeDisplay>
-    <app-home-submition-exe [selectExe]="selectExe">
+    <app-home-submition-exe [selectExe]="selectExe" [teacherName]="teacherName">
     </app-home-submition-exe>
 </ng-template>

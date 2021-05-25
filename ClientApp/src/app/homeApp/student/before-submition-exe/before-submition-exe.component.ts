@@ -1,22 +1,33 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild ,DoCheck, KeyValueDiffers, KeyValueDiffer, AfterContentInit} from '@angular/core';
 import { ApprovalService } from 'src/app/approval.service';
 import { ExerciseLabel } from 'src/Modules/ExerciseLabel';
 import { FormBuilder } from '@angular/forms';
 import { ElementRef } from '@angular/core';
 import { SubmissionUpload } from 'src/Modules/SubmissionUpload';
+import { StudentExInfo } from 'src/Modules/StudentExInfo';
+import { MatDialog } from '@angular/material/dialog';
+import { ChatDialogComponent } from './chat-dialog/chat-dialog.component';
+import { delay } from 'rxjs/internal/operators/delay';
+import { FileSubmit } from 'src/Modules/FileSubmit';
 
 @Component({
   selector: 'app-before-submition-exe',
   templateUrl: './before-submition-exe.component.html',
   styleUrls: ['./before-submition-exe.component.css']
 })
-export class BeforeSubmitionExeComponent implements OnInit {
-  isToShowAlert: boolean = false;
-  exeList: ExerciseLabel[];
+export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
+  exeStatus: string = "טרם הוגש";
   selectedExe: ExerciseLabel;
-  selectedExeInfo: any;
+  selectedExeInfo: StudentExInfo;
   uploadFileList: any[] = [];
+  modalRef: any;
+  isSented: boolean;
+  isToCloseModal: boolean = false;
+  isSubmitSuccess: boolean = false;
+  isSubmitCheck: boolean = false;
+  fileContainer: FileSubmit[];
+  converstionTarget: string;
   checkoutForm = this.formBuilder.group({
     additionalSubmitors: [''],
     uploadFiles: ['']
@@ -25,33 +36,97 @@ export class BeforeSubmitionExeComponent implements OnInit {
   token: string;
 
   @Input() selectExe: any;
+  @Input() teacherName: string;
+  @Output() isToShowAlert = new EventEmitter<boolean>();
+  @Output() color = new EventEmitter<string>();
+  @Output() errorMessageText = new EventEmitter<string>();
+
+  updateShowAlert(value: boolean, color: string, message: string) {
+    if(value) {
+      this.isToShowAlert.emit(value);
+    }
+    setTimeout(() => {
+      this.color.emit(color);
+      this.errorMessageText.emit(message);
+      this.isToShowAlert.emit(value);
+    }, 0);
+  }
+
   @ViewChild('fileUploadBox', {static: false}) fileUploadBox: ElementRef;
   @ViewChild('fileUploadText', {static: false}) fileUploadText: ElementRef;
   @ViewChild('additionalSubmitors', {static: false}) additionalSubmitors: ElementRef;
+  @ViewChild('file1', {static: false}) file1: ElementRef;
 
   constructor(
     private httpClient: HttpClient,
     private appService: ApprovalService,
     private formBuilder: FormBuilder,
+    public dialog: MatDialog,
   ) { 
     this.appService.tokenStorage.subscribe(token => this.token = token);
+  }
+  ngAfterContentInit(): void {
+    setTimeout(() => {
+      this.additionalSubmitors.nativeElement.addEventListener('input', this.isSubmitCheckFunc);
+    }, 0);
   }
 
   ngOnInit() {
     console.log(this.selectExe);
-    this.getExeLists(this.selectExe.courseID);
-    setTimeout(() => {
-      this.onSelect(this.exeList[0]); // TODO
-    }, 0);
-
   }
 
-  onSubmit() {
+  async onSubmit(realSubmit: boolean) {
     console.log("submit");
+    this.isSented = false;
 
-    const inputSubmition: SubmissionUpload = {
-      files: this.uploadFileList,
-      submitters: this.additionalSubmitors.nativeElement.value
+    console.log(this.uploadFileList);
+    this.fileContainer = [];
+    this.uploadFileList.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = ()=> {
+        let submitFile: FileSubmit = {
+          content: btoa(reader.result.toString()),
+          name: file.name
+        }
+        this.fileContainer.push(submitFile);
+      };
+      reader.readAsBinaryString(file);
+    });
+
+    setTimeout(() => {
+      this.isSented = true;
+      setTimeout(() => {
+        this.sendSubmission(realSubmit);
+      }, 2000);
+    }, 3000);
+
+    const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
+    while(!this.isSented) {
+      this.guiMessages("Sending Files", "alert-warning");
+      await sleep(500);
+      this.guiMessages("Sending Files.", "alert-warning"); 
+      await sleep(500);
+      this.guiMessages("Sending Files..", "alert-warning"); 
+      await sleep(500);
+      this.guiMessages("Sending Files...", "alert-warning"); 
+      await sleep(500);
+    }
+  }
+
+  sendSubmission(realSubmit: boolean) {
+    const inputSubmition = {
+      "RealSubmit": realSubmit,
+      "Files": this.fileContainer,
+      "Submitters": this.additionalSubmitors.nativeElement.value.split(",")
+    }
+
+    if(inputSubmition.Files.length === 0) {
+      this.errorMessage("No files to send", "alert-danger");
+      return;
+    }
+    if(inputSubmition.Submitters.length === 0) {
+      this.errorMessage("No student id to mach with", "alert-danger");
+      return;
     }
 
     let url = 'https://localhost:5001/Student/SubmitExercise?token=' + this.token + '&exerciseId=' + this.selectedExe.id;
@@ -59,19 +134,20 @@ export class BeforeSubmitionExeComponent implements OnInit {
     {responseType: 'text'}).toPromise().then(
       data => {
         console.log(inputSubmition);
+        this.errorMessage("Sent successfully", "alert-success");
+        this.isSubmitSuccess = true;
       }, error => {
-        console.log(error);
-
-        this.isToShowAlert = true;
-        setTimeout(() => {
-          const message = "קוד שגיאה:&nbsp;" + error.status + "&nbsp;&nbsp;נסה מאוחר יותר";
-          document.getElementById("alertEle").innerHTML = message;
-        }, 0);
-        setTimeout(() => {
-          this.isToShowAlert = false;
-        }, 5000);
+        this.errorMessage(error.status + "   try again", "alert-danger");
       }
     )
+  }
+
+  isSubmitCheckFunc() {
+    if(this.uploadFileList.length === 0 || this.additionalSubmitors.nativeElement.value === "") {
+      this.isSubmitCheck = false;
+    } else if(this.uploadFileList.length !== 0 && this.additionalSubmitors.nativeElement.value !== ""){
+      this.isSubmitCheck = true;
+    }
   }
 
   onSelect(exe) {
@@ -83,18 +159,22 @@ export class BeforeSubmitionExeComponent implements OnInit {
     {responseType: 'text'}).toPromise().then(
       data => {
         this.selectedExeInfo = JSON.parse(data);
-        //this.uploadFileList = this.selectedExeInfo. TODO
+        //this.uploadFileList = this.selectedExeInfo.files;
+        if(this.uploadFileList.length === 0) {
+          this.exeStatus = "טרם הוגש";
+          this.converstionTarget = "בקש הארכה";
+        } else if(this.selectedExeInfo.dates[0].date > new Date()) {
+          this.exeStatus = "הוגש";
+          this.converstionTarget = "בקש הארכה";
+        } else {
+          this.exeStatus = "ממתתין לבדיקה";
+          this.converstionTarget = "הגש ערעור";
+          this.isSubmitSuccess = true;
+        }
         this.fileSubmittersValue();
         console.log(this.selectedExeInfo);
       }, error => {
-        console.log(error);
-
-        this.isToShowAlert = true;
-        const message = error.status + "   try again";
-        document.getElementById("alertEle").innerHTML = message;
-        setTimeout(() => {
-          this.isToShowAlert = false;
-        }, 5000);
+        this.errorMessage(error.status + "   try again", "alert-danger");
       }
     )
   }
@@ -108,31 +188,6 @@ export class BeforeSubmitionExeComponent implements OnInit {
         this.additionalSubmitors.nativeElement.value += submitter.id;
       }
     });
-  }
-
-  getExeLists(courseID) {
-    let url = 'https://localhost:5001/Student/ExerciseLabels?token=' + this.token + '&coursed=' + courseID;
-    this.httpClient.get(url, 
-    {responseType: 'text'}).toPromise().then(
-      data => {
-        this.exeList = JSON.parse(data);
-      }, error => {
-        console.log(error);
-
-        this.exeList = [
-          {id: "123456789", name: "ex 3"},
-          {id: "123456789", name: "ex 2"},
-          {id: "123456789", name: "ex 1"},
-        ];
-
-        this.isToShowAlert = true;
-        const message = error.status + "   try again";
-        document.getElementById("alertEle").innerHTML = message;
-        setTimeout(() => {
-          this.isToShowAlert = false;
-        }, 5000);
-      }
-    )
   }
 
   onDragOver(event) {
@@ -158,10 +213,11 @@ export class BeforeSubmitionExeComponent implements OnInit {
   }
 
   onFileChoose(event) {
+    console.log(event.target.files[0].name);
     const file = event.target.files[0];
-    console.log(file.name);
-
     this.uploadFileList.push(file);
+    this.isSubmitCheckFunc();
+    this.file1.nativeElement.value = "";
   }
 
   eraseUploadFile(fileToDelete) {
@@ -170,5 +226,63 @@ export class BeforeSubmitionExeComponent implements OnInit {
     if(index > -1) {
       this.uploadFileList.splice(index, 1);
     }
+    this.isSubmitCheckFunc();
+  }
+
+  askForExtenstion() {
+    this.displayConverstion();
+    /*let extensionChat = this.selectedExeInfo.extensionChat;
+    if(extensionChat === null) { this.displayConverstion([]); return; }
+    let url = 'https://localhost:5001/Student/MessageList?token=' + this.token + '&chatId=' + extensionChat.id;
+    this.httpClient.get(url, 
+    {responseType: 'text'}).toPromise().then(
+      data => {
+        data = JSON.parse(data);
+        this.displayConverstion(data);
+      }, error => {
+        this.errorMessage(error.status + "   try again", "alert-danger");
+      }
+    )*/
+  }
+
+  displayConverstion() { // data: any
+    const modalRef =  this.dialog.open(ChatDialogComponent);
+    this.modalRef = modalRef;
+
+    modalRef.componentInstance.chatID = this.selectedExeInfo.extensionChat;
+    modalRef.componentInstance.teacherName = this.teacherName;
+    modalRef.componentInstance.exeName = this.selectExe.name;
+    //modalRef.componentInstance.messageList = data;
+  }
+
+  closeModal() {
+    //const change = this.isToCloseModal.diff(this);
+    this.modalRef.close();
+  }
+
+  errorMessage(message: string, color:string) {
+    this.updateShowAlert(true, color, message);
+    setTimeout(() => {
+      this.updateShowAlert(false, color, message);
+    }, 5000);
+  }
+
+  guiMessages(message: string, color:string) {
+    this.updateShowAlert(true, color, message);
+  }
+
+  lastFileRun() {
+    let extensionChat = this.selectedExeInfo.extensionChat;
+    if(extensionChat === null) { return; }
+    let url = 'https://localhost:5001/Student/RunResult?token=' + this.token + '&submitId=' + extensionChat.id;
+    this.httpClient.get(url, 
+    {responseType: 'text'}).toPromise().then(
+      data => {
+        data = JSON.parse(data);
+        console.log(data);
+      }, error => {
+        this.errorMessage(error.status + "   try again", "alert-danger");
+      }
+    )
   }
 }

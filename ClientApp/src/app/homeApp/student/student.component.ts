@@ -16,6 +16,7 @@ export class StudentComponent implements OnInit {
   exeStatus: string;
   selectedCourse: Course;
   selectExe: any;
+  teacherName: string;
   coursesList: Course[];
   submitionColumns: any;
   submitionDataSource: SubmitTable[];
@@ -25,20 +26,19 @@ export class StudentComponent implements OnInit {
 
 
   constructor(
-    private router: Router,
     private appService: ApprovalService,
     private httpClient: HttpClient,
   ) { 
     this.appService.exeStatusStorage.subscribe(exeStat => this.exeStatus = exeStat);
-
-    this.getCourseList();
-    this.submitionLoad();
-    this.gradeLoad();
+    this.appService.tokenStorage.subscribe(token => this.token = token);
   }
 
   ngOnInit() {
     this.appService.updateExeStatus("");
-    this.appService.userNameStorage.subscribe(token => this.token = token);
+
+    this.getCourseList();
+    this.submitionLoad();
+    this.gradeLoad();
   }
 
   onSelect(course: Course): void {
@@ -47,37 +47,18 @@ export class StudentComponent implements OnInit {
 
   getBeforeEXE(row) {
     this.selectExe = row;
+    this.teacherName = row.teacherName;
     this.appService.updateExeStatus("before");
   }
 
   getAfterEXE(row) {
     this.selectExe = row;
-    this.appService.updateExeStatus("after");
+    this.teacherName = row.teacherName;
+    this.appService.updateExeStatus("before");
+    //this.appService.updateExeStatus("after");
   }
 
   getExeInfo() { }
-
-  submitionLoad() {
-    this.submitionColumns = ['courseName', 'courseNumber', 'exeName', 'teacherName'];
-    let url = 'https://localhost:5001/Student/SubmissionList?token=' + this.token;
-    this.httpClient.get(url, 
-    {responseType: 'text'}).toPromise().then(
-      data => {
-        this.coursesList = JSON.parse(data);
-      }, error => {
-        console.log(error);
-
-        this.submitionDataSource = [
-          {courseName: "מבוא לרשתות תקשורת", courseNumber: '89-355', exeName: "ex 1", teacherName: 'אסנת'},
-          {courseName: "תכנות מתקדם 1", courseNumber: '89-357', exeName: "ex 3", teacherName: 'פבל'},
-          {courseName: "מבוא לרשתות תקשורת", courseNumber: '89-355', exeName: "ex 1", teacherName: 'אסנת'},
-          {courseName: "תכנות מתקדם 1", courseNumber: '89-357', exeName: "ex 3", teacherName: 'פבל'},
-          {courseName: "מבוא לרשתות תקשורת", courseNumber: '89-355', exeName: "ex 1", teacherName: 'אסנת'},
-          {courseName: "תכנות מתקדם 1", courseNumber: '89-357', exeName: "ex 3", teacherName: 'פבל'},
-        ];
-      }
-    )
-  }
 
   getCourseList() {
     let url = 'https://localhost:5001/Student/CourseList?token=' + this.token;
@@ -87,43 +68,33 @@ export class StudentComponent implements OnInit {
         this.coursesList = JSON.parse(data);
       }, error => {
         console.log(error);
+      }
+    )
+  }
 
-        this.coursesList = [
-          {
-            ID: "89-355",
-            name: "מבוא לרשתות תקשורת",
-            year: 2021,
-            number: 2
-          },
-          {
-            ID: "89-357",
-            name: "תכנות מתקדם 1",
-            year: 2021,
-            number: 2
-          }];
+  submitionLoad() {
+    this.submitionColumns = ['courseName', 'courseNumber', 'exeName', 'teacherName'];
+    let url = 'https://localhost:5001/Student/ExerciseList?token=' + this.token;
+    this.httpClient.get(url, 
+    {responseType: 'text'}).toPromise().then(
+      data => {
+        this.submitionDataSource = JSON.parse(data);
+      }, error => {
+        console.log(error);
       }
     )
   }
 
   gradeLoad() {
     this.gradeColumns = ['courseName', 'courseNumber', 'exeName', 'gradeNumber'];
-    let url = 'https://localhost:5001/Student/SubmissionList?token=' + this.token;
+    let url = 'https://localhost:5001/Student/GradesList?token=' + this.token;
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {
-        this.coursesList = JSON.parse(data);
+        this.gradeDataSource = JSON.parse(data);
       }, error => {
         console.log(error);
-
-        this.gradeDataSource = [
-          {courseName: "מבוא לרשתות תקשורת", courseNumber: '89-355', exeName: "ex 1", gradeNumber: 70},
-          {courseName: "תכנות מתקדם 1", courseNumber: '89-357', exeName: "ex 3", gradeNumber: 60},
-          {courseName: "מבוא לרשתות תקשורת", courseNumber: '89-355', exeName: "ex 1", gradeNumber: 80},
-          {courseName: "תכנות מתקדם 1", courseNumber: '89-357', exeName: "ex 3", gradeNumber: 100},
-          {courseName: "מבוא לרשתות תקשורת", courseNumber: '89-355', exeName: "ex 1", gradeNumber: 95},
-          {courseName: "תכנות מתקדם 1", courseNumber: '89-357', exeName: "ex 3", gradeNumber: 76},
-        ];
       }
     )
   }
-}
+};

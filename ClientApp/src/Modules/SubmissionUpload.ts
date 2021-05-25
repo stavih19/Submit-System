@@ -1,4 +1,4 @@
 export class SubmissionUpload {
-    files: any;
-    submitters: string;
+    files: string;
+    submitters: string[];
 }
