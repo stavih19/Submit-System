@@ -10,8 +10,7 @@ namespace Submit_System
         private const int HASH_LEN = 20;
         private const int SALT_START = HASH_LEN + sizeof(int);
         private const int SALT_LEN = 8;
-        private const int ITER = 1;
-        private const int MULT = 1000;
+        private const int ITER = 1000;
         private const string SEP = "$";
         private const string FORMAT = "{0}" + SEP + "{1}" + SEP +"{2}";
         /// <summary>
@@ -21,28 +20,25 @@ namespace Submit_System
         /// <returns>
         /// Format: {Password hash}${Salt}${Number of iterations in thousands}
         /// </returns>
-        private static string Hash(string password, byte[] salt, int iterThousands)
+        private static string Hash(string password, byte[] salt, int iter)
         {
-            if(salt == null) {
-                salt = GetRandomBytes(SALT_LEN);
-            }
             byte[] hash;
-            using (var hasher = new Rfc2898DeriveBytes(password, salt, iterThousands*MULT))
+            using (var hasher = new Rfc2898DeriveBytes(password, salt, iter))
             {
                 hash = hasher.GetBytes(HASH_LEN);
             }
-            return String.Format(FORMAT, Convert.ToBase64String(hash), Convert.ToBase64String(salt), iterThousands.ToString());
+            return String.Format(FORMAT, Convert.ToBase64String(hash), Convert.ToBase64String(salt), iter.ToString());
         }
         /// <summary>
         /// Overload. Gets Salt length.
         /// </summary>
         /// <param name="passsword"></param>
         /// <param name="saltLength"></param>
-        /// <param name="iterThousands"></param>
+        /// <param name="iter">Iterations. Must be at least 1000.</param>
         /// <returns></returns>
-         public static string Hash(string passsword, int saltLength=SALT_LEN, int iterThousands=ITER)
+         public static string Hash(string passsword, int saltLength=SALT_LEN, int iter=ITER)
         {
-            return Hash(passsword, GetRandomBytes(saltLength), iterThousands);
+            return Hash(passsword, GetRandomBytes(saltLength), iter);
         }
         public static byte[] GetRandomBytes(int len)
         {
@@ -86,7 +82,7 @@ namespace Submit_System
         /// </summary>
         public static void Test()
         {
-            const int num = 1;
+            const int num = 1000;
             int count = 0;
             int count2 = 0;
             var stop = new Stopwatch();
@@ -97,9 +93,8 @@ namespace Submit_System
                 string pass = GeneratePassword();
                 string fakePass = GeneratePassword();
                 var salt = GetRandomBytes(8);
-                var iter = 5;
+                var iter = 10000;
                 var hash = Hash(pass, salt, iter);
-                Trace.WriteLine(hash);
                 if(Verify(pass, hash))
                 {
                     count++;
@@ -109,7 +104,7 @@ namespace Submit_System
                 }
             }
             stop.Stop();
-            Trace.WriteLine($"Matches: {count}/{num} | Mismatches: {count2}/{num} | Elapsed: {stop.Elapsed}");
+            Debug.WriteLine($"Matches: {count}/{num} | Mismatches: {count2}/{num} | Elapsed: {stop.Elapsed}");
         }
     }
 }

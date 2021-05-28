@@ -23,7 +23,12 @@ namespace Submit_System
             services.AddControllersWithViews();
             // In production, the Angular files will be served from this directory
             services.AddSingleton<TokenStorage>(new TokenStorage(test : true, exp : 60*60));
+            services.AddSingleton<FakeDatabaseAccess>();
             services.AddScoped<AuthFilter>();
+            services.AddMvc(options =>
+            {
+                options.Filters.Add<ExceptionFilter>();
+            });
             services.AddSpaStaticFiles(configuration =>
             {
                 configuration.RootPath = "ClientApp/dist";
@@ -52,12 +57,9 @@ namespace Submit_System
             }
 
             app.UseRouting();
-
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllerRoute(
-                    name: "default",
-                    pattern: "{controller}/{action=Index}/{id?}");
+                endpoints.MapControllers();
             });
 
             app.UseSpa(spa =>

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 namespace Submit_System {
-    public enum SubmissionState { Unchecked, Checked, Appeal }
+    public enum SubmissionState { Unsubmitted, Unchecked, Checked, Appeal, AppealChecked }
     public class SubmissionData {
         
         public string ID { get; set; }
@@ -13,8 +13,8 @@ namespace Submit_System {
         public Chat ExtensionChat { get; set; } = null;
         public Chat AppealChat { get; set; } = null;
         public List<Student> Submitters {get; set; }
-        public SubmitFile Folder {get; set;}
-
+        public string Folder {get; set;}
+        public string ExID {get; set; }
         public SubmissionState State {get; set;}
     }
 }

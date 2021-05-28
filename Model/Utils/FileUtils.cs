@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNetCore.Http;
+using System.IO.Compression;
+using System.Diagnostics;
 
 namespace Submit_System
 {
@@ -9,16 +11,17 @@ namespace Submit_System
     /// </summary>
     public static class FileUtils
     {
+        const int MAX_LENGTH = 1024*1024 * 10;
         public static readonly Dictionary<string, string[]> LangToExt = new Dictionary<string, string[]>
         {
-            ["c"] = new string[2] { "*.c", "*.h" },
-            ["cc"] = new string[3] { "*.cpp", "*.h", "*.cc" },
-            ["ml"] = new string[1] { "*.ml" },
-            ["java"] = new string[1] { "*.java" },
-            ["csharp"] = new string[1] { "*.cs" },
-            ["python"] = new string[1] { "*.py" },
-            ["javascript"] = new string[1] { "*.js" },
-            ["perl"] = new string[1] { "*.pl" },
+            ["c"] = new string[] { "*.c", "*.h" },
+            ["cc"] = new string[] { "*.cpp", "*.h", "*.cc" },
+            ["ml"] = new string[] { "*.ml" },
+            ["java"] = new string[] { "*.java" },
+            ["csharp"] = new string[] { "*.cs" },
+            ["python"] = new string[] { "*.py" },
+            ["javascript"] = new string[] { "*.js" },
+            ["perl"] = new string[] { "*.pl" },
         };
         /// <summary>
         ///     Gets all files from the folder with the given extensions
@@ -31,7 +34,7 @@ namespace Submit_System
             var files = new List<string>();
             foreach (string ext in exts)
             {
-                var newFiles = Directory.GetFiles(folder, ext, System.IO.SearchOption.AllDirectories);
+                var newFiles = Directory.GetFiles(folder, ext, SearchOption.AllDirectories);
                 files.AddRange(newFiles);
             }
             return files;
@@ -74,7 +77,66 @@ namespace Submit_System
             return folder + '/' + GetFileName(file);
         }
 
-        public static void StoreFiles(string path, List<IFormFile> files)
+        public static bool TryGetValidPath(string filename, string destPath, out string filePath)
+        {
+            var fullDirPath = Path.GetFullPath(destPath);
+            filePath = Path.Combine(destPath, filename);
+            var fullFilePath = Path.GetFullPath(filePath);
+            if(!fullFilePath.StartsWith(fullDirPath))
+            {
+                return false;
+            }
+            return true;
+        }
+        private static void CopyToFile(Stream stream, string destPath, string filename)
+        {
+            string newPath;
+            if(!TryGetValidPath(filename, destPath, out newPath))
+            {
+                throw new System.ArgumentException("Attempt to access outside of the allowed folder");
+            }
+            using(Stream destStream = File.OpenWrite(newPath))
+            {
+                stream.CopyTo(destStream);
+            }
+        }
+        private static void DecompressAndStore(Stream stream, string destPath)
+        {   
+            using (ZipArchive zip = new ZipArchive(stream))
+            {
+                foreach(var entry in zip.Entries)
+                {
+                    string newPath;
+                    if(!TryGetValidPath(entry.FullName, destPath, out newPath))
+                    {
+                        throw new System.ArgumentException("Attempt to access outside of the allowed folder");
+                    }
+                    entry.ExtractToFile(newPath, true);    
+                }
+            }       
+        }
+        public static void StoreFiles(List<IFormFile> files, string destPath)
+        {
+            if(!Directory.Exists(destPath))
+            {
+                Directory.CreateDirectory(destPath);
+            }
+            foreach(var file in files)
+            {
+                using(Stream stream = file.OpenReadStream())
+                {
+                    if(Path.GetExtension(file.FileName) == ".zip")
+                    {
+                        DecompressAndStore(stream, destPath);
+                    }
+                    else
+                    {
+                        CopyToFile(stream, destPath, file.FileName);
+                    }   
+                }           
+            }  
+        }
+        public static void StoreFiles(List<SubmitFile> files, string path)
         {
             if(!Directory.Exists(path))
             {
@@ -82,15 +144,60 @@ namespace Submit_System
             }
             foreach(var file in files)
             {
-                if (file.Length > 0)
+                byte[] content = System.Convert.FromBase64String(file.Content);
+                using(Stream stream = new MemoryStream(content))
                 {
-                    string filePath = Path.Combine(path, file.FileName);
-                    using (Stream fileStream = new FileStream(filePath, FileMode.Create))
+                    if(Path.GetExtension(file.Name) == ".zip")
                     {
-                        file.CopyTo(fileStream);
+                        DecompressAndStore(stream, path);
+                    }
+                    else
+                    {
+                        CopyToFile(stream, path, file.Name);
                     }
                 }
             }  
+        }
+
+        public static string GetRelativePath(string filePath, string dirPath)
+        {
+            var newFileName = filePath.Replace(dirPath, "");
+            if(newFileName.StartsWith('/') || newFileName.StartsWith('\\'))
+            {
+                newFileName = newFileName.Remove(0, 1);
+            }
+            return newFileName;
+        }
+        public static List<string> GetRelativePaths(string folder)
+        {
+            var fileList = new List<string>();
+            if(Directory.Exists(folder))
+            {
+                var files = Directory.GetFiles(folder, "*", SearchOption.AllDirectories);
+                foreach(var file in files)
+                {
+                    fileList.Add(GetRelativePath(file, folder));
+                }
+            }
+            return fileList;
+        }
+        public static byte[] ToArchiveBytes(string path)
+        {
+            byte[] result;
+            using(var stream = new MemoryStream())
+            {
+                using(var zip = new ZipArchive(stream, ZipArchiveMode.Create, true))
+                {
+                    var files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
+                    foreach(var file in files)
+                    {
+                        var newFileName = GetRelativePath(file, path);
+                        zip.CreateEntryFromFile(file, newFileName);
+                    }
+                }
+                result = stream.ToArray();
+            }
+            return result;
         }
     }
 }
