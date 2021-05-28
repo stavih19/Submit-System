@@ -861,6 +861,27 @@ namespace Submit_System
             return (lst,0,"OK");   
         }
 
+        public static (List<(string,string)>,int,string) ReadExercisesIdAndNamesOfCourse(string course_id){
+            List<(string,string)> lst = new List<(string,string)>();
+            SqlConnection cnn  = new SqlConnection(connetionString);
+            try{cnn.Open();} catch {return (null,3,"Connection failed");}
+            String sql = "SELECT exercise_id,exercise_name FROM Exercise WHERE course_id = @ID;";
+            SqlCommand command = new SqlCommand(sql,cnn);
+            command.Parameters.Add("@ID",System.Data.SqlDbType.VarChar);
+            command.Parameters["@ID"].Value = course_id;
+            try{
+                SqlDataReader dataReader = command.ExecuteReader();
+                while(dataReader.Read()){
+                    lst.Add((dataReader.GetValue(0).ToString(),dataReader.GetValue(1).ToString()));
+                }
+            } catch {
+                try{cnn.Close();}catch{}
+                return (null,3,"Connection failed");
+            }
+            try{cnn.Close();} catch{return (lst,4,"Connection close failed");}
+            return (lst,0,"OK");   
+        }
+
 }
         
     
