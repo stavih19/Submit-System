@@ -90,11 +90,12 @@ namespace Submit_System.Controllers
             {
                 return NotFound("Exercise not found");
             }
+            List<string> submittedFiles;
             try
             {
-                FileUtils.StoreFiles(files, path);
+                submittedFiles = FileUtils.SubmitFiles(files, path);
             }
-            catch(ArgumentException e)
+            catch(System.Security.SecurityException e)
             {
                 return BadRequest(e.Message);
             }
@@ -103,14 +104,9 @@ namespace Submit_System.Controllers
                 Trace.WriteLine(e.ToString());
                 return ServerError("There was an issue with uploading the files");
             }
-            var filenames = System.IO.Directory.GetFiles(path, "*", System.IO.SearchOption.AllDirectories);
-            for(int i = 0; i < filenames.Length; i++)
-            {
-                filenames[i] = FileUtils.GetRelativePath(filenames[i], path);
-            }
             return new SubmitResult {
                 Message = $"Exercise Submitted successfully.\n Date Submitted: {DateTime.Now.ToString("m/dd/yyyy")}",
-                Files = filenames
+                Files = submittedFiles
             };
         }
         [HttpGet]
@@ -153,15 +149,7 @@ namespace Submit_System.Controllers
             {
                 return NotFound("Submisison not found");
             }
-            string fullPath;
-            if(!FileUtils.TryGetValidPath(file, submitDirectory, out fullPath))
-            {
-                return BadRequest();
-            }
-            // if(!IsTypeKnown)
-            // {
-            //     ct = "application/octet-stream";
-            // }
+            string fullPath = FileUtils.GetFullPath(file, submitDirectory);
             byte[] bytes = System.IO.File.ReadAllBytes(fullPath);
             return SubmitFile.Create(file, bytes);
         }

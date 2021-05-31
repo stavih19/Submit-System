@@ -5,7 +5,8 @@ using Microsoft.AspNetCore.Http;
 using System.IO;
 using System.Diagnostics;
 namespace Submit_System {
-    public class FakeDatabaseAccess : IDatabaseAccess {
+    public enum Role { Student, Checker, Teacher }
+    public class FakeDatabaseAccess {
 
         public string GetDirectory(string userid, string submisisonId)
         {
@@ -84,19 +85,16 @@ namespace Submit_System {
         }   
         public List<ExerciseGradeDisplay> GetStudentGrades(string id) {
             var grades = new List<ExerciseGradeDisplay>();
-            var exes = FakeDatabase.ExerciseList;
-            foreach(var ex in exes)
-            {
-                var newGrade = new ExerciseGradeDisplay {
+            var ex = FakeDatabase.ExerciseList[0];
+            var newGrade = new ExerciseGradeDisplay {
                     Grade = 100,
                     ExID = ex.ID,
                     ExName = ex.Name,
                     CourseID = "89111-2021",
                     CourseName = "תכנות מתקדם 1",
                     CourseNumber = 89111
-                };
-                grades.Add(newGrade);
             };
+            grades.Add(newGrade);
             return grades;
         }
 
