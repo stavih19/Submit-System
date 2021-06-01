@@ -9,17 +9,18 @@ namespace Submit_System {
             this.Input = "";
             this.Expected_Output = "";
             this.Output_File_Name = "stdout";
-            this.Command_Line_Arguments= new List<string>();
+            this.ArgumentsString= "";
             this.Timeout_In_Seconds = 300;
             this.Main_Sourse_File = null;
             this.AdittionalFilesLocation = null;
+
         }
         public int Value{get;set;}
         public string Input{get;set;}
         public string Expected_Output{get;set;}
         public string Output_File_Name{get;set;}
 
-        public List<string> Command_Line_Arguments{get;set;}
+        public string ArgumentsString{get;set;}
 
         public int Timeout_In_Seconds{get;set;}
 
@@ -27,10 +28,7 @@ namespace Submit_System {
 
         public string AdittionalFilesLocation{get;set;}
 
-        public string GetArgumentsString(){
-            return string.Join(" ",this.Command_Line_Arguments);
-        }
-
+        public bool Has_Adittional_Files{get{return AdittionalFilesLocation != null;}}
     }
 
     public class CheckResult{
@@ -67,7 +65,10 @@ namespace Submit_System {
             if(this.Is_Error){
                 return 0;
             }
-            return 100;
+            if(Output == Expected_Output){
+                return 100;
+            }
+            return 0;
         }
 
         public bool Is_Error{get;set;}
@@ -84,7 +85,7 @@ namespace Submit_System {
         public void SetTestLocation(string submissin_id);
         public void AddTest(Test test);
 
-        public void RunAllTests();
+        public bool RunAllTests();
 
         public void SetFilesLocation(string path);
 
