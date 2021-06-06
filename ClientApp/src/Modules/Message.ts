@@ -1,7 +1,7 @@
 export class Message {
     id: string;
     senderID: string;
-    date: Date;
+    date: string;
     body: string;
     isTeacher: boolean;
 }

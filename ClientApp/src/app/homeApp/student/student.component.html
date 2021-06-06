@@ -11,7 +11,8 @@
                 <ul class="coursesEelemnts">
                     <li *ngFor="let course of coursesList"
                         [class.selected]="course === selectedCourse"
-                        class="course" (click)="onSelect(course)">
+                        class="course" (click)="onSelect(course)"
+                        (dblclick)="SelectFirstExe(course)">
                         <div class="badge">
                             <div class="courseName">
                                 {{ course.name }}
