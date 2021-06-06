@@ -34,7 +34,7 @@ namespace Submit_System
             }
             if(login.Username == "" && login.Password == "") {
                 string ID = _storage.CreateToken(login.Username);
-                string name = "Yosi Yosi";
+                string name = "Yosi Cohen";
                 return new List<string> {ID, name};
             }
             return NotFound();

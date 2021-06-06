@@ -13,6 +13,7 @@ import { BeforeSubmitionExeComponent } from '../before-submition-exe.component';
 })
 export class ChatDialogComponent implements OnInit, AfterContentInit {
   chatID: Chat;
+  headerMessage: string;
   teacherName: string;
   exeName: string;
   isThereMessage: boolean = false;
@@ -82,18 +83,19 @@ export class ChatDialogComponent implements OnInit, AfterContentInit {
         msg: this.textMessage
       }
 
-      this.httpClient.post('https://localhost:5001/Student/MessageList?token=' + this.token + '&chatId=' + this.chatID.id, params,
+      this.httpClient.post('https://localhost:5001/Student/NewMessage?userid=' + this.token + '&chatId=' + this.chatID.id, params,
       {responseType: 'text'}).toPromise().then(
         data => {
           console.log(data);
-          const message = {
+          const message: Message = {
             id: "",
             senderID: "",
-            date: new Date(),
+            date: "Just now",
             body: this.textMessage,
             isTeacher: false
           }
           this.messageList.push(message);
+          this.textMessageRef.nativeElement.value = "";
         }, error => {
           this.errorMessage(error.status);
         }

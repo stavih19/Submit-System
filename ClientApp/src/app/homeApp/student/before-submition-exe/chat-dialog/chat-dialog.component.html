@@ -2,44 +2,44 @@
     <div class="col-1"></div>
     <div class="col-10">
         <div class="row headerRow">
-            <h2 class="extenstioHeader">בקשת הארכה:&nbsp;&nbsp;</h2>
+            <h2 class="extenstioHeader">{{ headerMessage }}:&nbsp;&nbsp;</h2>
             <h2 class="exeName">{{ exeName }}</h2>
         </div>
         <div class="row spaceRow">
             <h6 class="extenstioHeader">אל המתרגל/ת:&nbsp;&nbsp;</h6>
             <h6 class="exeName">{{ teacherName }}</h6>
         </div>
-        <div class="row mesasgeConverstion" #mesasgeConverstion>
+        <div class="mesasgeConverstion" #mesasgeConverstion>
             <div *ngFor="let message of messageList">
-                    <div *ngIf="!message.isTeacher">
-                    <div class="row">
-                        <div class="col-1"></div>
-                        <div class="col-4">
-                            <div class="studentMessage">
-                                את/ה:
-                                <br>
+                <div *ngIf="!message.isTeacher" class="row">
+                    <div class="col-8"></div>
+                    <div class="col-4">
+                        <div class="studentMessage">
+                            <label class="nameHeader">את/ה:</label>
+                            <br>
+                            <div class="studentMessageContent">
                                 {{ message.body }}
+                                <br>
                                 <br>
                                 {{ message.date.substring(0, 10) }}
                             </div>
                         </div>
-                        <div class="col-7"></div>
                     </div>
                 </div>
-                <div *ngIf="message.isTeacher">
-                    <div class="row">
-                        <div class="col-7"></div>
-                        <div class="col-4">
-                            <div class="teacherMessage">
-                                {{ teacherName }}
-                                <br>
+                <div *ngIf="message.isTeacher" class="row">
+                    <div class="col-4">
+                        <div class="teacherMessage">
+                            <label class="nameHeader">{{ teacherName }}</label>
+                            <br>
+                            <div class="teacherMessageContent"> 
                                 {{ message.body }}
+                                <br>
                                 <br>
                                 {{ message.date.substring(0, 10) }}
                             </div>
                         </div>
-                        <div class="col-1"></div>
                     </div>
+                    <div class="col-8"></div>
                 </div>
             </div>
         </div>

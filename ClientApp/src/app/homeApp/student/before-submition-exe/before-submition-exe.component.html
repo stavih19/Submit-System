@@ -24,7 +24,7 @@
         <div class="col-3">
             <div class="extenstionButton">
                 <label class="btn btn-primary" color="primary" type="button"
-                    (click)="askForExtenstion()">
+                    (click)="askForChat()">
                     {{ converstionTarget }}
                 </label>
             </div>
@@ -76,8 +76,9 @@
                 <div class="fileUploadButton">
                     <input type="file" name="file-1[]" (change)="onFileChoose($event)"
                     id="file-1" class="inputfile inputfile-1" style="visibility: hidden;"
-                    #file1 [disabled]="exeStatus === 'ממתתין לבדיקה'"><!--???-->
-                    <label for="file-1" class="btn btn-primary" type="button" color="primary">
+                    #file1>
+                    <label for="file-1" class="btn btn-primary" type="button" color="primary"
+                    #file1label>
                         בחר קבצים
                     </label>
                 </div>
@@ -89,13 +90,19 @@
                     color="primary" type="button" (click)="lastFileRun()"
                     [disabled]="!isSubmitSuccess">
                     תוצאות ריצה
-                </button>                                
+                </button>                          
             </div>
-            <div class="row" class="resultsButton"></div>
+            <div class="row" class="resultsButton">
+                <button mat-raised-button class="btn btn-primary" style="width: 100px;"
+                    color="primary" type="button" (click)="downloadFiles()"
+                    [disabled]="!isSubmitSuccess">
+                    הורד קבצים
+                </button>
+            </div>
             <div class="resultsButton">
                 <button mat-raised-button class="btn btn-primary" style="width: 100px;"
                     color="primary" type="button" (click)="onSubmit(false)"
-                    [disabled]="!isSubmitCheck && exeStatus === 'ממתתין לבדיקה'">
+                    [disabled]="(isSubmitCheck || exeStatus === 'נבדק')">
                     ניסיון הרצה
                 </button>                                
             </div>
@@ -118,7 +125,7 @@
             <div class="submitButton">
                 <button mat-raised-button class="btn btn-primary" 
                 style="width: 100px;" color="primary" type="submit"
-                [disabled]="exeStatus === 'ממתתין לבדיקה'">
+                [disabled]="exeStatus === 'נבדק'">
                 הגש
                 </button>
             </div>

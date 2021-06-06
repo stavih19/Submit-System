@@ -14,6 +14,7 @@ export class HomeSubmitionExeComponent implements OnInit {
   token: string;
   exeStatus: string;
   isToShowAlert: boolean;
+  isToShowTrySend: boolean;
   color: string;
   errorMessage: string;
   exeList: ExerciseLabel[];
@@ -55,12 +56,16 @@ export class HomeSubmitionExeComponent implements OnInit {
   }
 
   getExeLists(courseID) {
-    let url = 'https://localhost:5001/Student/ExerciseLabels?token=' + this.token + '&coursed=' + courseID;
+    let url = 'https://localhost:5001/Student/ExerciseLabels?userid=' + this.token + '&courseId=' + courseID;
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {
         this.exeList = JSON.parse(data);
-        this.onSelect(this.exeList[0]); // TODO
+        this.exeList.forEach(exe => {
+          if(this.selectExe.id === exe.id) {
+            this.onSelect(exe);
+          }
+        });
       }, error => {
         console.log(error);
         this.isToShowAlert = true;
