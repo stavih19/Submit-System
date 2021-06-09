@@ -882,6 +882,28 @@ namespace Submit_System
             return (lst,0,"OK");   
         }
 
+        public static (List<MessageData>,int,string) ReadMessagesOfChat(string chat_id){
+            List<MessageData> lst = new List<MessageData>();
+            SqlConnection cnn  = new SqlConnection(connetionString);
+            try{cnn.Open();} catch {return (null,3,"Connection failed");}
+            String sql = "SELECT * FROM Message WHERE chat_id = @ID ORDER BY message_time;";
+            SqlCommand command = new SqlCommand(sql,cnn);
+            command.Parameters.Add("@ID",System.Data.SqlDbType.VarChar);
+            command.Parameters["@ID"].Value = chat_id;
+            try{
+                SqlDataReader dataReader = command.ExecuteReader();
+                while(dataReader.Read()){
+                    lst.Add(new MessageData(dataReader.GetValue(1).ToString(),(DateTime)dataReader.GetValue(2),(int)dataReader.GetValue(3),dataReader.GetValue(4).ToString(),dataReader.GetValue(5).ToString(),(int)dataReader.GetValue(6),dataReader.GetValue(7).ToString()));
+                }
+            } catch {
+                try{cnn.Close();}catch{}
+                return (null,3,"Connection failed");
+            }
+            try{cnn.Close();} catch{return (lst,4,"Connection close failed");}
+            return (lst,0,"OK");   
+        }
+
+
 }
         
     
