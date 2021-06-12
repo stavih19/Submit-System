@@ -1,0 +1,86 @@
+.box {
+    padding: 0px 10px 0px 10px;
+    border-style: ridge;
+    height: 465px;
+    overflow-y: scroll;
+}
+
+.buttonBox {
+    padding: 10px 10px 10px 10px;
+    height: 50px;
+    cursor: pointer;
+}
+
+.addButton {
+    width: 100%;
+}
+
+.shrotBox {
+    padding: 0px 10px 0px 10px;
+    border-style: ridge;
+    height: 400px;
+    overflow-y: scroll;
+}
+
+.addElement {
+    padding: 0px 10px 0px 10px;
+    height: 65px;
+}
+
+.example-full-width {
+    width: 100%;
+    text-align: right;
+}
+
+.headersLine {  
+    height: 35px;
+}
+
+.exeHeader {
+    padding-bottom: 10px;
+}
+
+.list-group-item {    
+    background-color: white; /*#6f42c1*/
+    box-shadow: 0 4px 2px -2px gray;
+    color: black;
+    cursor: pointer;
+}
+
+.list-group {
+    width: 100%;
+}
+
+.exeBox {
+    padding: 10px 10px 10px 10px;
+}
+
+.nameBox {
+    padding: 10px 2px 10px 2px;
+}
+
+.nameHeader {
+    height: 20px;
+}
+
+.year {
+    padding: 10px 10px 10px 10px;
+}
+
+.col-3 {
+    text-align: right;
+}
+
+.close {
+    padding: 0px 0px 0px 12px;
+}
+
+.exeLabel {
+    display: inline-grid;
+    grid-template-columns: auto 10px 10px;
+    grid-column-gap: 10px;
+}
+
+.editExe {
+    cursor: pointer;   
+}

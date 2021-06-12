@@ -1,1 +1,196 @@
-<p>teacher works!</p>
+<div *ngIf="theacherStatus === ''; else corseDisplay" class="row studentGeneral">
+    <div class="col-6">
+        <div class="row headersLine">
+            <div class="col-2">
+                <h4>קורסים</h4>
+            </div>
+            <div class="col-10"></div>
+        </div>
+        <div class="row coursesList">
+            <ul class="coursesEelemnts">
+                <li *ngFor="let course of coursesList"
+                    [class.selected]="course === selectedCourse"
+                    class="course" (click)="onSelect(course)">
+                    <div class="badge">
+                        <div class="courseName">
+                            {{ course.name }}
+                        </div>
+                        <div class="gap"></div>
+                        <div class="courseId">
+                            {{ course.number }}
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <div class="row headersLine">
+            <div class="col-6">
+                <h4>תרגילים אחרונים</h4>
+            </div>
+            <div class="col-6"></div>
+        </div>
+        <div class="row exeToSubmitContent">
+            <table mat-table [dataSource]="submitionDataSource" class="mat-elevation-z8">
+                <ng-container matColumnDef="courseName">
+                    <th mat-header-cell *matHeaderCellDef>
+                        <div class="row">
+                            <div class="col-5">שם הקורס</div>
+                            <div class="col-2"></div>
+                        </div>
+                    </th>
+                    <td mat-cell *matCellDef="let element"> {{element.courseName}} </td>
+                </ng-container>
+                <ng-container matColumnDef="courseNumber">
+                    <th mat-header-cell *matHeaderCellDef>
+                        <div class="row">
+                            <div class="col-8">מס' הקורס</div>
+                            <div class="col-3"></div>
+                        </div>  
+                    </th>
+                    <td mat-cell *matCellDef="let element"> {{element.courseNumer}} </td>
+                </ng-container>
+                <ng-container matColumnDef="exeName">
+                    <th mat-header-cell *matHeaderCellDef>
+                        <div class="row">
+                            <div class="col-8">שם התרגיל</div>
+                            <div class="col-4"></div>
+                        </div>    
+                    </th>
+                    <td mat-cell *matCellDef="let element"> {{element.name}} </td>
+                </ng-container>
+                <ng-container matColumnDef="teacherName">
+                    <th mat-header-cell *matHeaderCellDef>
+                        <div class="row">
+                            <div class="col-8">תאריך להגשה</div>
+                            <div class="col-2"></div>
+                        </div>
+                    </th>
+                    <td mat-cell *matCellDef="let element"> {{element.teacherName}} </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="submitionColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: submitionColumns;"
+                    (dblclick)="getBeforeEXE(row)" class="rowTable">
+                </tr>
+            </table>              
+        </div>
+    </div>
+    <div class="col-6">
+        <div class="row headersLine">
+            <div class="col-4">
+                <h4>ערעורים</h4>
+            </div>
+            <div class="col-8"></div>
+        </div>
+        <div class="row exeToSubmitContent">
+            <table mat-table [dataSource]="submitionDataSource" class="mat-elevation-z8">
+                <ng-container matColumnDef="courseName">
+                    <th mat-header-cell *matHeaderCellDef>
+                        <div class="row">
+                            <div class="col-5">שם הקורס</div>
+                            <div class="col-2"></div>
+                        </div>
+                    </th>
+                    <td mat-cell *matCellDef="let element"> {{element.courseName}} </td>
+                </ng-container>
+                <ng-container matColumnDef="courseNumber">
+                    <th mat-header-cell *matHeaderCellDef>
+                        <div class="row">
+                            <div class="col-8">מס' הקורס</div>
+                            <div class="col-3"></div>
+                        </div>  
+                    </th>
+                    <td mat-cell *matCellDef="let element"> {{element.courseNumer}} </td>
+                </ng-container>
+                <ng-container matColumnDef="exeName">
+                    <th mat-header-cell *matHeaderCellDef>
+                        <div class="row">
+                            <div class="col-8">שם התרגיל</div>
+                            <div class="col-4"></div>
+                        </div>    
+                    </th>
+                    <td mat-cell *matCellDef="let element"> {{element.name}} </td>
+                </ng-container>
+                <ng-container matColumnDef="teacherName">
+                    <th mat-header-cell *matHeaderCellDef>
+                        <div class="row">
+                            <div class="col-8">שם סטודנט</div>
+                            <div class="col-2"></div>
+                        </div>
+                    </th>
+                    <td mat-cell *matCellDef="let element"> {{element.teacherName}} </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="submitionColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: submitionColumns;"
+                    (dblclick)="getBeforeEXE(row)" class="rowTable">
+                </tr>
+            </table>              
+        </div>
+        <div class="row headersLine">
+            <div class="col-4">
+                <h4>בקשות להארכה</h4>
+            </div>
+            <div class="col-8"></div>
+        </div>
+        <div class="row gradeContent">
+            <table mat-table [dataSource]="gradeDataSource" class="mat-elevation-z8">
+                <ng-container matColumnDef="courseName" class="courseNameCell">
+                    <th mat-header-cell *matHeaderCellDef>
+                    <div class="row">
+                        <div class="col-5">שם הקורס</div>
+                        <div class="col-2"></div>
+                    </div>
+                    </th>
+                    <td mat-cell *matCellDef="let element"> {{element.courseName}} </td>
+                </ng-container>
+                <ng-container matColumnDef="courseNumber">
+                    <th mat-header-cell *matHeaderCellDef>
+                    <div class="row">
+                        <div class="col-7">מס' הקורס</div>
+                        <div class="col-3"></div>
+                    </div> 
+                    </th>
+                    <td mat-cell *matCellDef="let element"> {{element.courseNumber}} </td>
+                </ng-container>
+                <ng-container matColumnDef="exeName">
+                    <th mat-header-cell *matHeaderCellDef>
+                    <div class="row">
+                        <div class="col-7">שם התרגיל</div>
+                        <div class="col-4"></div>
+                    </div> 
+                    </th>
+                    <td mat-cell *matCellDef="let element"> {{element.exName}} </td>
+                </ng-container>
+                <ng-container matColumnDef="gradeNumber">
+                    <th mat-header-cell *matHeaderCellDef>
+                    <div class="row">
+                        <div class="col-5">שם סטודנט</div>
+                        <div class="col-4"></div>
+                    </div> 
+                    </th>
+                    <td mat-cell *matCellDef="let element"> {{element.grade}} </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="gradeColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: gradeColumns;"
+                    (dblclick)="getAfterEXE(row)" class="rowTable">
+                </tr>
+            </table>     
+        </div>
+    </div>
+</div>
+<ng-template #corseDisplay>
+    <div *ngIf="isToShowAlert" #alert class="alert" role="alert" id="alertEle">
+        {{ errorMessage }}
+    </div>
+    <div class="row headersLine">{{ selectedCourse.name }}</div>
+    <app-exe *ngIf="theacherStatus === 'edit' || theacherStatus === 'create'; else menu">
+
+    </app-exe>
+    <ng-template #menu>
+        <app-course-menu [selectedCourse]="selectedCourse"
+            (isToShowAlert)="changeIsToShowAlert($event)"
+            (color)="changeColorAlert($event)"
+            (errorMessageText)="changeMessageAlert($event)">
+        
+        </app-course-menu>
+    </ng-template>
+</ng-template>
