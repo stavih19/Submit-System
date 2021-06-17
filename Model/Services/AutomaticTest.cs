@@ -15,6 +15,22 @@ namespace Submit_System {
             this.AdittionalFilesLocation = null;
 
         }
+
+        public Test(int value,string input,string expected_output,string output_file_name,string arguments_string,int timeout_in_seconds,string main_sourse_file,string adittional_files_location,string exercise_id,int type){
+            this.Value = value;
+            this.Input = input;
+            this.Expected_Output = expected_output;
+            this.Output_File_Name =output_file_name;
+            this.ArgumentsString = arguments_string;
+            this.Timeout_In_Seconds = timeout_in_seconds;
+            this.Main_Sourse_File = main_sourse_file;
+            this.AdittionalFilesLocation = adittional_files_location;
+            this.Exercise_ID = exercise_id;
+            this.Type = type;
+        }
+
+        public int Type{get;set;}
+        public string Exercise_ID{get;set;}
         public int Value{get;set;}
         public string Input{get;set;}
         public string Expected_Output{get;set;}
