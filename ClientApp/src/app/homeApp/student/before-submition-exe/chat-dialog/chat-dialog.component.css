@@ -19,10 +19,8 @@
 
 .mesasgeConverstion {
     border-style: ridge;
-}
-
-.mesasgeConverstion {
     height: 50%;
+    padding-top: 20px;
 }
 
 .newMessage {
@@ -39,6 +37,16 @@
     height: 100%;
     resize: none;
     direction: rtl;
+}
+
+.studentMessage, .teacherMessage {
+    text-align: right;
+    border-radius: 8px;
+    border-color: black;
+    border-width: 5px;
+    width: 300px;
+    height: 100px;
+
 }
 
 .studentMessage {

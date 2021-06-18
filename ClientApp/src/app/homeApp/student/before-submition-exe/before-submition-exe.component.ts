@@ -4,12 +4,10 @@ import { ApprovalService } from 'src/app/approval.service';
 import { ExerciseLabel } from 'src/Modules/ExerciseLabel';
 import { FormBuilder } from '@angular/forms';
 import { ElementRef } from '@angular/core';
-import { SubmissionUpload } from 'src/Modules/SubmissionUpload';
 import { StudentExInfo } from 'src/Modules/StudentExInfo';
 import { MatDialog } from '@angular/material/dialog';
-import { ChatDialogComponent } from './chat-dialog/chat-dialog.component';
-import { delay } from 'rxjs/internal/operators/delay';
 import { FileSubmit } from 'src/Modules/FileSubmit';
+import { ChatDialogComponent } from './chat-dialog/chat-dialog.component';
 
 @Component({
   selector: 'app-before-submition-exe',

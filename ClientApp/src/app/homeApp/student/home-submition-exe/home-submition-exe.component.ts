@@ -55,7 +55,7 @@ export class HomeSubmitionExeComponent implements OnInit {
   }
 
   getExeLists(courseID) {
-    let url = 'https://localhost:5001/Student/ExerciseLabels?token=' + this.token + '&coursed=' + courseID;
+    let url = 'https://localhost:5001/Student/ExerciseList?userid=' + this.token + '&coursed=' + courseID;
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {
