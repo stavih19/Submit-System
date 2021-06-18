@@ -50,16 +50,23 @@ export class TeacherComponent implements OnInit {
     this.appService.updateTheacherStatus("course");
   }
 
-  getBeforeEXE(row) {
+  getAppeals(row) {
+    console.log("appeal");
     this.selectExe = row;
     this.teacherName = row.teacherName;
-    this.appService.updateExeStatus("before");
+    this.appService.updateTheacherStatus("appeal");
   }
 
-  getAfterEXE(row) {
+  getExtenstions(row) {
     this.selectExe = row;
     this.teacherName = row.teacherName;
-    this.appService.updateExeStatus("before");
+    this.appService.updateTheacherStatus("extenstion");
+  }
+
+  getLastExe(row) {
+    this.selectExe = row;
+    this.teacherName = row.teacherName;
+    //this.appService.updateTheacherStatus("extenstion");
   }
 
   getExeInfo() { }

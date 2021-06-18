@@ -1,3 +1,31 @@
 .frame {
     border-style: ridge;
+    height: 465px;
+    text-align: right;
+    display: grid;
+    row-gap: 50px;
+    grid-template-areas: 
+    'input1 input2'
+    'input3 input4'
+    'input5 input6'
+    'input7 input8'
+    'input9 input9';
+}
+
+.exeName { grid-area: input1; }
+.submitDate { grid-area: input2; }
+.multiplePartners { grid-area: input3; }
+.automaticChecks { grid-area: input4; }
+.belongCheckers { grid-area: input5; }
+.belongTeacher { grid-area: input6; }
+.reducePoints { grid-area: input7; }
+.reduceTeams { grid-area: input8; }
+.createButton { grid-area: input9;}
+
+.example-full-width {
+    text-align: right;
+}
+
+.createButton {
+    text-align: center;
 }

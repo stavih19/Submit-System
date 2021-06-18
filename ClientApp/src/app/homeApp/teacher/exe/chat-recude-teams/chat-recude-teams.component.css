@@ -1,0 +1,59 @@
+.courseName {
+    text-align: right;
+}
+.addExtenstionLine {
+    text-align: right;
+    padding: 10px 30px 30px 10px;
+    width: 100%;
+    border-style: ridge;
+    display: grid;
+    row-gap: 10px;
+    column-gap: 30px;
+    grid-template-areas:
+    'header header header header header'
+    'button date date reduce reduce'
+    'content content content content content';
+}
+.headerGrid { 
+    grid-area: header;
+    text-align: right;
+}
+.dateInput { 
+    grid-area: date;
+    width: 30;
+    height: 20;
+}
+.reduceInput {
+    grid-area: reduce;
+}
+.teamInput { 
+    grid-area: team; 
+}
+.studentInput { 
+    grid-area: student; 
+}
+.addInput { 
+    grid-area: button;
+    padding: 20px 10px 0 20px;
+}
+.example-full-width {
+    text-align: right;
+}
+.tableLines {
+    grid-area: content;
+}
+.headerCols {
+    text-align: right;
+}
+.mat-elevation-z8 {
+    text-align: right;
+    padding: 0px 10px 10px 10px;
+    height: 300px;
+    width: 100%;
+}
+.headerLabel {
+    text-align: right;
+}
+.example-viewport {
+    height: 200px;
+}
