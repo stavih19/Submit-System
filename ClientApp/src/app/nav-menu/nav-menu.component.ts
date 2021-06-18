@@ -24,5 +24,6 @@ export class NavMenuComponent {
   logOut() {
     this.appService.updateLoginStatus(false);
     this.appService.updateUserName(["", ""]);
+    this.appService.updateTheacherStatus("");
   }
 }

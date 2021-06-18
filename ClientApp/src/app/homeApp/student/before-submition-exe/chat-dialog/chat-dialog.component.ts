@@ -4,7 +4,6 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { ApprovalService } from 'src/app/approval.service';
 import { Chat } from 'src/Modules/Chat';
 import { Message } from 'src/Modules/Message';
-import { BeforeSubmitionExeComponent } from '../before-submition-exe.component';
 
 @Component({
   selector: 'app-chat-dialog',

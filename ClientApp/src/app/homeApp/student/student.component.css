@@ -17,12 +17,14 @@
 
 .exeToSubmitContent {
     height: 215px;
+    width: 100%;
     border-style: ridge;
     overflow: scroll;
 }
 
 .gradeContent {
     height: 215px;
+    width: 100%;
     border-style: ridge;
     overflow: scroll;
 }
@@ -104,5 +106,9 @@ table {
 }
 
 table {
+    text-align: right;
+}
+
+.headerLabel {
     text-align: right;
 }
