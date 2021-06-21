@@ -97,7 +97,11 @@ namespace Submit_System {
                     }
                     if(test.Output_File_Name != "stdout")
                     {
-                        output = File.ReadAllText(test.Output_File_Name);
+                        try{
+                            output = File.ReadAllText(test.Output_File_Name);
+                        } catch{
+                            output = "";
+                        }
                     }
                     using(StreamReader reader = process.StandardError)
                     {
