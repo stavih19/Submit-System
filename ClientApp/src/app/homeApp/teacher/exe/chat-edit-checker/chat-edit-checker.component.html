@@ -1,0 +1,29 @@
+<div class="courseName">
+    {{ selectedCourse.name }}
+</div>
+<form [formGroup]="checkoutForm" class="example-form" (ngSubmit)="onSubmit()">
+    <div class="addExtenstionLine">
+        <span class="headerGrid">הוסף בודק</span>
+        <div class="dateInput">
+            <mat-form-field class="example-full-width">
+                <mat-label>ת.ז</mat-label>
+                <input matInput placeholder="ת.ז" value="" formControlName="id">
+            </mat-form-field>
+        </div>
+        <div class="addInput">
+            <button mat-raised-button color="primary" type="submit">הוסף</button>
+        </div>
+        <div class="tableLines">
+            <cdk-virtual-scroll-viewport itemSize="50" class="example-viewport">
+                <table mat-table [dataSource]="lines" class="mat-elevation-z8">
+                    <ng-container matColumnDef="weight">
+                        <th mat-header-cell *matHeaderCellDef class="headerLabel">ת.ז בודק</th>
+                        <td mat-cell *matCellDef="let element"> {{ element.name }} </td>
+                    </ng-container>
+                    <tr mat-header-row class="headerCols" *matHeaderRowDef="displayedColumns"></tr>
+                    <tr mat-row class="headerCols" *matRowDef="let row; columns: displayedColumns;"></tr>
+                </table>
+            </cdk-virtual-scroll-viewport>
+        </div>
+    </div>
+</form>

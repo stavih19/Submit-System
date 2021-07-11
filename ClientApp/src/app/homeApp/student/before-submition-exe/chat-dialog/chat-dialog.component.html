@@ -11,35 +11,31 @@
         </div>
         <div class="mesasgeConverstion" #mesasgeConverstion>
             <div *ngFor="let message of messageList">
-                <div *ngIf="!message.isTeacher" class="row">
-                    <div class="col-8"></div>
+                <div class="row" *ngIf="!message.isTeacher">
+                    <div class="col-7"></div>
                     <div class="col-4">
                         <div class="studentMessage">
-                            <label class="nameHeader">את/ה:</label>
+                            את/ה:
                             <br>
-                            <div class="studentMessageContent">
-                                {{ message.body }}
-                                <br>
-                                <br>
-                                {{ message.date.substring(0, 10) }}
-                            </div>
+                            {{ message.body }}
+                            <br>
+                            {{ message.date.toString().substring(0, 10) }}
                         </div>
                     </div>
+                    <div class="col-1"></div>
                 </div>
-                <div *ngIf="message.isTeacher" class="row">
+                <div class="row" *ngIf="message.isTeacher">
+                    <div class="col-1"></div>
                     <div class="col-4">
                         <div class="teacherMessage">
-                            <label class="nameHeader">{{ teacherName }}</label>
+                            {{ teacherName }}
                             <br>
-                            <div class="teacherMessageContent"> 
-                                {{ message.body }}
-                                <br>
-                                <br>
-                                {{ message.date.substring(0, 10) }}
-                            </div>
+                            {{ message.body }}
+                            <br>
+                            {{ message.date.toString().substring(0, 10) }}
                         </div>
                     </div>
-                    <div class="col-8"></div>
+                    <div class="col-7"></div>
                 </div>
             </div>
         </div>

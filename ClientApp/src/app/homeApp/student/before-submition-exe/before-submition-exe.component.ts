@@ -1,15 +1,13 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, EventEmitter, Input, OnInit, Output, ViewChild ,DoCheck, KeyValueDiffers, KeyValueDiffer, AfterContentInit} from '@angular/core';
 import { ApprovalService } from 'src/app/approval.service';
-import { ExerciseLabel } from 'src/Modules/ExerciseLabel';
+import { ExerciseLabel } from 'src/Modules/exercise-label';
 import { FormBuilder } from '@angular/forms';
 import { ElementRef } from '@angular/core';
-import { SubmissionUpload } from 'src/Modules/SubmissionUpload';
-import { StudentExInfo } from 'src/Modules/StudentExInfo';
+import { StudentExInfo } from 'src/Modules/student-exInfo';
 import { MatDialog } from '@angular/material/dialog';
+import { FileSubmit } from 'src/Modules/file-submit';
 import { ChatDialogComponent } from './chat-dialog/chat-dialog.component';
-import { delay } from 'rxjs/internal/operators/delay';
-import { FileSubmit } from 'src/Modules/FileSubmit';
 
 @Component({
   selector: 'app-before-submition-exe',

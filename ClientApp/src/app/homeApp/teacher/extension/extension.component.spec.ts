@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { AfterSubmitionExeComponent } from './after-submition-exe.component';
+import { ExtensionComponent } from './extension.component';
 
-describe('AfterSubmitionExeComponent', () => {
-  let component: AfterSubmitionExeComponent;
-  let fixture: ComponentFixture<AfterSubmitionExeComponent>;
+describe('ExtensionComponent', () => {
+  let component: ExtensionComponent;
+  let fixture: ComponentFixture<ExtensionComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ AfterSubmitionExeComponent ]
+      declarations: [ ExtensionComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(AfterSubmitionExeComponent);
+    fixture = TestBed.createComponent(ExtensionComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { ApprovalService } from 'src/app/approval.service';
-import { ExerciseLabel } from 'src/Modules/ExerciseLabel';
+import { ExerciseLabel } from 'src/Modules/exercise-label';
 import { BeforeSubmitionExeComponent } from '../before-submition-exe/before-submition-exe.component';
 
 @Component({
@@ -56,7 +56,7 @@ export class HomeSubmitionExeComponent implements OnInit {
   }
 
   getExeLists(courseID) {
-    let url = 'https://localhost:5001/Student/ExerciseLabels?userid=' + this.token + '&courseId=' + courseID;
+    let url = 'https://localhost:5001/Student/ExerciseList?userid=' + this.token + '&coursed=' + courseID;
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {

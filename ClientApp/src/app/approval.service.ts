@@ -10,11 +10,13 @@ export class ApprovalService {
   private userName = new BehaviorSubject(["", ""]);
   private token = new BehaviorSubject("");
   private exeStatus = new BehaviorSubject("");
+  private theacherStatus = new BehaviorSubject("");
 
   logedInStorage = this.logedIn.asObservable();
   userNameStorage = this.userName.asObservable();
   tokenStorage = this.token.asObservable();
   exeStatusStorage = this.exeStatus.asObservable();
+  theacherStatusStorage = this.theacherStatus.asObservable();
 
   constructor() { }
 
@@ -32,5 +34,9 @@ export class ApprovalService {
 
   updateExeStatus(status: string): void {
     this.exeStatus.next(status);
+  }
+
+  updateTheacherStatus(status: string): void {
+    this.theacherStatus.next(status);
   }
 }

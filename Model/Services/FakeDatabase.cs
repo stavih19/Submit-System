@@ -17,7 +17,7 @@ namespace Submit_System {
             new Course
             {
                 Number = 89111,
-                Name = "1 תכנות מתקדם",
+                Name = "תכנות מתקדם 1",
                 Year = 2021,
                 ID = C1ID
             },
