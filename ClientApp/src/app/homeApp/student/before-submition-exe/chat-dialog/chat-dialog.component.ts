@@ -12,6 +12,7 @@ import { Message } from 'src/Modules/message';
 })
 export class ChatDialogComponent implements OnInit, AfterContentInit {
   chatID: Chat;
+  headerMessage: string;
   teacherName: string;
   exeName: string;
   isThereMessage: boolean = false;
@@ -86,10 +87,10 @@ export class ChatDialogComponent implements OnInit, AfterContentInit {
       {responseType: 'text'}).toPromise().then(
         data => {
           console.log(data);
-          const message = {
+          const message: Message = {
             id: "",
             senderID: "",
-            date: new Date(),
+            date: "Just now",
             body: this.textMessage,
             isTeacher: false
           }

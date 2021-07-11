@@ -17,4 +17,6 @@ export class StudentExInfo {
     dates: SubmitDate[];
     dateSubmitted: Date;
     isMultipleSubmission: boolean;
+    filenames: string[];
+    state: number;
 }

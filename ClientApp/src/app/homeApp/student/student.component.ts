@@ -45,6 +45,10 @@ export class StudentComponent implements OnInit {
     this.selectedCourse = course;
   }
 
+  SelectFirstExe(course: Course) {
+    //this.getBeforeEXE(course)
+  }
+
   getBeforeEXE(row) {
     this.selectExe = row;
     this.teacherName = row.teacherName;
