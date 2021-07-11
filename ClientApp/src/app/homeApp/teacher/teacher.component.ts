@@ -1,9 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ApprovalService } from 'src/app/approval.service';
-import { Course } from 'src/Modules/Course';
-import { GradeTable } from 'src/Modules/GradeTable';
-import { SubmitTable } from 'src/Modules/SubmitTable';
+import { Course } from 'src/Modules/course';
+import { GradeTable } from 'src/Modules/grade-table';
+import { SubmitTable } from 'src/Modules/submit-table';
 
 @Component({
   selector: 'app-teacher',
@@ -15,6 +15,8 @@ export class TeacherComponent implements OnInit {
   theacherStatus: string;
   selectedCourse: Course;
   selectExe: any;
+  selectExelabel: any;
+  headerText: string;
   teacherName: string;
   coursesList: Course[];
   submitionColumns: any;
@@ -41,8 +43,13 @@ export class TeacherComponent implements OnInit {
     this.appService.updateExeStatus("");
 
     this.getCourseList();
+    this.getAppealsLoad();
     this.submitionLoad();
     this.gradeLoad();
+  }
+
+  onMark(course: Course): void {
+    this.selectedCourse = course;
   }
 
   onSelect(course: Course): void {
@@ -54,33 +61,55 @@ export class TeacherComponent implements OnInit {
     console.log("appeal");
     this.selectExe = row;
     this.teacherName = row.teacherName;
-    this.appService.updateTheacherStatus("appeal");
+    this.headerText = "בקשות ערעור";
+    this.appService.updateTheacherStatus("extenstion");
   }
 
   getExtenstions(row) {
     this.selectExe = row;
     this.teacherName = row.teacherName;
+    this.headerText = "בקשות הארכה";
     this.appService.updateTheacherStatus("extenstion");
   }
 
   getLastExe(row) {
     this.selectExe = row;
     this.teacherName = row.teacherName;
-    //this.appService.updateTheacherStatus("extenstion");
+    this.coursesList.forEach(course => {
+      if(course.name === row.courseName) {
+        this.selectedCourse = course;
+        this.selectExelabel = row;
+        this.appService.updateTheacherStatus("lastExe");
+      }
+    });
   }
 
   getExeInfo() { }
 
   getCourseList() {
+    let url = 'https://localhost:5001/Teacher/CourseList?token=' + this.token;
+    this.httpClient.get(url, 
+    {responseType: 'text'}).toPromise().then(
+      data => {
+        this.coursesList = JSON.parse(data);
+        console.log(this.coursesList);
+      }, error => {
+        console.log(error);
+      }
+    );
+  }
+
+  getAppealsLoad() {
     let url = 'https://localhost:5001/Student/CourseList?token=' + this.token;
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {
         this.coursesList = JSON.parse(data);
+        console.log(this.coursesList);
       }, error => {
         console.log(error);
       }
-    )
+    );
   }
 
   submitionLoad() {
@@ -93,7 +122,7 @@ export class TeacherComponent implements OnInit {
       }, error => {
         console.log(error);
       }
-    )
+    );
   }
 
   gradeLoad() {
@@ -103,6 +132,7 @@ export class TeacherComponent implements OnInit {
     {responseType: 'text'}).toPromise().then(
       data => {
         this.gradeDataSource = JSON.parse(data);
+        console.log(data);
       }, error => {
         console.log(error);
       }

@@ -41,6 +41,7 @@ import { ChatAutoChecksComponent } from './homeApp/teacher/exe/chat-auto-checks/
 import { ChatAdvancedChecksComponent } from './homeApp/teacher/exe/chat-auto-checks/chat-advanced-checks/chat-advanced-checks.component';
 import { ExtensionComponent } from './homeApp/teacher/extension/extension.component';
 import { AppealComponent } from './homeApp/teacher/appeal/appeal.component';
+import { AutoCheckComponent } from './homeApp/teacher/auto-check/auto-check.component';
 
 @NgModule({
   declarations: [
@@ -67,7 +68,8 @@ import { AppealComponent } from './homeApp/teacher/appeal/appeal.component';
     ChatAutoChecksComponent,
     ChatAdvancedChecksComponent,
     ExtensionComponent,
-    AppealComponent
+    AppealComponent,
+    AutoCheckComponent
   ],
   entryComponents: [
     ChatDialogComponent,

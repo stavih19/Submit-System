@@ -1,4 +1,6 @@
-<app-extension *ngIf="theacherStatus === 'extenstion'">
+<app-extension *ngIf="theacherStatus === 'extenstion'" 
+    [selectExe]="selectExe"
+    [headerText]="headerText">
     
 </app-extension>
 <div *ngIf="theacherStatus === ''" class="row studentGeneral">
@@ -13,7 +15,7 @@
             <ul class="coursesEelemnts">
                 <li *ngFor="let course of coursesList"
                     [class.selected]="course === selectedCourse"
-                    class="course" (click)="onSelect(course)">
+                    class="course" (dblclick)="onSelect(course)" (click)="onMark(course)">
                     <div class="badge">
                         <div class="courseName">
                             {{ course.name }}
@@ -172,13 +174,14 @@
         </div>
     </div>
 </div>
-<div *ngIf="theacherStatus === 'edit' || theacherStatus === 'create' || theacherStatus === 'course'">
+<div *ngIf="theacherStatus === 'edit' || theacherStatus === 'create' || theacherStatus === 'course' || theacherStatus === 'lastExe'">
     <div *ngIf="isToShowAlert" #alert class="alert" role="alert" id="alertEle">
         {{ errorMessage }}
     </div>
     <div class="row headersLine">{{ selectedCourse.name }}</div>
-    <app-exe *ngIf="theacherStatus === 'edit' || theacherStatus === 'create'; else menu"
-        [selectedCourse]="selectedCourse">
+    <app-exe *ngIf="theacherStatus === 'edit' || theacherStatus === 'create' || theacherStatus === 'lastExe'; else menu"
+        [selectedCourse]="selectedCourse"
+        [selectExelabel]="selectExelabel">
 
     </app-exe>
     <ng-template #menu>

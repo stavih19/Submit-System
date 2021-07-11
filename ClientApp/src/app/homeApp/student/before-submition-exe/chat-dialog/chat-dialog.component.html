@@ -12,13 +12,17 @@
         <div class="mesasgeConverstion" #mesasgeConverstion>
             <div *ngFor="let message of messageList">
                 <div class="row" *ngIf="!message.isTeacher">
-                    <div class="studentMessage">
-                        את/ה:
-                        <br>
-                        {{ message.body }}
-                        <br>
-                        {{ message.date.substring(0, 10) }}
+                    <div class="col-7"></div>
+                    <div class="col-4">
+                        <div class="studentMessage">
+                            את/ה:
+                            <br>
+                            {{ message.body }}
+                            <br>
+                            {{ message.date.toString().substring(0, 10) }}
+                        </div>
                     </div>
+                    <div class="col-1"></div>
                 </div>
                 <div class="row" *ngIf="message.isTeacher">
                     <div class="col-1"></div>
@@ -28,7 +32,7 @@
                             <br>
                             {{ message.body }}
                             <br>
-                            {{ message.date.substring(0, 10) }}
+                            {{ message.date.toString().substring(0, 10) }}
                         </div>
                     </div>
                     <div class="col-7"></div>

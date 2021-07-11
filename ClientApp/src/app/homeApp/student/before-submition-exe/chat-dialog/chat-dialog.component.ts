@@ -2,8 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { AfterContentInit, ElementRef, EventEmitter, Output } from '@angular/core';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ApprovalService } from 'src/app/approval.service';
-import { Chat } from 'src/Modules/Chat';
-import { Message } from 'src/Modules/Message';
+import { Chat } from 'src/Modules/chat';
+import { Message } from 'src/Modules/message';
 
 @Component({
   selector: 'app-chat-dialog',
@@ -81,7 +81,8 @@ export class ChatDialogComponent implements OnInit, AfterContentInit {
         msg: this.textMessage
       }
 
-      this.httpClient.post('https://localhost:5001/Student/MessageList?token=' + this.token + '&chatId=' + this.chatID.id, params,
+      let url = 'https://localhost:5001/Student/NewMessage?userid=' + this.token + '&chatId=' + this.chatID.id;
+      this.httpClient.post(url, params,
       {responseType: 'text'}).toPromise().then(
         data => {
           console.log(data);
@@ -93,6 +94,7 @@ export class ChatDialogComponent implements OnInit, AfterContentInit {
             isTeacher: false
           }
           this.messageList.push(message);
+          this.textMessageRef.nativeElement.value = "";
         }, error => {
           this.errorMessage(error.status);
         }
@@ -103,7 +105,7 @@ export class ChatDialogComponent implements OnInit, AfterContentInit {
   errorMessage(error: string) {
     this.updateShowAlert(true);
     const message = error + "   try again";
-    document.getElementById("alertEle").innerHTML = message;
+    //document.getElementById("alertEle").innerHTML = message;
     setTimeout(() => {
       this.updateShowAlert(false);
     }, 5000);

@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { ApprovalService } from 'src/app/approval.service';
-import { ExerciseLabel } from 'src/Modules/ExerciseLabel';
+import { ExerciseLabel } from 'src/Modules/exercise-label';
 import { BeforeSubmitionExeComponent } from '../before-submition-exe/before-submition-exe.component';
 
 @Component({

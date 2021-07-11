@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ApprovalService } from 'src/app/approval.service';
-import { Course } from 'src/Modules/Course';
+import { Course } from 'src/Modules/course';
 import { FormBuilder } from '@angular/forms';
 import { MatDialog } from '@angular/material';
 import { ChatAdvancedChecksComponent } from './chat-advanced-checks/chat-advanced-checks.component';

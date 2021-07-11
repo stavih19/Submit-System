@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { ApprovalService } from 'src/app/approval.service';
 import { MatDialog } from '@angular/material/dialog';
 import { FormBuilder } from '@angular/forms';
-import { Course } from 'src/Modules/Course';
+import { Course } from 'src/Modules/course';
 import { ChatReduceComponent } from './chat-reduce/chat-reduce.component';
 import { ChatRecudeTeamsComponent } from './chat-recude-teams/chat-recude-teams.component';
 import { ChatEditTeacherComponent } from './chat-edit-teacher/chat-edit-teacher.component';
@@ -16,6 +16,7 @@ import { ChatAutoChecksComponent } from './chat-auto-checks/chat-auto-checks.com
 })
 export class ExeComponent implements OnInit {
   modalRef: any;
+  theacherStatus: string = "";
 
   constructor(
     private appService: ApprovalService,
@@ -24,8 +25,10 @@ export class ExeComponent implements OnInit {
   ) { }
 
   @Input() selectedCourse: Course;
-  ngOnInit() {
+  @Input() selectExelabel: any;
 
+  ngOnInit() {
+    console.log(this.selectedCourse);
   }
   openAutoChecks() {
     const modalRef = this.dialog.open(ChatAutoChecksComponent);
@@ -50,5 +53,9 @@ export class ExeComponent implements OnInit {
   reduceTeams() {
     const modalRef = this.dialog.open(ChatRecudeTeamsComponent);
     modalRef.componentInstance.selectedCourse = this.selectedCourse;
+  }
+
+  getAutoChecks() {
+    this.theacherStatus = "autoCheck";
   }
 }

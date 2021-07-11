@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { ApprovalService } from 'src/app/approval.service';
-import { Course } from 'src/Modules/Course';
+import { Course } from 'src/Modules/course';
 import { TeamLabel } from 'src/Modules/Reduce/team-label';
 
 @Component({

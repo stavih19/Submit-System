@@ -1,4 +1,4 @@
-<div class="frame">
+<div class="frame" *ngIf="theacherStatus === ''">
     <div class="exeName">
         1.
         <mat-form-field class="example-full-width">
@@ -46,4 +46,16 @@
     <div class="createButton">
         <button mat-raised-button color="primary">צור</button>
     </div>
+    <br>
 </div>
+<br>
+<div class="row" *ngIf="theacherStatus === ''">
+    <button mat-raised-button color="warn" type="submit"
+    (click)="getAutoChecks()">
+        בדיקה אוטומטית
+    </button>
+</div>
+<app-auto-check *ngIf="theacherStatus === 'autoCheck'"
+    [selectExelabel]="selectExelabel">
+
+</app-auto-check>

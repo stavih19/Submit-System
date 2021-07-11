@@ -3,7 +3,7 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { MatDialog } from '@angular/material';
 import { ApprovalService } from 'src/app/approval.service';
-import { Course } from 'src/Modules/Course';
+import { Course } from 'src/Modules/course';
 
 @Component({
   selector: 'app-chat-advanced-checks',

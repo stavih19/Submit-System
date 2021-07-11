@@ -1,4 +1,7 @@
-<div class="extenstionHeader">בקשות הארכה</div>
+<div *ngIf="isToShowAlert" #alert class="alert" role="alert" id="alertEle">
+    {{ errorMessage }}
+</div>
+<div class="extenstionHeader">{{ headerText }}</div>
 <div class="content">
     <div class="requestFrame">
         <div class="requestBox" *ngFor="let request of requests">
@@ -8,18 +11,21 @@
             <div class="file">{{ request.file }}</div>
             <div class="menuRequest">
                 <div class="deny">
-                    <button mat-raised-button class="btn btn-danger" type="button">סירוב</button>
+                    <button mat-raised-button class="btn btn-danger" type="button"
+                    (click)="onDeny(request)">סירוב</button>
                 </div>
                 <div class="approve">
-                    <button mat-raised-button class="btn btn-success" type="button">אשר</button>
+                    <button mat-raised-button class="btn btn-success" type="button"
+                    (click)="onApprove(request)" [id]="request.id" disabled="true">אשר</button>
                 </div>
                 <div class="response">
-                    <button mat-raised-button class="btn btn-secondary" type="button">הגב</button>
+                    <button mat-raised-button class="btn btn-secondary" type="button"
+                    (click)="onReplay(request)">הגב</button>
                 </div>
                 <div class="date">
                     <mat-form-field appearance="fill">
                         <mat-label>team</mat-label>
-                        <mat-select [(ngModel)]="selectedOption">
+                        <mat-select [(ngModel)]="selectedOption" (selectionChange)="teamSelected(request)">
                         <mat-option *ngFor="let team of teams" [value]="team">
                             {{ team }}
                         </mat-option>
