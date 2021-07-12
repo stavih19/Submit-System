@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
+using System.Threading;
 
 namespace Submit_System
 {
@@ -16,11 +17,11 @@ namespace Submit_System
             "c", "cc", "java", "ml", "pascal", "ada", "lisp", "schema", "haskell",
             "fortran", "ascii", "vhdl", "perl","matlab", "python", "mips", "prolog",
             "spice", "vb", "csharp", "modula2", "a8086", "javascript", "plsql" };
-        public volatile bool InUse = false;
 
+        public int MaxConcurrentRequests {get;}
         public const int DEF_SHOW = 250;
         public const int DEF_MAX_FOUND = 10;
-        public readonly bool IsExperimental = false;
+        private readonly Semaphore sema;
 
         // private const string RESULTS = "https://moss.stanford.edu/results/";
         private class MossRequestor : IDisposable
@@ -82,8 +83,7 @@ namespace Submit_System
             private void UploadFiles(string folder, bool isBaseFiles = false)
             {
                 // Simplifying directory name
-                
-                var files = FileUtils.GetFiles(folder, FileUtils.LangToExt[data.Language]);
+                var files = FileUtils.GetFiles(folder, FileUtils.GetExts(data.Language));
                 string dirname = FileUtils.GetFileName(folder);
                 foreach (string file in files)
                 {
@@ -99,7 +99,7 @@ namespace Submit_System
             }
             public void UploadBaseFiles() {
                 if(data.BaseFilesFolder != null) {
-                     UploadFiles(data.BaseFilesFolder, true);
+                    UploadFiles(data.BaseFilesFolder, true);
                 }
             }
             /// <summary>
@@ -133,15 +133,17 @@ namespace Submit_System
 
         }
 
-        public MossClient(bool isExp = false) {
-            IsExperimental = isExp;
+        public MossClient(int maxReq = 1) {
+            MaxConcurrentRequests = maxReq;
+            sema = new Semaphore(maxReq, maxReq);
+
         }
         /// <summary>method <c>IsSupported</c> Checks if a language is supported by Moss.</summary>
         /// <param name="language">the language to be checked.</param>
         /// <returns>True if the langauge is supported. False otherwise.</returns>
         public static bool IsSupported(string language)
         {
-            return (FileUtils.LangToExt[language] != null && SupportedLangauges.Contains(language));
+            return (FileUtils.ContainsLang(language) && SupportedLangauges.Contains(language));
         }
         /// <summary>
         ///     Checks if the url is valid.
@@ -193,6 +195,7 @@ namespace Submit_System
             data.MaxFound = (data.MaxFound < 2 ? DEF_MAX_FOUND : data.MaxFound);
             data.MatchesShow = (data.MatchesShow < 1 ? DEF_SHOW : data.MatchesShow);
             string result;
+            sema.WaitOne();
             using(MossRequestor request = new MossRequestor(data, testMode))
             {        
                     request.Connect();
@@ -201,12 +204,21 @@ namespace Submit_System
                     request.UploadSubmissions();
                     result = request.GetResult();
             }
+            sema.Release();
             if (!CheckUrl(result))
             {
                 // Console.WriteLine(result);
                 throw new Exception("The Moss server didn't return a working link. Returned result was: " + result );
             }
             return result;
+        }
+        public void Dispose()
+        {
+            sema.Dispose();
+        }
+        ~MossClient()
+        {
+            Dispose();
         }
     }
 }

@@ -14,7 +14,7 @@ namespace Submit_System
     public static class FileUtils
     {
         const int MAX_LENGTH = 1024*1024 * 10;
-        public static readonly Dictionary<string, string[]> LangToExt = new Dictionary<string, string[]>
+        public static readonly Dictionary<string, string[]> LangToExts = new Dictionary<string, string[]>
         {
             ["c"] = new string[] { "*.c", "*.h" },
             ["cc"] = new string[] { "*.cpp", "*.h", "*.cc" },
@@ -25,6 +25,14 @@ namespace Submit_System
             ["javascript"] = new string[] { "*.js" },
             ["perl"] = new string[] { "*.pl" },
         };
+        public static string[] GetExts(string language)
+        {
+            return LangToExts[language];
+        }
+        public static bool ContainsLang(string language)
+        {
+            return LangToExts.ContainsKey(language);
+        }
         /// <summary>
         ///     Gets all files from the folder with the given extensions
         /// </summary>
@@ -76,7 +84,8 @@ namespace Submit_System
         /// <returns>The file path relative to the folder</returns>
         public static string FlattenFilePath(string folder, string file)
         {
-            return folder + '/' + GetFileName(file);
+            string relPath = GetRelativePath(file, folder).Replace("/", "_-_");
+            return folder + '/' + relPath;
         }
 
         /// <summary>
@@ -164,10 +173,15 @@ namespace Submit_System
             }
             return GetRelativePaths(destDir, submittedFiles);
         }
-
-        public static string GetRelativePath(string filePath, string dirPath)
+        /// <summary>
+        /// Returns the path of the file "filePath" relative to the directory "dirPath" 
+        /// </summary>
+        /// <param name="file">the file</param>
+        /// <param name="dir">an ancestor directory</param>
+        /// <returns>filePath's relaative to </returns>
+        public static string GetRelativePath(string file, string dir)
         {
-            var newFileName = filePath.Replace(dirPath, "");
+            var newFileName = file.Replace(dir, "");
             if(newFileName.StartsWith('/') || newFileName.StartsWith('\\'))
             {
                 newFileName = newFileName.Remove(0, 1);
@@ -176,11 +190,15 @@ namespace Submit_System
         }
         public static List<string> GetRelativePaths(string folder)
         {
-            if(Directory.Exists(folder))
+            try
             {
-                var files = Directory.GetFiles(folder, "*", SearchOption.AllDirectories);
-                return GetRelativePaths(folder, files);
+                if(Directory.Exists(folder))
+                {
+                    var files = Directory.EnumerateFiles(folder, "*", SearchOption.AllDirectories);
+                    return GetRelativePaths(folder, files);
+                }
             }
+            catch {}
             return new List<string>();
         }
         public static List<string> GetRelativePaths(string folder, IEnumerable<string> files)
@@ -195,11 +213,15 @@ namespace Submit_System
         public static byte[] ToArchiveBytes(string path)
         {
             byte[] result;
+            if(!Directory.Exists(path))
+            {
+                return null;
+            }
             using(var stream = new MemoryStream())
             {
                 using(var zip = new ZipArchive(stream, ZipArchiveMode.Create, true))
                 {
-                    var files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
+                    var files = Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories);
                     foreach(var file in files)
                     {
                         var newFileName = GetRelativePath(file, path);

@@ -10,17 +10,13 @@ namespace Submit_System {
             this.Status = status;
             this.Course_ID= course_id;
         }
+        public MessageData() {}
         public string Chat_ID{get;set;}
-
         public DateTime Time{get;set;}
-
         public int Type{get;set;}
-
         public string Value{get;set;}
-
         public string Sender_ID{get;set;}
         public int Status{get;set;}
-
         public string Course_ID{get;set;}
     }
 }

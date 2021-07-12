@@ -4,8 +4,8 @@ using System.Collections.Generic;
 
 namespace Submit_System
 {
-    public class DataBaseManager{
-        private static string connetionString = "Data Source=127.0.0.1;Initial Catalog=submit02;User ID=SA;Password=HKCGHFKJ,GKG56fvfviW";//paSSwordius$;"
+    public partial class DataBaseManager{
+        private static string connetionString = "Data Source=127.0.0.1;Initial Catalog=submit02;User ID=SA;Password=paSSwordius$";
 
         private static int WAITING_TO_METARGEL = 0;
         public static (User,int,string) ReadUser(string id) {
@@ -48,9 +48,9 @@ namespace Submit_System
             command.Parameters.Add("@NAME",System.Data.SqlDbType.NVarChar);
             command.Parameters.Add("@EMAIL",System.Data.SqlDbType.NVarChar);
             command.Parameters["@ID"].Value = user.ID;
-            command.Parameters["@PWD"].Value = user.PASSWORD_HASH;
-            command.Parameters["@NAME"].Value = user.NAME;
-            command.Parameters["@EMAIL"].Value = user.EMAIL;
+            command.Parameters["@PWD"].Value = user.PasswordHash;
+            command.Parameters["@NAME"].Value = user.Name;
+            command.Parameters["@EMAIL"].Value = user.Email;
             try{
                 command.ExecuteReader();
             } catch {
@@ -223,14 +223,14 @@ namespace Submit_System
                 ex.Name = dataReader.GetValue(1).ToString();
                 ex.Course_ID = dataReader.GetValue(2).ToString();
                 ex.Original_Exercise_ID = dataReader.GetValue(3).ToString();
-                ex.Max_Submitters = (int)dataReader.GetValue(4);
-                ex.Test_Files_Location = dataReader.GetValue(5).ToString();
-                ex.Late_Submittion_Settings = dataReader.GetValue(6).ToString();
-                ex.Programming_Language = dataReader.GetValue(7).ToString();
-                ex.Auto_Test_Grade_Value = (int)dataReader.GetValue(8);
-                ex.Style_Test_Grade_Value = (int)dataReader.GetValue(9);
-                ex.Is_Active = (int)dataReader.GetValue(10);
-                ex.Multiple_Submission = (int)dataReader.GetValue(11);
+                ex.MaxSubmitters = (int)dataReader.GetValue(4);
+                ex.FilesLocation = dataReader.GetValue(5).ToString();
+                ex.LateSubmissionSettings = dataReader.GetValue(6).ToString();
+                ex.ProgrammingLanguage = dataReader.GetValue(7).ToString();
+                ex.AutoTestGradeWeight = (int)dataReader.GetValue(8);
+                ex.StyleTestGradeWeight = (int)dataReader.GetValue(9);
+                ex.IsActive = (int)dataReader.GetValue(10);
+                ex.MultipleSubmission = (int)dataReader.GetValue(11) == 1;
             } catch {
                 try{cnn.Close();}catch{}
                 return (null,3,"Connection failed");
@@ -264,14 +264,14 @@ namespace Submit_System
             command.Parameters["@NAME"].Value = exercise.Name;
             command.Parameters["@CID"].Value = exercise.Course_ID;
             command.Parameters["@OEID"].Value = exercise.Original_Exercise_ID;
-            command.Parameters["@MAX"].Value = exercise.Max_Submitters;
-            command.Parameters["@FILES"].Value = exercise.Test_Files_Location;
-            command.Parameters["@LATEST"].Value = exercise.Late_Submittion_Settings;
-            command.Parameters["@LANG"].Value = exercise.Programming_Language;
-            command.Parameters["@AUTO"].Value = exercise.Auto_Test_Grade_Value;
-            command.Parameters["@STYLE"].Value = exercise.Style_Test_Grade_Value;
-            command.Parameters["@ACTIVE"].Value = exercise.Is_Active;
-            command.Parameters["@MULT"].Value = exercise.Multiple_Submission;
+            command.Parameters["@MAX"].Value = exercise.MaxSubmitters;
+            command.Parameters["@FILES"].Value = exercise.FilesLocation;
+            command.Parameters["@LATEST"].Value = exercise.LateSubmissionSettings;
+            command.Parameters["@LANG"].Value = exercise.ProgrammingLanguage;
+            command.Parameters["@AUTO"].Value = exercise.AutoTestGradeWeight;
+            command.Parameters["@STYLE"].Value = exercise.StyleTestGradeWeight;
+            command.Parameters["@ACTIVE"].Value = exercise.IsActive;
+            command.Parameters["@MULT"].Value = exercise.MultipleSubmission ? 1 : 0;
             try{
                 command.ExecuteReader();
             } catch {
@@ -381,6 +381,7 @@ namespace Submit_System
                 sub.Time_Submitted = (DateTime)dataReader.GetValue(9);
                 sub.Chat_Late_ID = dataReader.GetValue(10).ToString();
                 sub.Chat_Appeal_ID = dataReader.GetValue(11).ToString();
+                sub.HasCopied = (int)dataReader.GetValue(12) == 1;
             } catch {
                 try{cnn.Close();}catch{}
                 return (null,3,"Connection failed");
@@ -563,14 +564,14 @@ namespace Submit_System
             command.Parameters["@NAME"].Value = exercise.Name;
             command.Parameters["@CID"].Value = exercise.Course_ID;
             command.Parameters["@OEID"].Value = exercise.Original_Exercise_ID;
-            command.Parameters["@MAX"].Value = exercise.Max_Submitters;
-            command.Parameters["@FILES"].Value = exercise.Test_Files_Location;
-            command.Parameters["@LATEST"].Value = exercise.Late_Submittion_Settings;
-            command.Parameters["@LANG"].Value = exercise.Programming_Language;
-            command.Parameters["@AUTO"].Value = exercise.Auto_Test_Grade_Value;
-            command.Parameters["@STYLE"].Value = exercise.Style_Test_Grade_Value;
-            command.Parameters["@ACTIVE"].Value = exercise.Is_Active;
-            command.Parameters["@MULT"].Value = exercise.Multiple_Submission;
+            command.Parameters["@MAX"].Value = exercise.MaxSubmitters;
+            command.Parameters["@FILES"].Value = exercise.FilesLocation;
+            command.Parameters["@LATEST"].Value = exercise.LateSubmissionSettings;
+            command.Parameters["@LANG"].Value = exercise.ProgrammingLanguage;
+            command.Parameters["@AUTO"].Value = exercise.AutoTestGradeWeight;
+            command.Parameters["@STYLE"].Value = exercise.StyleTestGradeWeight;
+            command.Parameters["@ACTIVE"].Value = exercise.IsActive;
+            command.Parameters["@MULT"].Value = exercise.MultipleSubmission;
             try{
                 command.ExecuteReader();
             } catch {
@@ -747,7 +748,8 @@ namespace Submit_System
         public static (int,string) AddMessage(MessageData msg){
             SqlConnection cnn  = new SqlConnection(connetionString);
             try{cnn.Open();} catch {return (3,"Connection failed");}
-            String sql = "INSERT INTO Message(chat_id,message_time,message_type,message_value,sender_user_id,message_status,course_id) VALUES (@CHID, @TIME,@TYPE,@VALUE,@SENDER,@STATUS,@CID);";
+            String sql = @"INSERT INTO Message(chat_id,message_time,message_type,message_value,sender_user_id,message_status, sender_name, is_teacher)
+                            VALUES (@CHID, @TIME,@TYPE,@VALUE,@SENDER,@STATUS,@NAME, @IST);";
             SqlCommand command = new SqlCommand(sql,cnn);
             command.Parameters.Add("@CHID",System.Data.SqlDbType.NVarChar);
             command.Parameters.Add("@TIME",System.Data.SqlDbType.DateTime);
@@ -755,14 +757,12 @@ namespace Submit_System
             command.Parameters.Add("@VALUE",System.Data.SqlDbType.NVarChar);
             command.Parameters.Add("@SENDER",System.Data.SqlDbType.NVarChar);
             command.Parameters.Add("@STATUS",System.Data.SqlDbType.Int);
-            command.Parameters.Add("@CID",System.Data.SqlDbType.NVarChar);
             command.Parameters["@CHID"].Value = msg.Chat_ID;
             command.Parameters["@TIME"].Value = msg.Time;
             command.Parameters["@TYPE"].Value = msg.Type;
             command.Parameters["@VALUE"].Value = msg.Value;
-            command.Parameters["@SENDER"].Value = msg.Sender_ID;
+            command.Parameters["@SENDER"].Value = msg.Sender_ID;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
             command.Parameters["@STATUS"].Value = msg.Status;
-            command.Parameters["@CID"].Value = msg.Course_ID;
             try{
                 command.ExecuteReader();
             } catch {
@@ -883,18 +883,28 @@ namespace Submit_System
             return (lst,0,"OK");   
         }
 
-        public static (List<MessageData>,int,string) ReadMessagesOfChat(string chat_id){
-            List<MessageData> lst = new List<MessageData>();
+        public static (List<Message>,int,string) ReadMessagesOfChat(string chat_id){
+            List<Message> lst = new List<Message>();
             SqlConnection cnn  = new SqlConnection(connetionString);
             try{cnn.Open();} catch {return (null,3,"Connection failed");}
-            String sql = "SELECT * FROM Message WHERE chat_id = @ID ORDER BY message_time;";
+            String sql = "SELECT * FROM Message WHERE chat_id=@ID ORDER BY message_time;";
             SqlCommand command = new SqlCommand(sql,cnn);
-            command.Parameters.Add("@ID",System.Data.SqlDbType.NVarChar);
+            command.Parameters.Add("@ID",System.Data.SqlDbType.VarChar);
             command.Parameters["@ID"].Value = chat_id;
             try{
                 SqlDataReader dataReader = command.ExecuteReader();
-                while(dataReader.Read()){
-                    lst.Add(new MessageData(dataReader.GetValue(1).ToString(),(DateTime)dataReader.GetValue(2),(int)dataReader.GetValue(3),dataReader.GetValue(4).ToString(),dataReader.GetValue(5).ToString(),(int)dataReader.GetValue(6),dataReader.GetValue(7).ToString()));
+                while(dataReader.Read()) {
+                    var data = new Message {
+                        ChatID = dataReader.GetValue(1).ToString(),
+                        Date = (DateTime)dataReader.GetValue(2),
+                        IsFile = (int) dataReader.GetValue(3) == 1,
+                        Body = dataReader.GetValue(4).ToString(),
+                        SenderID = dataReader.GetValue(5).ToString(),
+                        Status = (int) dataReader.GetValue(6),
+                        IsTeacher = (int) dataReader.GetValue(8) == 1,
+                        SenderName = dataReader.GetValue(9).ToString()
+                    };
+                    lst.Add(data);
                 }
             } catch {
                 try{cnn.Close();}catch{}
@@ -1110,5 +1120,5 @@ namespace Submit_System
             return (0,"OK");
         }
 
-}  
+    }  
 }

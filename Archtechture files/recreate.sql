@@ -1,4 +1,10 @@
-CREATE DATABASE Submit02;
+DECLARE @sql NVARCHAR(max)=''
+
+SELECT @sql += ' Drop table ' + QUOTENAME(TABLE_SCHEMA) + '.'+ QUOTENAME(TABLE_NAME) + '; '
+FROM   INFORMATION_SCHEMA.TABLES
+WHERE  TABLE_TYPE = 'BASE TABLE'
+
+Exec Sp_executesql @sql
 GO
 USE Submit02;
 CREATE TABLE Users (
@@ -64,7 +70,8 @@ CREATE TABLE Submission(
     submission_date_id int,
     time_submitted DATETIME,
     chat_late_id nvarchar(32),
-    chat_appeal_id nvarchar(32)
+    chat_appeal_id nvarchar(32),
+    has_copied int
 );
 CREATE TABLE Submitters(
     user_id nvarchar(10),
@@ -111,5 +118,6 @@ CREATE TABLE Test(
 CREATE TABLE Tokens(
     user_id varchar(10),
     token varchar(64),
-    creation_date DATE
+    expire_date DATE
 );
+GO

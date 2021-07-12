@@ -1,14 +1,12 @@
 using System;
 using System.Collections.Generic;
 namespace Submit_System {
-    public class SubmitDate {
+    public class TeacherDateDisplay {
+        public int  ID { get; set; }
         public DateTime Date { get; set;}
         public int Group {get; set; }
         public int Reduction { get; set; }
-        public int CompareTo(SubmitDate sb)
-        {
-            return Date.CompareTo(sb.Date);
-        }
+        public List<UserLabel> submitters {get; set; }
 
     }
 }

@@ -3,7 +3,10 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Diagnostics;
-
+using System.Web;
+using System.IO;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 namespace Submit_System
 {
     /// <summary>
@@ -16,6 +19,7 @@ namespace Submit_System
         private ConcurrentDictionary<string, Token> Tokens;
         public volatile bool IsTestMode;
         private readonly int ExpirationSeconds;
+        private const string jsonFile = "tokens.json";
         private readonly Timer timer;
         /// <summary>
         /// Constructor
@@ -33,27 +37,64 @@ namespace Submit_System
             {
                 RemoveExpired();
             }, null, startTimeSpan, periodTimeSpan);
+            if(IsTestMode)
+            {
+                Deserialize();
+            }
+        }
+        public void Deserialize()
+        {
+            if(File.Exists(jsonFile))
+            {
+                Monitor.Enter(jsonFile);
+                string json = File.ReadAllText(jsonFile);
+                Tokens = JsonSerializer.Deserialize<ConcurrentDictionary<string, Token>>(json);
+                Monitor.Exit(jsonFile);
+            }
+        }
+        public void Serialize()
+        {
+            Monitor.Enter(jsonFile);
+            string json = JsonSerializer.Serialize(Tokens);
+            using (var reader = File.CreateText(jsonFile))
+            {
+                reader.Write(json);
+            }
+            Monitor.Exit(jsonFile);
         }
         public string CreateToken(string userId)
         {
             var token = new Token(userId, GenerateTokenID());
             Tokens[token.tokenID] = token;
+            if(IsTestMode)
+            {
+                Serialize();
+            }
             return token.tokenID;
         }
         private string GenerateTokenID()
         {
             string result;
             do {
-                var tokenBytes = CryptoUtils.GetRandomBytes(TOKENLENGTH);
-                result = BitConverter.ToString(tokenBytes).Replace("-", "");
+                result = CryptoUtils.GetRandomBase64String(TOKENLENGTH);
             } while(Tokens.ContainsKey(result));
             return result;
+        }
+        public void RemoveByID(string userid)
+        {
+            foreach(Token token in Tokens.Values)
+            {
+                if(token.UserID == userid)
+                {
+                    RemoveToken(token.tokenID);
+                }
+            }
         }
         public bool TryGetUserID(string tokenID, out string username)
         {
             if(IsTestMode)
             {
-                username = "Yosi";
+                username = "576888433";
                 return true;
             };
             if(tokenID == null)

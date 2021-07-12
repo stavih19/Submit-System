@@ -3,14 +3,18 @@ using System;
 using Microsoft.AspNetCore.Mvc;
 using System.Security;
 using System.Collections.Generic;
+using System.Web;
 namespace Submit_System
 {
     public class UserController : AbstractController 
     {  
+        private const string PASSWORD_LINK = "http://localhost:5000/SetPassword?token={0}";
         private readonly TokenStorage _storage;
-        public UserController(TokenStorage storage)
+        private readonly  DatabaseAccess _access;
+        public UserController(TokenStorage storage, DatabaseAccess access)
         {
             _storage = storage;
+            _access = access;
 
         }
         [HttpPost]  
@@ -21,30 +25,20 @@ namespace Submit_System
             {  
                 return BadRequest();
             }
-            string passwordHash = CryptoUtils.Hash("password"); // Hash result for "password"
-            // var readResult = DataBaseManager.ReadUser(login.Username);
-            // if(IsDatabaseError(readResult))
-            // {
-            //     return HandleDatabaseOutput(readResult);
-            // }
-            //User user = readResult.Item1;
-            if(login.Username == "Yosi" && CryptoUtils.Verify(login.Password, passwordHash)) {
-                string ID = _storage.CreateToken(login.Username);
-                return new List<string> {ID, "Yosi"};
+            
+            var result = _access.AuthenticateUser(login.Username, login.Password);
+            if(result.Item1 == null) {
+                return NotFound();
             }
-            if(login.Username == "" && login.Password == "") {
-                string ID = _storage.CreateToken(login.Username);
-                string name = "Yosi Yosi";
-                return new List<string> {ID, name};
-            }
-            return NotFound();
+            string id = _storage.CreateToken(login.Username);
+            return new List<string> { HttpUtility.UrlEncode(id), result.Item1};
         }
         [ServiceFilter(typeof(AuthFilter))]
         [Route("User/Password")]
         [HttpPut]
         public IActionResult SetPassword(string token, string userid, [FromBody]string password)
         {
-            var hash = CryptoUtils.Hash(password);
+            var hash = CryptoUtils.KDFHash(password);
             //Logout(token);
             return Ok();
         }
@@ -78,5 +72,26 @@ namespace Submit_System
             _storage.IsTestMode = false;
             return Ok("Authentication enabled.");
         }
+        [HttpPost]
+        [Route("Database/Reset")]
+        public IActionResult Reset()
+        {
+            bool isSuccess = false; // DataBaseManager.Reset();
+            return isSuccess ? Ok() : ServerError();
+        }
+        [HttpPost]
+        [Route("Admin/AddUser")]
+        public IActionResult AddUser([FromBody] User user)
+        {
+            user.PasswordHash = "N/A";
+            DataBaseManager.AddUser(user);
+            string token = CryptoUtils.GetRandomBase64String(24);
+            string tokenHash = CryptoUtils.Sha256Hash(token);
+            string link =  String.Format(PASSWORD_LINK, HttpUtility.UrlEncode(token));
+            //_access.AddPasswordToken(user.ID, tokenHash);
+            //MaleUtils.SendRegistration(user.Email, link);
+            return Ok();
+        }
+
     }  
 }

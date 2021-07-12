@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 namespace Submit_System {
 
 
@@ -41,9 +42,18 @@ namespace Submit_System {
         public int Timeout_In_Seconds{get;set;}
 
         public string Main_Sourse_File{get;set;}
-
-        public string AdittionalFilesLocation{get;set;}
-
+        private string loc;
+        [JsonIgnore]
+        public string AdittionalFilesLocation{
+            get => loc;
+            set
+            {
+                AdditionFiles = FileUtils.GetRelativePaths(value);
+                loc = value;
+            }
+        }
+        
+        public List<string> AdditionFiles {get; private set;}
         public bool Has_Adittional_Files{get{return AdittionalFilesLocation != null;}}
     }
 
@@ -99,6 +109,7 @@ namespace Submit_System {
     public interface AutomaticTester{
 
         public void SetTestLocation(string submissin_id);
+
         public void AddTest(Test test);
 
         public bool RunAllTests();
