@@ -3,7 +3,7 @@ namespace Submit_System {
     public class Exercise {
 
         public void GenerateID(){
-            this.ID = this.Course_ID + "|" + this.Name;
+            this.ID = this.Course_ID + "_" + this.Name;
         }
 
         public string ID {get; set; }
@@ -22,5 +22,7 @@ namespace Submit_System {
         public int Auto_Test_Grade_Value { get; set; }
         public int Style_Test_Grade_Value { get; set; }
         public int Is_Active { get; set; }
+
+        public int Multiple_Submission{ get; set; }
     }
 }

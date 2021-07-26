@@ -44,7 +44,9 @@ namespace Submit_System {
                     }
                 },
                 MaxSubmitters = 1,
-                CourseID = C1ID
+                CourseID = C1ID,
+                MaxLateDays = 1,
+                LateDayPenalty = 10
             },
             new ExerciseFull
             {
@@ -58,7 +60,9 @@ namespace Submit_System {
                     }
                 },
                 MaxSubmitters = 1,
-                CourseID = C1ID
+                CourseID = C1ID,
+                MaxLateDays = 2,
+                LateDayPenalty = 10
                 
             }
         };

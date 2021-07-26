@@ -23,7 +23,7 @@ namespace Submit_System
             services.AddControllersWithViews();
             // In production, the Angular files will be served from this directory
             services.AddSingleton<TokenStorage>(new TokenStorage(test : true, exp : 60*60));
-            services.AddSingleton<DatabaseAccess>();
+            services.AddSingleton<FakeDatabaseAccess>();
             services.AddScoped<AuthFilter>();
             services.AddMvc(options =>
             {

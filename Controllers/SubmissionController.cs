@@ -18,9 +18,9 @@ namespace Submit_System.Controllers
 
         private readonly ILogger<ExerciseController> _logger;
 
-        private readonly DatabaseAccess _access;
+        private readonly FakeDatabaseAccess _access;
 
-        public SubmissionController(ILogger<ExerciseController> logger, DatabaseAccess access)
+        public SubmissionController(ILogger<ExerciseController> logger, FakeDatabaseAccess access)
         {
             _logger = logger;
             _access = access;
@@ -65,7 +65,7 @@ namespace Submit_System.Controllers
         }
         [Route("Student/SubmitExercise")]
         [HttpPost]        
-        public ActionResult<SubmitResult> Submit(string userid, string exerciseId, [FromBody] List<UploadedFile> files)
+        public ActionResult<SubmitResult> Submit(string userid, string exerciseId, [FromBody] List<SubmitFile> files)
         {
             if(files == null) {
                 return BadRequest("No files");
@@ -90,11 +90,12 @@ namespace Submit_System.Controllers
             {
                 return NotFound("Exercise not found");
             }
+            List<string> submittedFiles;
             try
             {
-                FileUtils.StoreFiles(files, path);
+                submittedFiles = FileUtils.SubmitFiles(files, path);
             }
-            catch(ArgumentException e)
+            catch(System.Security.SecurityException e)
             {
                 return BadRequest(e.Message);
             }
@@ -103,14 +104,9 @@ namespace Submit_System.Controllers
                 Trace.WriteLine(e.ToString());
                 return ServerError("There was an issue with uploading the files");
             }
-            var filenames = System.IO.Directory.GetFiles(path, "*", System.IO.SearchOption.AllDirectories);
-            for(int i = 0; i < filenames.Length; i++)
-            {
-                filenames[i] = FileUtils.GetRelativePath(filenames[i], path);
-            }
             return new SubmitResult {
                 Message = $"Exercise Submitted successfully.\n Date Submitted: {DateTime.Now.ToString("m/dd/yyyy")}",
-                Files = filenames
+                Files = submittedFiles
             };
         }
         [HttpGet]
@@ -145,38 +141,31 @@ namespace Submit_System.Controllers
         }
         [HttpGet]
         [Route("Student/GetFile")]
-        public ActionResult GetFile(string userid, string submissionId, string file)
+        back-end
+        public ActionResult<SubmitFile> GetFile(string userid, string submissionId, [FromBody] string file)
         {
-            string ct;
+            // string ct;
             string submitDirectory = _access.GetDirectory(userid, submissionId);
             if(submitDirectory == null)
             {
                 return NotFound("Submisison not found");
             }
-            string fullPath;
-            if(!FileUtils.TryGetValidPath(file, submitDirectory, out fullPath))
-            {
-                return BadRequest();
-            }
-            var IsTypeKnown = new FileExtensionContentTypeProvider().TryGetContentType(file, out ct);
-            if(!IsTypeKnown)
-            {
-                ct = "application/octet-stream";
-            }
-            byte[] res = System.IO.File.ReadAllBytes(fullPath);
-            return File(res, ct);
+            string fullPath = FileUtils.GetFullPath(file, submitDirectory);
+            byte[] bytes = System.IO.File.ReadAllBytes(fullPath);
+            return SubmitFile.Create(file, bytes);
         }
         [HttpGet]
         [Route("Student/Download")]
-        public ActionResult Download(string userid, string submissionId)
+        back-end
+        public ActionResult<SubmitFile> Download(string userid, string submissionId)
         {
             string file = _access.GetDirectory(userid, submissionId);
             if(file == null)
             {
                 return NotFound("Submission not found");
             }
-            var archive = FileUtils.ToArchiveBytes(file);
-            return File(archive, "application/zip", "ex.zip");
+            var archiveBytes = FileUtils.ToArchiveBytes(file);
+            return SubmitFile.Create("ex.zip", archiveBytes);
         }
     }
 }

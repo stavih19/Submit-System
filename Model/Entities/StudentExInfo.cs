@@ -14,10 +14,12 @@ namespace Submit_System {
         public List<Student> Submitters {get; set; }
         public string ExID {get; set; }
         public string ExName { get; set; }
-        public List<SubmitDate> Dates {get; set; }
+        public DateTime Date {get; set; }
+        public int MaxLateDays {get; set; }
+        public int LateDayPenalty {get; set; }
         public DateTime DateSubmitted { get; set; }
         public bool IsMultipleSubmission { get; set; }
-        public List<string> filenames {get; set; } = null;
+        public List<string> filenames {get; set; }
         public SubmissionState State {get; set; }
     }
 }

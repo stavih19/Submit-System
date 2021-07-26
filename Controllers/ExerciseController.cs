@@ -13,9 +13,9 @@ namespace Submit_System.Controllers
 
         private readonly ILogger<ExerciseController> _logger;
 
-        private readonly DatabaseAccess _access;
+        private readonly FakeDatabaseAccess _access;
 
-        public ExerciseController(ILogger<ExerciseController> logger, DatabaseAccess access)
+        public ExerciseController(ILogger<ExerciseController> logger, FakeDatabaseAccess access)
         {
             _logger = logger;
             _access = access;

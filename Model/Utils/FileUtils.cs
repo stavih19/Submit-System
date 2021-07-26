@@ -3,6 +3,8 @@ using System.IO;
 using Microsoft.AspNetCore.Http;
 using System.IO.Compression;
 using System.Diagnostics;
+using System.Security;
+using System;
 
 namespace Submit_System
 {
@@ -77,86 +79,90 @@ namespace Submit_System
             return folder + '/' + GetFileName(file);
         }
 
-        public static bool TryGetValidPath(string filename, string destPath, out string filePath)
+        /// <summary>
+        /// Checks if the file has a valid full path with respect to its directory
+        /// </summary>
+        /// <param name="filename"> the name/relative path of the file from the directory</param>
+        /// <param name="dirPath">The path of the directory</param>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        public static string GetFullPath(string filename, string dirPath)
         {
-            var fullDirPath = Path.GetFullPath(destPath);
-            filePath = Path.Combine(destPath, filename);
+            var fullDirPath = Path.GetFullPath(dirPath);
+            var filePath = Path.Combine(dirPath, filename);
             var fullFilePath = Path.GetFullPath(filePath);
             if(!fullFilePath.StartsWith(fullDirPath))
             {
-                return false;
+                throw new SecurityException("Attempt to access outside of the allowed folder");
             }
-            return true;
+            return filePath;
         }
-        private static void CopyToFile(Stream stream, string destPath, string filename)
+        private static void CopyToFile(Stream stream, string destPath)
         {
-            string newPath;
-            if(!TryGetValidPath(filename, destPath, out newPath))
-            {
-                throw new System.ArgumentException("Attempt to access outside of the allowed folder");
-            }
-            using(Stream destStream = File.OpenWrite(newPath))
+            using(Stream destStream = File.OpenWrite(destPath))
             {
                 stream.CopyTo(destStream);
             }
         }
-        private static void DecompressAndStore(Stream stream, string destPath)
+        private static List<string> DecompressAndStore(Stream stream, string destDir)
         {   
+            var files = new List<string>();
             using (ZipArchive zip = new ZipArchive(stream))
             {
                 foreach(var entry in zip.Entries)
                 {
-                    string newPath;
-                    if(!TryGetValidPath(entry.FullName, destPath, out newPath))
-                    {
-                        throw new System.ArgumentException("Attempt to access outside of the allowed folder");
-                    }
-                    entry.ExtractToFile(newPath, true);    
+                    string newPath = GetFullPath(entry.FullName, destDir);
+                    entry.ExtractToFile(newPath, true);
+                    files.Add(newPath);
                 }
-            }       
-        }
-        public static void StoreFiles(List<IFormFile> files, string destPath)
-        {
-            if(!Directory.Exists(destPath))
-            {
-                Directory.CreateDirectory(destPath);
             }
-            foreach(var file in files)
-            {
-                using(Stream stream = file.OpenReadStream())
-                {
-                    if(Path.GetExtension(file.FileName) == ".zip")
-                    {
-                        DecompressAndStore(stream, destPath);
-                    }
-                    else
-                    {
-                        CopyToFile(stream, destPath, file.FileName);
-                    }   
-                }           
-            }  
+            return files;
         }
-        public static void StoreFiles(List<UploadedFile> files, string path)
+        public static List<string> SubmitFiles(List<SubmitFile> files, string destDir)
         {
-            if(!Directory.Exists(path))
+            var submittedFiles = new List<string>();
+            if(!Directory.Exists(destDir))
             {
-                Directory.CreateDirectory(path);
+                Directory.CreateDirectory(destDir);
             }
-            foreach(var file in files)
+            try
             {
-                byte[] content = System.Convert.FromBase64String(file.Content);
-                using(Stream stream = new MemoryStream(content))
+                foreach(var file in files)
                 {
-                    if(Path.GetExtension(file.Name) == ".zip")
+                    byte[] content = System.Convert.FromBase64String(file.Content);
+                    using(Stream stream = new MemoryStream(content))
                     {
-                        DecompressAndStore(stream, path);
-                    }
-                    else
-                    {
-                        CopyToFile(stream, path, file.Name);
+                        if(Path.GetExtension(file.Name) == ".zip")
+                        {
+                            submittedFiles.AddRange(DecompressAndStore(stream, destDir));
+                        }
+                        else
+                        {
+                            string destPath = GetFullPath(file.Name, destDir);
+                            CopyToFile(stream, destPath);
+                            submittedFiles.Add(destPath);
+                        }
                     }
                 }
-            }  
+                var a = Directory.GetFiles(destDir, "*", SearchOption.AllDirectories);
+                foreach(var file in a )
+                {
+                    if(!submittedFiles.Contains(file))
+                    {
+                        try
+                        {
+                            File.Delete(file);
+                        }
+                        catch {}
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Directory.Delete(destDir);
+                throw e;
+            }
+            return GetRelativePaths(destDir, submittedFiles);
         }
 
         public static string GetRelativePath(string filePath, string dirPath)
@@ -170,14 +176,19 @@ namespace Submit_System
         }
         public static List<string> GetRelativePaths(string folder)
         {
-            var fileList = new List<string>();
             if(Directory.Exists(folder))
             {
                 var files = Directory.GetFiles(folder, "*", SearchOption.AllDirectories);
-                foreach(var file in files)
-                {
-                    fileList.Add(GetRelativePath(file, folder));
-                }
+                return GetRelativePaths(folder, files);
+            }
+            return new List<string>();
+        }
+        public static List<string> GetRelativePaths(string folder, IEnumerable<string> files)
+        {
+            var fileList = new List<string>();
+            foreach(var file in files)
+            {
+                fileList.Add(GetRelativePath(file, folder));
             }
             return fileList;
         }
@@ -198,6 +209,28 @@ namespace Submit_System
                 result = stream.ToArray();
             }
             return result;
+        }
+        public static void StoreFiles(List<IFormFile> files, string destDir)
+        {
+            if(!Directory.Exists(destDir))
+            {
+                Directory.CreateDirectory(destDir);
+            }
+            foreach(var file in files)
+            {
+                using(Stream stream = file.OpenReadStream())
+                {
+                    if(Path.GetExtension(file.FileName) == ".zip")
+                    {
+                        DecompressAndStore(stream, destDir);
+                    }
+                    else
+                    {
+                        string destPath = GetFullPath(file.FileName, destDir);
+                        CopyToFile(stream, destPath);
+                    }   
+                }           
+            }  
         }
     }
 }
