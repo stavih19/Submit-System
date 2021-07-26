@@ -1,32 +1,25 @@
 using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 namespace Submit_System {
-    public class StudentExInfo : GradeCalculator  {
-        public int TotalGrade { get => CalculateGrade(); }
+    public class StudentExInfo {
+        
         public string SubmissionID { get; set; }
-        public Chat ExtensionChat { get; set; }
-        public Chat AppealChat { get; set; }
+        public int TotalGrade { get; set; } = -1;
+        public int AutoGrade { get; set; } = -1;
+        public int StyleGrade { get; set; } = -1;
+        public int ManualGrade { get; set; } = -1;
+        public Chat ExtensionChat { get; set; } = null;
+        public Chat AppealChat { get; set; } = null;
         public int MaxSubmitters { get; set; }
-        public List<UserLabel> Submitters {get; set; }
+        public List<Student> Submitters {get; set; }
         public string ExID {get; set; }
         public string ExName { get; set; }
+        public DateTime Date {get; set; }
+        public int MaxLateDays {get; set; }
+        public int LateDayPenalty {get; set; }
         public DateTime DateSubmitted { get; set; }
-        public List<SubmitDate> Dates {get; set; }
         public bool IsMultipleSubmission { get; set; }
-        private string folder;
-        [JsonIgnore]
-        public string SubmissionFolder {
-            set
-            {
-                filenames = FileUtils.GetRelativePaths(value);
-                folder = value;
-            }
-            get => folder;
-         }
         public List<string> filenames {get; set; }
         public SubmissionState State {get; set; }
-        public bool IsMainSubmitter { get; set; }
-
     }
 }

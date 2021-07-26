@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 
 namespace Submit_System
 {
@@ -16,26 +15,6 @@ namespace Submit_System
             };
             return file;
         }
-        public static SubmitFile Create(string path)
-        {
-            if(File.Exists(path))
-            {
-                string content = Convert.ToBase64String(File.ReadAllBytes(path));
-                string name = FileUtils.GetFileName(path);
-                return new SubmitFile {
-                    Name = name,
-                    Content = content
-                };
-            }
-            return null;
-        }
-        public void CreateFile(string path)
-        {
-            byte[] bytes = System.Convert.FromBase64String(Content);
-            using (var stream = File.Create(path))
-            {
-                stream.Write(bytes, 0, bytes.Length);
-            }
-        }
+        
     }
 }

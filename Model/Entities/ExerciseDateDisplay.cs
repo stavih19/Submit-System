@@ -5,7 +5,7 @@ namespace Submit_System {
         public string Name { get; set; }
         public DateTime Date {get; set; }
         public string CourseName {get; set; }
-        public int CourseNumber {get; set; }
+        public int CourseNumer {get; set; }
         public string CourseID {get; set; }
         public string TeacherName {get; set; }
 

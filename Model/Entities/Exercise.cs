@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 namespace Submit_System {
     public class Exercise {
 
@@ -9,20 +8,21 @@ namespace Submit_System {
 
         public string ID {get; set; }
         public string Name {get; set; }
-        [JsonIgnore]
+        
         public string Course_ID { get; set; }
-        [JsonIgnore]
+
         public string Original_Exercise_ID{ get; set; }
 
-        public int MaxSubmitters { get; set; }
-        [JsonIgnore]
-        public string FilesLocation { get; set; }
-        [JsonIgnore]
-        public string LateSubmissionSettings { get; set; }
-        public string ProgrammingLanguage { get; set; }
-        public int AutoTestGradeWeight { get; set; }
-        public int StyleTestGradeWeight { get; set; }
-        public int IsActive { get; set; }
-        public bool MultipleSubmission{ get; set; }
+        public int Max_Submitters { get; set; }
+
+        public string Test_Files_Location { get; set; }
+
+        public string Late_Submittion_Settings { get; set; }
+        public string Programming_Language { get; set; }
+        public int Auto_Test_Grade_Value { get; set; }
+        public int Style_Test_Grade_Value { get; set; }
+        public int Is_Active { get; set; }
+
+        public int Multiple_Submission{ get; set; }
     }
 }

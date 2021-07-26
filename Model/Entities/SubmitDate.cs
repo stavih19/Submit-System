@@ -2,13 +2,9 @@ using System;
 using System.Collections.Generic;
 namespace Submit_System {
     public class SubmitDate {
-        public DateTime Date { get; set;}
-        public int Group {get; set; }
+        public string  ID { get; set; }
+        public DateTime date { get; set;}
         public int Reduction { get; set; }
-        public int CompareTo(SubmitDate sb)
-        {
-            return Date.CompareTo(sb.Date);
-        }
 
     }
 }
