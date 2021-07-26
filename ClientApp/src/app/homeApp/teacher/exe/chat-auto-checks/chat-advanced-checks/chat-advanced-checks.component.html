@@ -1,0 +1,56 @@
+<div class="courseName">
+    {{ selectedCourse.name }}
+</div>
+<form [formGroup]="checkoutForm" class="example-form" (ngSubmit)="onSubmit()">
+    <div class="addExtenstionLine">
+        <span class="headerGrid">הגדרות מתקדמות</span>
+        <div class="destination">
+            <mat-form-field class="example-full-width">
+                <mat-label class="destinationLabel">נתיב הפלט</mat-label>
+                <input matInput placeholder="/" value="" formControlName="desteny">
+            </mat-form-field>
+        </div>
+        <div class="timeout">
+            <mat-form-field class="example-full-width">
+                <mat-label>timeout(s)</mat-label>
+                <input matInput placeholder="0 s" value="" formControlName="timeout">
+            </mat-form-field>
+        </div>
+        <div class="arguments">
+            <mat-form-field class="example-full-width">
+                <mat-label>cmd arg</mat-label>
+                <input matInput placeholder="cmd arg" value="" formControlName="arguments">
+            </mat-form-field>
+        </div>
+        <div class="fileRun">
+            <mat-form-field class="example-full-width">
+                <mat-label class="fileRunLabel">שם הקובץ</mat-label>
+                <input matInput placeholder="שם הקובץ" value="" formControlName="fileRun">
+            </mat-form-field>
+        </div>
+        <div class="extraFiles" #fileUploadBox
+                (dragover)="onDragOver($event)"
+                (dragleave)="onDragLeave($event)"
+                (drop)="onDrop($event)">
+            <div *ngFor="let file of uploadFileList">
+                <div>
+                    <span class="close times"
+                    (click)="eraseUploadFile(file)" style="cursor: pointer;">x&nbsp;&nbsp;</span>
+                    <span>{{ file.name }}</span>
+                    <br>
+                </div>
+            </div>
+            <input type="file" name="file-1[]" (change)="onFileChoose($event)"
+            id="file-1" class="inputfile inputfile-1" style="visibility: hidden;"
+            #file1>
+            <div style="text-align: center;">
+                <label for="file-1" class="btn btn-success" type="button">
+                    הוסף קובץ
+                </label>
+            </div>
+        </div>
+        <div class="sendAdvanced">
+            <button mat-raised-button color="primary" type="submit">הוסף בדיקה</button>
+        </div>
+    </div>
+</form>

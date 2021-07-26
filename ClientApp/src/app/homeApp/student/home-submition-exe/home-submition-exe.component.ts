@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { ApprovalService } from 'src/app/approval.service';
-import { ExerciseLabel } from 'src/Modules/ExerciseLabel';
+import { ExerciseLabel } from 'src/Modules/exercise-label';
 import { BeforeSubmitionExeComponent } from '../before-submition-exe/before-submition-exe.component';
 
 @Component({
@@ -14,6 +14,7 @@ export class HomeSubmitionExeComponent implements OnInit {
   token: string;
   exeStatus: string;
   isToShowAlert: boolean;
+  isToShowTrySend: boolean;
   color: string;
   errorMessage: string;
   exeList: ExerciseLabel[];
@@ -55,12 +56,16 @@ export class HomeSubmitionExeComponent implements OnInit {
   }
 
   getExeLists(courseID) {
-    let url = 'https://localhost:5001/Student/ExerciseLabels?token=' + this.token + '&coursed=' + courseID;
+    let url = 'https://localhost:5001/Student/ExerciseList?userid=' + this.token + '&coursed=' + courseID;
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {
         this.exeList = JSON.parse(data);
-        this.onSelect(this.exeList[0]); // TODO
+        this.exeList.forEach(exe => {
+          if(this.selectExe.id === exe.id) {
+            this.onSelect(exe);
+          }
+        });
       }, error => {
         console.log(error);
         this.isToShowAlert = true;

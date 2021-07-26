@@ -1,15 +1,13 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, EventEmitter, Input, OnInit, Output, ViewChild ,DoCheck, KeyValueDiffers, KeyValueDiffer, AfterContentInit} from '@angular/core';
 import { ApprovalService } from 'src/app/approval.service';
-import { ExerciseLabel } from 'src/Modules/ExerciseLabel';
+import { ExerciseLabel } from 'src/Modules/exercise-label';
 import { FormBuilder } from '@angular/forms';
 import { ElementRef } from '@angular/core';
-import { SubmissionUpload } from 'src/Modules/SubmissionUpload';
-import { StudentExInfo } from 'src/Modules/StudentExInfo';
+import { StudentExInfo } from 'src/Modules/student-exInfo';
 import { MatDialog } from '@angular/material/dialog';
+import { FileSubmit } from 'src/Modules/file-submit';
 import { ChatDialogComponent } from './chat-dialog/chat-dialog.component';
-import { delay } from 'rxjs/internal/operators/delay';
-import { FileSubmit } from 'src/Modules/FileSubmit';
 
 @Component({
   selector: 'app-before-submition-exe',
@@ -19,15 +17,17 @@ import { FileSubmit } from 'src/Modules/FileSubmit';
 export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
   exeStatus: string = "טרם הוגש";
   selectedExe: ExerciseLabel;
+  filesMessage: string;
   selectedExeInfo: StudentExInfo;
   uploadFileList: any[] = [];
   modalRef: any;
   isSented: boolean;
   isToCloseModal: boolean = false;
   isSubmitSuccess: boolean = false;
-  isSubmitCheck: boolean = false;
+  isSubmitCheck: boolean = true;
   fileContainer: FileSubmit[];
   converstionTarget: string;
+  isTrySend: boolean = false;
   checkoutForm = this.formBuilder.group({
     additionalSubmitors: [''],
     uploadFiles: ['']
@@ -56,6 +56,7 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
   @ViewChild('fileUploadText', {static: false}) fileUploadText: ElementRef;
   @ViewChild('additionalSubmitors', {static: false}) additionalSubmitors: ElementRef;
   @ViewChild('file1', {static: false}) file1: ElementRef;
+  @ViewChild('file1label', {static: false}) file1label: ElementRef;
 
   constructor(
     private httpClient: HttpClient,
@@ -75,22 +76,23 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
     console.log(this.selectExe);
   }
 
+  fileBefore: string;
   async onSubmit(realSubmit: boolean) {
     console.log("submit");
     this.isSented = false;
-
     console.log(this.uploadFileList);
     this.fileContainer = [];
     this.uploadFileList.forEach(file => {
       const reader = new FileReader();
       reader.onload = ()=> {
+        this.fileBefore = reader.result.toString();
         let submitFile: FileSubmit = {
-          content: btoa(reader.result.toString()),
+          content: reader.result.toString(),
           name: file.name
         }
         this.fileContainer.push(submitFile);
       };
-      reader.readAsBinaryString(file);
+      reader.readAsDataURL(file);
     });
 
     setTimeout(() => {
@@ -113,30 +115,47 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
     }
   }
 
-  sendSubmission(realSubmit: boolean) {
-    const inputSubmition = {
-      "RealSubmit": realSubmit,
-      "Files": this.fileContainer,
-      "Submitters": this.additionalSubmitors.nativeElement.value.split(",")
-    }
+  async sendSubmission(realSubmit: boolean) {
+    const files = [];
+    this.fileContainer.forEach(file => {
+      files.push({
+        "Name": file.name,
+        "Content": file.content
+      });
+    });
 
-    if(inputSubmition.Files.length === 0) {
+    if(files.length === 0) {
       this.errorMessage("No files to send", "alert-danger");
       return;
     }
-    if(inputSubmition.Submitters.length === 0) {
+
+    const submitters = this.additionalSubmitors.nativeElement.value.split(",");
+    if(submitters.length === 0) {
       this.errorMessage("No student id to mach with", "alert-danger");
       return;
     }
 
-    let url = 'https://localhost:5001/Student/SubmitExercise?token=' + this.token + '&exerciseId=' + this.selectedExe.id;
-    this.httpClient.post(url, inputSubmition,
+    const idResponse = await this.checkSubmittersValidation(submitters);
+    if(idResponse !== "") {
+      this.errorMessage('The id "' + idResponse + '" ' + "isn't relate to any student", "alert-danger");
+      return;
+    }
+
+    console.log(files);
+
+    let url = 'https://localhost:5001/Student/SubmitExercise?userid=' + this.token + '&exerciseId=' + this.selectedExe.id;
+    this.httpClient.post(url, files,
     {responseType: 'text'}).toPromise().then(
       data => {
-        console.log(inputSubmition);
+        console.log(files);
         this.errorMessage("Sent successfully", "alert-success");
         this.isSubmitSuccess = true;
+        this.exeStatus = "הוגש";
       }, error => {
+        //this.errorMessage("Sent successfully", "alert-success");
+        //this.isSubmitSuccess = true;
+        //this.exeStatus = "הוגש";
+        console.log(error);
         this.errorMessage(error.status + "   try again", "alert-danger");
       }
     )
@@ -144,9 +163,9 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
 
   isSubmitCheckFunc() {
     if(this.uploadFileList.length === 0 || this.additionalSubmitors.nativeElement.value === "") {
-      this.isSubmitCheck = false;
-    } else if(this.uploadFileList.length !== 0 && this.additionalSubmitors.nativeElement.value !== ""){
       this.isSubmitCheck = true;
+    } else if(this.uploadFileList.length !== 0 && this.additionalSubmitors.nativeElement.value !== ""){
+      this.isSubmitCheck = false;
     }
   }
 
@@ -159,17 +178,31 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
     {responseType: 'text'}).toPromise().then(
       data => {
         this.selectedExeInfo = JSON.parse(data);
-        //this.uploadFileList = this.selectedExeInfo.files;
-        if(this.uploadFileList.length === 0) {
+        console.log(this.selectedExeInfo);
+        this.selectedExeInfo.filenames.forEach(fileName => {
+          this.uploadFileList.push(fileName);
+          console.log(fileName);
+          const file = this.getFilebyName(fileName);
+        });
+        console.log(this.uploadFileList);
+        
+        const state = this.selectedExeInfo.state;
+        if(state === 0) {
           this.exeStatus = "טרם הוגש";
           this.converstionTarget = "בקש הארכה";
-        } else if(this.selectedExeInfo.dates[0].date > new Date()) {
+          this.filesMessage = "בחר קבצים";
+        } else if(state === 1) {
           this.exeStatus = "הוגש";
           this.converstionTarget = "בקש הארכה";
-        } else {
-          this.exeStatus = "ממתתין לבדיקה";
-          this.converstionTarget = "הגש ערעור";
+          this.filesMessage = "בחר קבצים";
           this.isSubmitSuccess = true;
+        } else if(state === 2){
+          this.exeStatus = "נבדק";
+          this.converstionTarget = "הגש ערעור";
+          this.filesMessage = "הורד קבצים";
+          this.isSubmitSuccess = true;
+        } else {
+          
         }
         this.fileSubmittersValue();
         console.log(this.selectedExeInfo);
@@ -177,6 +210,27 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
         this.errorMessage(error.status + "   try again", "alert-danger");
       }
     )
+  }
+
+  getFilebyName(file: string) {
+    let submissionID = this.selectedExeInfo.submissionID;
+    let url = 'https://localhost:5001/Student/GetFile?userid=' + this.token + '&submissionId=' + submissionID + "&file=" + file;
+    this.httpClient.get(url, 
+    {responseType: 'text'}).toPromise().then(
+      data => {     
+        data = data.toString();
+        console.log();
+
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(data));
+        element.setAttribute('download', file);
+        element.style.display = "none";
+        document.body.appendChild(element);
+        element.click();
+      }, error => {
+        this.errorMessage(error.status + "   try again", "alert-danger");
+      }
+    );
   }
 
   fileSubmittersValue() {
@@ -214,10 +268,19 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
 
   onFileChoose(event) {
     console.log(event.target.files[0].name);
-    const file = event.target.files[0];
-    this.uploadFileList.push(file);
-    this.isSubmitCheckFunc();
-    this.file1.nativeElement.value = "";
+    if(this.exeStatus === "נבדק") {
+      
+    } else {
+      const file = event.target.files[0];
+      this.uploadFileList.push(file);
+      this.isSubmitCheckFunc();
+      this.file1.nativeElement.value = "";
+    }
+
+    const state = this.selectedExeInfo.state;
+    if(state > 0) {
+      
+    }
   }
 
   eraseUploadFile(fileToDelete) {
@@ -229,34 +292,27 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
     this.isSubmitCheckFunc();
   }
 
-  askForExtenstion() {
+  askForChat() {
     this.displayConverstion();
-    /*let extensionChat = this.selectedExeInfo.extensionChat;
-    if(extensionChat === null) { this.displayConverstion([]); return; }
-    let url = 'https://localhost:5001/Student/MessageList?token=' + this.token + '&chatId=' + extensionChat.id;
-    this.httpClient.get(url, 
-    {responseType: 'text'}).toPromise().then(
-      data => {
-        data = JSON.parse(data);
-        this.displayConverstion(data);
-      }, error => {
-        this.errorMessage(error.status + "   try again", "alert-danger");
-      }
-    )*/
   }
 
   displayConverstion() { // data: any
     const modalRef =  this.dialog.open(ChatDialogComponent);
     this.modalRef = modalRef;
 
-    modalRef.componentInstance.chatID = this.selectedExeInfo.extensionChat;
+    const state = this.selectedExeInfo.state;
+    if(state === 2) {
+      modalRef.componentInstance.chatID = this.selectedExeInfo.extensionChat;
+      modalRef.componentInstance.headerMessage = "הגש ערעור";
+    } else {
+      modalRef.componentInstance.chatID = this.selectedExeInfo.extensionChat;
+      modalRef.componentInstance.headerMessage = "בקש הארכה";
+    }
     modalRef.componentInstance.teacherName = this.teacherName;
     modalRef.componentInstance.exeName = this.selectExe.name;
-    //modalRef.componentInstance.messageList = data;
   }
 
   closeModal() {
-    //const change = this.isToCloseModal.diff(this);
     this.modalRef.close();
   }
 
@@ -272,17 +328,49 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
   }
 
   lastFileRun() {
-    let extensionChat = this.selectedExeInfo.extensionChat;
-    if(extensionChat === null) { return; }
-    let url = 'https://localhost:5001/Student/RunResult?token=' + this.token + '&submitId=' + extensionChat.id;
+    let submissionID = this.selectedExeInfo.submissionID;
+    let url = 'https://localhost:5001/Student/RunResult?token=' + this.token + '&submitId=' + submissionID;
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {
-        data = JSON.parse(data);
         console.log(data);
       }, error => {
         this.errorMessage(error.status + "   try again", "alert-danger");
       }
-    )
+    );
+  }
+
+  async checkSubmittersValidation(submitters) {
+    let url = 'https://localhost:5001/Student/ValidateSubmitters?userid=' + this.token + '&exerciseId=' + this.selectedExe.id;
+    const idRespone = await this.httpClient.post(url, submitters, 
+    {responseType: 'text'}).toPromise().then(
+      data => {
+        const dataObj = JSON.parse(data);
+        const dataMap = new Map(Object.entries(dataObj));
+        for (let [id, isValid] of dataMap) {
+          if(!isValid) { return id; }
+        }
+        return "";
+      }, error => {
+        this.errorMessage("Sent successfully", "alert-success");
+        return false;
+      }
+    );
+
+    return idRespone;
+  }
+
+  downloadFiles() {
+    let extensionChat = this.selectedExeInfo.extensionChat;
+    if(extensionChat === null) { return; }
+    let url = 'https://localhost:5001/Student/Download?userid=' + this.token + '&submissionId=' + extensionChat.id;
+    this.httpClient.get(url, 
+    {responseType: 'text'}).toPromise().then(
+      data => {
+        console.log(data);
+      }, error => {
+        this.errorMessage(error.status + "   try again", "alert-danger");
+      }
+    );
   }
 }

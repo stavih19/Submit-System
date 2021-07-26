@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { Course } from 'src/Modules/Course';
+import { Course } from 'src/Modules/course';
 import { Router } from '@angular/router';
 import { ApprovalService } from 'src/app/approval.service';
 import { ThrowStmt } from '@angular/compiler';
 import { HttpClient } from '@angular/common/http';
-import { SubmitTable } from 'src/Modules/SubmitTable';
-import { GradeTable } from 'src/Modules/GradeTable';
+import { SubmitTable } from 'src/Modules/submit-table';
+import { GradeTable } from 'src/Modules/grade-table';
 
 @Component({
   selector: 'app-student',
@@ -43,6 +43,10 @@ export class StudentComponent implements OnInit {
 
   onSelect(course: Course): void {
     this.selectedCourse = course;
+  }
+
+  SelectFirstExe(course: Course) {
+    //this.getBeforeEXE(course)
   }
 
   getBeforeEXE(row) {

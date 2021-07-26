@@ -1,6 +1,6 @@
-import { Chat } from "./Chat";
-import { Student } from "./Student";
-import { SubmitDate } from "./SubmitDate";
+import { Chat } from "./chat";
+import { Student } from "./student";
+import { SubmitDate } from "./submit-date";
 
 export class StudentExInfo {
     submissionID: string;
@@ -17,4 +17,6 @@ export class StudentExInfo {
     dates: SubmitDate[];
     dateSubmitted: Date;
     isMultipleSubmission: boolean;
+    filenames: string[];
+    state: number;
 }

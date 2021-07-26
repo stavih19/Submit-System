@@ -1,0 +1,50 @@
+.addExtenstionLine {
+    text-align: center;
+    padding: 10px 30px 30px 10px;
+    border-style: ridge;
+    display: grid;
+    row-gap: 10px;
+    grid-template-areas:
+    'header'
+    'destination'
+    'timeout'
+    'arguments'
+    'fileRun'
+    'extraFiles'
+    'sendAdvanced';
+}
+.example-full-width {
+    width: 100%;
+}
+.headerGrid {
+    grid-area: header;
+}
+.destination {
+    grid-area: destination;
+}
+.destinationLabel {
+    text-align: right;
+}
+.timeout {
+    grid-area: timeout;
+}
+.arguments {
+    grid-area: arguments;
+}
+.fileRun {
+    grid-area: fileRun;
+}
+.fileRunLabel {
+    text-align: right;
+}
+.extraFiles {
+    grid-area: extraFiles;
+    border-style: dotted;
+}
+.sendAdvanced {
+    grid-area: sendAdvanced;
+    padding-top: 30px;
+}
+.courseName {
+    text-align: right;
+}

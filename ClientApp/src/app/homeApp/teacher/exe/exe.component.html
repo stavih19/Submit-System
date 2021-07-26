@@ -1,0 +1,61 @@
+<div class="frame" *ngIf="theacherStatus === ''">
+    <div class="exeName">
+        1.
+        <mat-form-field class="example-full-width">
+            <mat-label>שם התרגיל</mat-label>
+            <input matInput placeholder="exe 1" value="">
+        </mat-form-field>
+    </div>
+    <div class="submitDate">
+        2.
+        <mat-form-field appearance="fill">
+            <mat-label>תאריך הגשה</mat-label>
+            <input matInput [matDatepicker]="picker">
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+    </div>
+    <div class="multiplePartners">
+        3.
+        <mat-checkbox class="example-margin">&nbsp;&nbsp;הגשה מרובת משתתפים</mat-checkbox>
+    </div>
+    <div class="automaticChecks">
+        4.
+        בדיקות אוטומטיות
+        <button mat-raised-button color="primary" (click)="openAutoChecks()">ערוך רשימה</button>
+    </div>
+    <div class="belongCheckers">
+        5.
+        שייך מתרגלים
+        <button mat-raised-button color="primary" (click)="openEditTeacher()">שייך</button>
+    </div>
+    <div class="belongTeacher">
+        6.
+        שייך בודקים
+        <button mat-raised-button color="primary" (click)="openEditChekers()">שייך</button>
+    </div>
+    <div class="reducePoints">
+        7.
+        הפחתות ניקוד
+        <button mat-raised-button color="primary" (click)="openReduceModal()">קבע הפחתות</button>
+    </div>
+    <div class="reduceTeams">
+        8.ערוך קבוצות איחור
+        <button mat-raised-button color="primary" (click)="reduceTeams()">קבוצות איחור</button>
+    </div>
+    <div class="createButton">
+        <button mat-raised-button color="primary">צור</button>
+    </div>
+    <br>
+</div>
+<br>
+<div class="row" *ngIf="theacherStatus === ''">
+    <button mat-raised-button color="warn" type="submit"
+    (click)="getAutoChecks()">
+        בדיקה אוטומטית
+    </button>
+</div>
+<app-auto-check *ngIf="theacherStatus === 'autoCheck'"
+    [selectExelabel]="selectExelabel">
+
+</app-auto-check>

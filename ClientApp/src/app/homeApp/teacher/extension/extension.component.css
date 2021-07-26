@@ -1,0 +1,48 @@
+.content {
+    display: grid;
+    row-gap: 0px;
+    column-gap: 170px;
+    grid-template-areas: 
+    'tableRequest requestList';
+}
+.requestFrame {
+    grid-area: tableRequest;
+}
+.reducePoints {
+    grid-area: requestList;
+}
+.extenstionHeader {
+    text-align: right;
+}
+.requestBox {
+    border-bottom: ridge;
+    border-top: ridge;
+    /*height: 465px;*/
+    text-align: right;
+    display: grid;
+    row-gap: 0px;
+    grid-template-areas: 
+    'name'
+    'id'
+    'textContent'
+    'file'
+    'menuRequest';
+}
+.name { grid-area: name; }
+.id { grid-area: id; }
+.textContent { grid-area: textContent; }
+.file { grid-area: file; }
+.menuRequest {
+    grid-area: menuRequest;
+    display: grid;
+    column-gap: 10px;
+    grid-template-areas: 
+    'response date approve deny';
+}
+::ng-deep .mat-form-field-appearance-fill .mat-form-field-flex {
+    background-color: #fff;
+}
+.teamDateText, .teamHeader, .dateHeader {
+    text-align: right;
+    padding: 0px 10px 0px 10px;
+}

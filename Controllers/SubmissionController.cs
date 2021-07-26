@@ -141,6 +141,7 @@ namespace Submit_System.Controllers
         }
         [HttpGet]
         [Route("Student/GetFile")]
+        back-end
         public ActionResult<SubmitFile> GetFile(string userid, string submissionId, [FromBody] string file)
         {
             // string ct;
@@ -155,6 +156,7 @@ namespace Submit_System.Controllers
         }
         [HttpGet]
         [Route("Student/Download")]
+        back-end
         public ActionResult<SubmitFile> Download(string userid, string submissionId)
         {
             string file = _access.GetDirectory(userid, submissionId);
