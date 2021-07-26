@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace Submit_System
 {
     public partial class DataBaseManager{
-        private static string connetionString = "Data Source=127.0.0.1;Initial Catalog=submit02;User ID=SA;Password=paSSwordius$";
+        private static string connetionString = "Data Source=127.0.0.1;Initial Catalog=submit02;User ID=SA;Password=HKCGHFKJ,GKG56fvfviW";
 
         private static int WAITING_TO_METARGEL = 0;
         public static (User,int,string) ReadUser(string id) {
@@ -397,7 +397,7 @@ namespace Submit_System
             }
             SqlConnection cnn  = new SqlConnection(connetionString);
             try{cnn.Open();} catch {return (3,"Connection failed");}
-            String sql = "INSERT INTO Submission VALUES (@ID,@EID,@FL,@AG,@SG,@MFG,@MD,@STATUS,@DID,@SUBMITTED,@CL,@CA);";
+            String sql = "INSERT INTO Submission VALUES (@ID,@EID,@FL,@AG,@SG,@MFG,@MD,@STATUS,@DID,@SUBMITTED,@CL,@CA,@HC);";
             SqlCommand command = new SqlCommand(sql,cnn);
             command.Parameters.Add("@ID",System.Data.SqlDbType.NVarChar);
             command.Parameters.Add("@EID",System.Data.SqlDbType.NVarChar);
@@ -411,6 +411,7 @@ namespace Submit_System
             command.Parameters.Add("@SUBMITTED",System.Data.SqlDbType.DateTime);
             command.Parameters.Add("@CL",System.Data.SqlDbType.NVarChar);
             command.Parameters.Add("@CA",System.Data.SqlDbType.NVarChar);
+            command.Parameters.Add("@HC",System.Data.SqlDbType.Int);
             command.Parameters["@ID"].Value = submission.ID;
             command.Parameters["@EID"].Value = submission.Exercise_ID;
             command.Parameters["@FL"].Value = submission.Files_Location;
@@ -423,11 +424,12 @@ namespace Submit_System
             command.Parameters["@SUBMITTED"].Value = submission.Time_Submitted;
             command.Parameters["@CL"].Value = submission.Chat_Late_ID;
             command.Parameters["@CA"].Value = submission.Chat_Appeal_ID;
+            command.Parameters["@HC"].Value = submission.HasCopied;
             try{
                 command.ExecuteReader();
-            } catch{
+            } catch(Exception e){
                 try{cnn.Close();}catch{}
-                return (2,"Addittion failed");
+                return (2,"Addittion failed "+e.Message);
             }
             try{cnn.Close();} catch{return (4,"Connection close failed");}
             return (0,"OK");
@@ -633,7 +635,7 @@ namespace Submit_System
             }
             SqlConnection cnn  = new SqlConnection(connetionString);
             try{cnn.Open();} catch {return (3,"Connection failed");}
-            String sql = "UPDATE Submission SET exercise_id=@EID,files_location=@FL,auto_grade=@AG,style_grade=@SG,manual_final_grade=@MFG,manual_check_data=@MD,submission_status=@STATUS,submission_date_id=@DID,time_submitted=@SUBMITTED,chat_late_id=@CL,chat_appeal_id=@CA WHERE submission_id = @ID;";
+            String sql = "UPDATE Submission SET exercise_id=@EID,files_location=@FL,auto_grade=@AG,style_grade=@SG,manual_final_grade=@MFG,manual_check_data=@MD,submission_status=@STATUS,submission_date_id=@DID,time_submitted=@SUBMITTED,chat_late_id=@CL,chat_appeal_id=@CA,has_copied=@HC WHERE submission_id = @ID;";
             SqlCommand command = new SqlCommand(sql,cnn);
             command.Parameters.Add("@ID",System.Data.SqlDbType.NVarChar);
             command.Parameters.Add("@EID",System.Data.SqlDbType.NVarChar);
@@ -647,6 +649,7 @@ namespace Submit_System
             command.Parameters.Add("@SUBMITTED",System.Data.SqlDbType.DateTime);
             command.Parameters.Add("@CL",System.Data.SqlDbType.NVarChar);
             command.Parameters.Add("@CA",System.Data.SqlDbType.NVarChar);
+            command.Parameters.Add("@HC",System.Data.SqlDbType.Int);
             command.Parameters["@ID"].Value = submission.ID;
             command.Parameters["@EID"].Value = submission.Exercise_ID;
             command.Parameters["@FL"].Value = submission.Files_Location;
@@ -659,6 +662,7 @@ namespace Submit_System
             command.Parameters["@SUBMITTED"].Value = submission.Time_Submitted;
             command.Parameters["@CL"].Value = submission.Chat_Late_ID;
             command.Parameters["@CA"].Value = submission.Chat_Appeal_ID;
+            command.Parameters["@HC"].Value = submission.HasCopied;
             try{
                 command.ExecuteReader();
             } catch {

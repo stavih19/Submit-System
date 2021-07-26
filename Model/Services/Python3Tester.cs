@@ -4,6 +4,16 @@ using System.IO;
 using System;
 
 namespace Submit_System {
+
+    public class Python3TesterFactory : TestManager.TesterFactory
+    {
+        public AutomaticTester Create()
+        {
+            return new Python3Tester();
+        }
+    }
+
+
     public class Python3Tester : AutomaticTester
     {
         private static string exe_file_location = "/usr/bin/python3";
@@ -27,19 +37,8 @@ namespace Submit_System {
         {
             return this.results;
         }
-
-        public int GetGrade()
-        {
-            double grade = 0;
-            foreach(CheckResult result in results){
-                double test_grade = result.CalculateTestGrade();
-                double test_value = result.Value;
-                grade = grade + test_grade*(test_value/100);
-            }
-            return (int)grade;
-        }
-
-        public bool RunAllTests()
+        
+        public string RunAllTests()
         {
             try{
             bool ok;
@@ -50,12 +49,12 @@ namespace Submit_System {
                 if(test.Has_Adittional_Files){
                     ok = CopyAll(test.AdittionalFilesLocation,directory_path);
                     if(!ok){
-                    return false;
+                    return "Cannot Load files at "+test.AdittionalFilesLocation;
                     }
                 }
                 ok = CopyAll(files_location,directory_path);
                 if(!ok){
-                    return false;
+                    return "Cannot Load files at "+files_location;
                 }
 
                 string output = "";
@@ -98,9 +97,10 @@ namespace Submit_System {
                     if(test.Output_File_Name != "stdout")
                     {
                         try{
-                            output = File.ReadAllText(test.Output_File_Name);
+                            output = File.ReadAllText(directory_path+"/"+test.Output_File_Name);
                         } catch{
                             output = "";
+                            errors = errors + "Cannot read the output file " + test.Output_File_Name + ".\n";
                         }
                     }
                     using(StreamReader reader = process.StandardError)
@@ -116,9 +116,9 @@ namespace Submit_System {
 
                 Directory.Delete(directory_path,true);
             }
-            return true;
-            }catch{
-                return false;
+            return "OK";
+            }catch(Exception ex){
+                return "Exception "+ex.Message;
             }
         }
 
