@@ -5,8 +5,9 @@ using Microsoft.AspNetCore.Http;
 using System.IO;
 using System.Diagnostics;
 namespace Submit_System {
-    public enum Role { Student, Checker, Teacher }
-    public class FakeDatabaseAccess {
+     public enum Role { Student, Checker, Teacher }
+    public enum ResourceType { Course, Exercise, Submission, Chat }
+    public class DatabaseAccess {
 
         public string GetDirectory(string userid, string submisisonId)
         {
@@ -85,16 +86,19 @@ namespace Submit_System {
         }   
         public List<ExerciseGradeDisplay> GetStudentGrades(string id) {
             var grades = new List<ExerciseGradeDisplay>();
-            var ex = FakeDatabase.ExerciseList[0];
-            var newGrade = new ExerciseGradeDisplay {
+            var exes = FakeDatabase.ExerciseList;
+            foreach(var ex in exes)
+            {
+                var newGrade = new ExerciseGradeDisplay {
                     Grade = 100,
                     ExID = ex.ID,
                     ExName = ex.Name,
                     CourseID = "89111-2021",
                     CourseName = "תכנות מתקדם 1",
                     CourseNumber = 89111
+                };
+                grades.Add(newGrade);
             };
-            grades.Add(newGrade);
             return grades;
         }
 
@@ -125,10 +129,7 @@ namespace Submit_System {
                     info.ExID = ex.ID;
                     info.ExName = ex.Name;
                     info.MaxSubmitters = ex.MaxSubmitters;
-                    var date = ex.Dates[0];
-                    info.Date = date.date;
-                    info.MaxLateDays = ex.MaxLateDays;
-                    info.LateDayPenalty = ex.LateDayPenalty;
+                    info.Dates = ex.Dates;
                     info.IsMultipleSubmission = ex.IsMultipleSubmission;
                     found = true;
                 }
