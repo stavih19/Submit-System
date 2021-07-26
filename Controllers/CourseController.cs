@@ -11,9 +11,9 @@ namespace Submit_System.Controllers
     public class CourseController : AbstractController
     {    
         private readonly ILogger<ExerciseController> _logger;
-        private readonly FakeDatabaseAccess _access;
+        private readonly DatabaseAccess _access;
 
-        public CourseController(ILogger<ExerciseController> logger, FakeDatabaseAccess access)
+        public CourseController(ILogger<ExerciseController> logger, DatabaseAccess access)
         {
             _logger = logger;
             _access = access;
