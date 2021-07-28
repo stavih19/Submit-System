@@ -19,10 +19,6 @@ namespace Submit_System {
         public int SubmissionDateId{get;set;}
 
         public DateTime TimeSubmitted{get;set;}
-        [JsonIgnore]
-        public string ChatLateID{get;set;}
-        [JsonIgnore]
-        public string ChatAppealID{get;set;}
         public bool HasCopied {get; set;} = false;
         [JsonIgnore]
         public string CurrentCheckerId {get; set;}

@@ -1173,7 +1173,7 @@ namespace Submit_System
             command.Parameters.Add("@MAIN",System.Data.SqlDbType.NVarChar);
             command.Parameters.Add("@ADD",System.Data.SqlDbType.NVarChar);
             command.Parameters["@TYPE"].Value = test.Type;
-            command.Parameters["@EID"].Value = test.ExerciseID;
+            command.Parameters["@EID"].Value = test.Exercise_ID;
             command.Parameters["@VALUE"].Value = test.Value;
             command.Parameters["@INPUT"].Value = test.Input;
             command.Parameters["@EOUTPUT"].Value = test.Expected_Output;

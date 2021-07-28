@@ -209,12 +209,12 @@ namespace Submit_System.Controllers
         [Route("Teacher/AddTest")]
         public ActionResult<TestOutput> AddTest([FromBody] Test test)
         {
-            DBCode code = _access.CheckExercisePermission(test.ExerciseID, Role.Teacher);
+            DBCode code = _access.CheckExercisePermission(test.Exercise_ID, Role.Teacher);
             if(code != DBCode.OK)
             {
                 return HandleDatabaseOutput(code);
             }
-            (string path, _) = _access.GetExerciseDirectory(test.ExerciseID);
+            (string path, _) = _access.GetExerciseDirectory(test.Exercise_ID);
             path = Path.Combine(path, "Runfiles");
             if(path == null)
             {
@@ -235,7 +235,7 @@ namespace Submit_System.Controllers
             {
                 if(test.Has_Adittional_Files)
                 {
-                    output.Files = FileUtils.StoreFiles(test.AdditionalFiles, testDir, false, true);
+                    output.Files = FileUtils.StoreFiles(test.AdditionFiles, testDir, false, true);
                 }
             }
             catch

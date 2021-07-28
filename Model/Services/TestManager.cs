@@ -30,12 +30,12 @@ namespace Submit_System {
                 return (null,1,"Can't Read Submission "+errstr);
             }
             Exercise exercise;
-            (exercise,err,errstr) = DataBaseManager.ReadExercise(submission.Exercise_ID);
+            (exercise,err,errstr) = DataBaseManager.ReadExercise(submission.ExerciseID);
             if(err != 0){
                 return (null,2,"Can't Read Exercise "+errstr);
             }
             List<Test> tests;
-            (tests,err,errstr) = DataBaseManager.ReadTestsOfExercise(submission.Exercise_ID);
+            (tests,err,errstr) = DataBaseManager.ReadTestsOfExercise(submission.ExerciseID);
             if(err != 0){
                 return (null,3,"Can't Read Tests "+errstr);
             }
@@ -49,7 +49,7 @@ namespace Submit_System {
                     tester.AddTest(t);
                 }
             }
-            tester.SetFilesLocation(submission.Files_Location);
+            tester.SetFilesLocation(submission.FilesLocation);
             errstr = tester.RunAllTests();
             if(errstr != "OK"){
                 return (null,5,"Testing process failed "+errstr);
