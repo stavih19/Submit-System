@@ -7,7 +7,8 @@ namespace Submit_System
     { 
         public void OnException(ExceptionContext context)
         {
-            Trace.WriteLine(context.Exception.ToString());
+            Debug.Write(context.HttpContext.Request.Path);
+            Debug.WriteLine(context.Exception.ToString());
             context.Result = new StatusCodeResult(500);
             context.ExceptionHandled = true;
         }

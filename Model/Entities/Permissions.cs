@@ -16,8 +16,6 @@ namespace Submit_System {
         private Dictionary<string, Role> CourseSet;
         private (string exID, Role role) LastExercise;
         private (string subID, Role role) LastSubmission;
-        private string SubmissionFolder;
-        private string ExerciseFolder;
         private (string chatID, Role role) LastExtChat;
         private (string chatID, Role role) LastAppChat;
 
@@ -42,36 +40,13 @@ namespace Submit_System {
         {
             LastExercise = (exerciseid, role);
         }
-        /// <summary>
-        /// Only teachers should have access to this.
-        /// </summary>
-        /// <param name="exerciseId"></param>
-        /// <returns></returns>
-        public string GetExerciseFolder(string exerciseId)
-        {
-            if(exerciseId != LastExercise.exID)
-            {
-                return null;
-            }
-            return ExerciseFolder;
-        }
-        public void SetTeacherExercisePerm(string exerciseid, string path)
-        {
-            LastExercise = (exerciseid, Role.Teacher);
-            ExerciseFolder = path;
-        }
         public bool CheckSubmissionPerm(string submissionid, Role role)
         {
             return LastSubmission == (submissionid, role);
         }
-        public string GetSubmissionFolder(string submisionid)
-        {
-            return (LastSubmission.subID == submisionid) ? SubmissionFolder : null;
-        }
-        public void SetSubmissionPerm(string submissionid, Role role, string path)
+        public void SetSubmissionPerm(string submissionid, Role role)
         {
             LastExercise = (submissionid, role);
-            SubmissionFolder = path;
         }
         public bool CheckChatPerm(string chatid, Role role)
         {

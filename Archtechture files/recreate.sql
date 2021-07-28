@@ -1,15 +1,16 @@
+IF DB_ID('submit02') IS NULL
+   CREATE DATABASE submit02;
+GO
+USE submit02;
 DECLARE @sql NVARCHAR(max)=''
-
 SELECT @sql += ' Drop table ' + QUOTENAME(TABLE_SCHEMA) + '.'+ QUOTENAME(TABLE_NAME) + '; '
 FROM   INFORMATION_SCHEMA.TABLES
 WHERE  TABLE_TYPE = 'BASE TABLE'
-
 Exec Sp_executesql @sql
 GO
-USE Submit02;
 CREATE TABLE Users (
-    user_id nvarchar(10),
-    password_hash nvarchar(48),
+    user_id nvarchar(10), 
+    password_hash nvarchar(64),
     name nvarchar(32),
     email nvarchar(64)
 );
@@ -39,12 +40,15 @@ CREATE TABLE Exercise(
     original_exercise_id nvarchar(48),
     max_submitters int,
     test_files_location nvarchar(64),
-    late_submittion_settings nvarchar(64),
+    late_submission_settings nvarchar(64),
     programming_language nvarchar(32),
     auto_test_grade_value int,
     style_test_grade_value int,
     is_active int,
-    multiple_submissions int
+    multiple_submissions int,
+    moss_number_of_matches int,
+    moss_max_match int,
+    moss_result_link varchar(256)
 );
 CREATE TABLE Checker_Exercise(
     user_id nvarchar(10),
@@ -53,10 +57,10 @@ CREATE TABLE Checker_Exercise(
 
 CREATE TABLE Submission_Dates(
     exercise_id nvarchar(48),
-    submission_date_id int,
+    submission_date_id int IDENTITY(1, 1),
+    submission_date DATE,
     reduction int,
-    [group] int,
-    submission_date DATE
+    group_number int
 );
 CREATE TABLE Submission(
     submission_id nvarchar(60),
@@ -69,10 +73,10 @@ CREATE TABLE Submission(
     submission_status int,
     submission_date_id int,
     time_submitted DATETIME,
-    chat_late_id nvarchar(32),
-    chat_appeal_id nvarchar(32),
-    has_copied int
+    has_copied int,
+    current_checker_id varchar(10)
 );
+
 CREATE TABLE Submitters(
     user_id nvarchar(10),
     submission_id nvarchar(60),
@@ -86,11 +90,11 @@ CREATE TABLE Chat(
     chat_type int
 );
 CREATE TABLE Message(
-    message_id int IDENTITY(1,1),
+    message_id int IDENTITY(1,1) ,
     chat_id nvarchar(60),
-    message_time DATETIME,
-    message_type int,
-    message_value nvarchar(8000),
+    message_time DATETIME DEFAULT GETDATE(),
+    attached_file varchar(128),
+    message_text ntext,
     sender_user_id nvarchar(10),
     message_status int,
     course_id nvarchar(16),
@@ -103,6 +107,7 @@ CREATE TABLE Managers(
 );
 
 CREATE TABLE Test(
+    test_id int IDENTITY(1, 1),
     [weight] int,
     input ntext,
     expected_output ntext,
@@ -110,7 +115,7 @@ CREATE TABLE Test(
     arguments_string ntext,
     timeout_in_seconds int,
     main_sourse_file nvarchar(32),
-    adittional_files_location nvarchar(64),
+    additional_files_location nvarchar(64),
     exercise_id nvarchar(48),
     [type] int
 );
@@ -118,6 +123,11 @@ CREATE TABLE Test(
 CREATE TABLE Tokens(
     user_id varchar(10),
     token varchar(64),
-    expire_date DATE
+    expiry_date DATETIME
 );
 GO
+CREATE TRIGGER DELETE_DATE
+ON Submission_Dates
+AFTER DELETE
+AS
+    UPDATE Submission SET submission_date_id = null WHERE submission_date_id = Deleted.submission_date_id 

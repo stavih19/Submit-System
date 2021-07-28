@@ -1,25 +1,40 @@
 using System;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using System.Diagnostics;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc.Filters;
 using System.Web;
+using Microsoft.AspNetCore.Identity;
+using System.Security.Principal;
+using System.IO;
+
 
 namespace Submit_System
 {
-    public abstract class AbstractController : ControllerBase  
+    public abstract class AbstractController : Controller
     {
         public const string SUBMISSIONS = "Submissions";
         public const string RUN_FILES = "Runfiles";
         public static string BASE_FILES { get => RUN_FILES; }
-        private static readonly Dictionary<DBCode, int> result =  new Dictionary<DBCode, int> {
-            [DBCode.OK] = 200,
-            [DBCode.NotFound] = 404,
-            [DBCode.Invalid] =  400,
-            [DBCode.Error] =  500,
-            [DBCode.NotAllowed] =  403,
-            [DBCode.AlreadyExists] = 409
-        };
+        private static readonly Dictionary<DBCode, int> DBCodeToHttp;
+        protected readonly DatabaseAccess _access;
+        static AbstractController()
+        {
+            DBCodeToHttp =  new Dictionary<DBCode, int> {
+                [DBCode.OK] = 200,
+                [DBCode.NotFound] = 404,
+                [DBCode.Invalid] =  400,
+                [DBCode.Error] =  500,
+                [DBCode.NotAllowed] =  403,
+                [DBCode.AlreadyExists] = 409
+            };
+        }
+        public AbstractController(DatabaseAccess access)
+        {
+            _access = access;
+        }
         protected ActionResult ServerError() 
             => new StatusCodeResult(500);
          protected ActionResult ServerError([ActionResultObjectValue] Object obj)
@@ -30,31 +45,89 @@ namespace Submit_System
             {
                 return Ok(dbResult.output);
             }
-            return new StatusCodeResult(result[dbResult.dbCode]);
+            return HandleDatabaseOutput(dbResult.dbCode);
         }
          protected ActionResult HandleDatabaseOutput(DBCode dbCode)
         {
-            return new StatusCodeResult(result[dbCode]);
-        }
-        protected bool IsDatabaseError((Object output, DBCode code, string msg) dbResult)
-        {
-             if(dbResult.code == DBCode.OK)
+            if(_access.ErrorString != null)
             {
-                return true;
+                return new ObjectResult(_access.ErrorString) { StatusCode = DBCodeToHttp[dbCode]};
+            }
+            return new StatusCodeResult(DBCodeToHttp[dbCode]);
+        }
+       
+        protected ActionResult HandleFileSending(string dir, string fileName)
+        {
+            string path;
+            try
+            {
+                path = FileUtils.PathSafeCombine(dir, fileName);
+            }
+            catch(System.Security.SecurityException e)
+            {
+                return BadRequest(e.Message);
+            }
+            if(!System.IO.File.Exists(path))
+            {
+                return NotFound();
+            }
+            string contentType = FileUtils.GetMimeType(fileName);
+            byte[] bytes = System.IO.File.ReadAllBytes(path);
+            return File(bytes, contentType);
+        }
+        protected ActionResult FileDownload(string dir, string fileName)
+        {
+            string path;
+            try
+            {
+                path = FileUtils.PathSafeCombine(dir, fileName);
+            }
+            catch(System.Security.SecurityException e)
+            {
+                return BadRequest(e.Message);
+            }
+            if(!System.IO.File.Exists(path))
+            {
+                return NotFound();
+            }
+            string contentType = FileUtils.GetMimeType(fileName);
+            byte[] bytes = System.IO.File.ReadAllBytes(path);
+            return File(bytes, contentType, fileName);
+        }
+        
+        protected ActionResult HandleArchiveSending(string dir, string zipName)
+        {
+            try
+            {
+                return File(FileUtils.ToArchive(dir), "application/zip", zipName);
+            }   
+            catch(DirectoryNotFoundException e)
+            {
+                Debug.WriteLine(e.Message);
+                return ServerError();
+            }
+        }
+
+        protected bool IsAnyNull(params Object[] args)
+        {
+            foreach(var arg in args)
+            {
+                if(arg == null)
+                {
+                    return true;
+                }
             }
             return false;
         }
-
-        protected ActionResult<SubmitFile> HandleFileSending(string dir, string file)
+        public override void OnActionExecuting(ActionExecutingContext context)
         {
-            file = HttpUtility.UrlDecode(file);
-            string fullPath = FileUtils.GetFullPath(file, dir);
-            if(!System.IO.File.Exists(fullPath))
+            string id = context.HttpContext.User.Identity.Name;
+            if(id != null)
             {
-                return NotFound("File not found");
+                bool isAdmin = context.HttpContext.User.IsInRole("Admin");
+                 _access.SetUser(id, isAdmin);
             }
-            byte[] bytes = System.IO.File.ReadAllBytes(fullPath);
-            return SubmitFile.Create(file, bytes);
         }
+         
     }
 }

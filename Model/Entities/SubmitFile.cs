@@ -18,19 +18,20 @@ namespace Submit_System
         }
         public static SubmitFile Create(string path)
         {
-            if(File.Exists(path))
+            if(!File.Exists(path))
             {
-                string content = Convert.ToBase64String(File.ReadAllBytes(path));
-                string name = FileUtils.GetFileName(path);
-                return new SubmitFile {
-                    Name = name,
-                    Content = content
-                };
+                throw new FileNotFoundException();
             }
-            return null;
+            string content = Convert.ToBase64String(File.ReadAllBytes(path));
+            string name = FileUtils.GetFileName(path);
+            return new SubmitFile {
+                Name = name,
+                Content = content
+            };
         }
-        public void CreateFile(string path)
+        public void CreateFile(string folder)
         {
+            string path = Path.Combine(folder, Name);
             byte[] bytes = System.Convert.FromBase64String(Content);
             using (var stream = File.Create(path))
             {

@@ -33,7 +33,7 @@ CREATE TABLE Exercise(
     original_exercise_id nvarchar(48),
     max_submitters int,
     test_files_location nvarchar(64),
-    late_submittion_settings nvarchar(64),
+    late_submission_settings nvarchar(64),
     programming_language nvarchar(32),
     auto_test_grade_value int,
     style_test_grade_value int,
@@ -46,8 +46,8 @@ CREATE TABLE Checker_Exercise(
 );
 
 CREATE TABLE Submission_Dates(
-    exercise_id nvarchar(48),
     submission_date_id int,
+    exercise_id nvarchar(48),
     reduction int,
     [group] int,
     submission_date DATE
@@ -96,6 +96,7 @@ CREATE TABLE Managers(
 );
 
 CREATE TABLE Test(
+    test_id int IDENTITY(1, 1),
     [weight] int,
     input ntext,
     expected_output ntext,
@@ -103,7 +104,7 @@ CREATE TABLE Test(
     arguments_string ntext,
     timeout_in_seconds int,
     main_sourse_file nvarchar(32),
-    adittional_files_location nvarchar(64),
+    additional_files_location nvarchar(64),
     exercise_id nvarchar(48),
     [type] int
 );
@@ -111,5 +112,5 @@ CREATE TABLE Test(
 CREATE TABLE Tokens(
     user_id varchar(10),
     token varchar(64),
-    creation_date DATE
+    expiry_date DATETIME
 );

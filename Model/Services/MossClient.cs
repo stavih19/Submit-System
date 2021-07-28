@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading;
-
+using Microsoft.Extensions.Configuration;
 namespace Submit_System
 {
 
@@ -11,37 +11,49 @@ namespace Submit_System
     ///     <c>MossClient</c> - Client for communicating with the MOSS server socket. Handles the
     ///     configuration, sending of files and receiving results.
     /// </summary>
-    public class MossClient
+    public class MossClient : IDisposable
     {
          public static readonly List<string> SupportedLangauges = new List<string> {
             "c", "cc", "java", "ml", "pascal", "ada", "lisp", "schema", "haskell",
             "fortran", "ascii", "vhdl", "perl","matlab", "python", "mips", "prolog",
             "spice", "vb", "csharp", "modula2", "a8086", "javascript", "plsql" };
 
-        public int MaxConcurrentRequests {get;}
+        public static int MaxConcurrentRequests { get; }
         public const int DEF_SHOW = 250;
         public const int DEF_MAX_FOUND = 10;
         private readonly Semaphore sema;
-
+        
+        static MossClient()
+        {
+            IConfigurationSection section = MyConfig.Configuration.GetSection("Moss");
+            MaxConcurrentRequests = section.GetValue<int>("MaxConcurrentRequests");
+        }
         // private const string RESULTS = "https://moss.stanford.edu/results/";
         private class MossRequestor : IDisposable
         {
-            private const int ID = 756989629;
+            private static readonly int _userID; //  756989629
             //private const string TEST_SERVER = "127.0.0.1";
             //private const int TEST_PORT = 8000;
             private readonly ApiSocket socket;
-            private const string SERVER = "moss.stanford.edu";
-            private const int PORT = 7690;
-            private readonly MossData data;
-            private uint id = 1;
-
+            private static readonly string _server;
+            private static readonly int _port;
+            private readonly MossData _data;
+            private uint _fileID = 1;
+            static MossRequestor()
+            {
+                IConfigurationSection section = MyConfig.Configuration.GetSection("Moss");
+                _userID = section.GetValue<int>("UserID");
+                _server = section.GetValue<string>("Server");
+                _port = section.GetValue<int>("Port");
+                
+            }
             /// <summary>
             ///     Constructor. Takes MossData object.
             /// </summary>
             /// <param name="d">The parameters of the moss request.</param>
             public MossRequestor(MossData d, bool test = false)
             {
-                data = d;
+                _data = d;
                 socket = new ApiSocket();
                 socket.TestMode = test;
             }
@@ -54,7 +66,7 @@ namespace Submit_System
             /// 
             public void Connect()
             {
-                socket.Connect(SERVER, PORT);
+                socket.Connect(_server, _port);
             }
             /// <summary>
             ///     Sends the request parameters to the moss server
@@ -63,16 +75,16 @@ namespace Submit_System
             /// <returns>Either "yes" or "no" from the server</returns>
             public void SendHeader()
             {
-                socket.SendCommandLine($"moss {ID}");
+                socket.SendCommandLine($"moss {_userID}");
                 socket.SendCommandLine("directory 1");
-                socket.SendCommandLine($"X {Convert.ToInt32(data.IsExperimental)}");
-                socket.SendCommandLine($"maxmatches {data.MaxFound}");
-                socket.SendCommandLine($"show {data.MatchesShow}");
-                socket.SendCommandLine($"language {data.Language}");
+                socket.SendCommandLine($"X {Convert.ToInt32(_data.IsExperimental)}");
+                socket.SendCommandLine($"maxmatches {_data.MaxFound}");
+                socket.SendCommandLine($"show {_data.MatchesShow}");
+                socket.SendCommandLine($"language {_data.Language}");
                 string langReponse = socket.ReadLineFromServer().Trim();
                 if(langReponse == "no")
                 {
-                    throw new NotSupportedException($"It appears Moss doesn't support {data.Language}.");
+                    throw new NotSupportedException($"It appears Moss doesn't support {_data.Language}.");
                 }  
             }
             /// <summary>
@@ -83,23 +95,23 @@ namespace Submit_System
             private void UploadFiles(string folder, bool isBaseFiles = false)
             {
                 // Simplifying directory name
-                var files = FileUtils.GetFiles(folder, FileUtils.GetExts(data.Language));
+                var files = FileUtils.EnumerateFiles(folder, FileUtils.GetExts(_data.Language));
                 string dirname = FileUtils.GetFileName(folder);
                 foreach (string file in files)
                 {
                     // Simplifying file name
                     string filename = FileUtils.FlattenFilePath(dirname, file);
                     filename = filename.Replace(' ', '_');
-                    uint fileId = isBaseFiles ? 0 : id++;
+                    uint fileId = isBaseFiles ? 0 : _fileID++;
                     string fileContent = File.ReadAllText(file);
-                    string command = $"file {fileId} {data.Language} {fileContent.Length} {filename}";
+                    string command = $"file {fileId} {_data.Language} {fileContent.Length} {filename}";
                     socket.SendCommandLine(command);
                     socket.SendCommand(fileContent);
                 }
             }
             public void UploadBaseFiles() {
-                if(data.BaseFilesFolder != null) {
-                    UploadFiles(data.BaseFilesFolder, true);
+                if(_data.BaseFilesFolder != null) {
+                    UploadFiles(_data.BaseFilesFolder, true);
                 }
             }
             /// <summary>
@@ -108,7 +120,7 @@ namespace Submit_System
             /// <param name="dir">The submissions directory.</param>
             public void UploadSubmissions()
             {
-                string[] subFolders = Directory.GetDirectories(data.SubmissionsFolder);
+                string[] subFolders = Directory.GetDirectories(_data.SubmissionsFolder);
                 foreach (string folder in subFolders)
                 {
                     UploadFiles(folder);
@@ -120,10 +132,10 @@ namespace Submit_System
             /// <returns>The link to the check results.</returns>
             public string GetResult()
             {
-                socket.SendCommandLine($"query 0 {data.Comment}");
+                socket.SendCommandLine($"query 0 {_data.Comment}");
                 string result = socket.ReadLineFromServer().Trim();
                 socket.SendCommandLine("end");
-                id = 1;
+                _fileID = 1;
                 return result;
             }
 
@@ -133,10 +145,8 @@ namespace Submit_System
 
         }
 
-        public MossClient(int maxReq = 1) {
-            MaxConcurrentRequests = maxReq;
-            sema = new Semaphore(maxReq, maxReq);
-
+        public MossClient() {
+            sema = new Semaphore(MaxConcurrentRequests, MaxConcurrentRequests);
         }
         /// <summary>method <c>IsSupported</c> Checks if a language is supported by Moss.</summary>
         /// <param name="language">the language to be checked.</param>
@@ -208,7 +218,7 @@ namespace Submit_System
             if (!CheckUrl(result))
             {
                 // Console.WriteLine(result);
-                throw new Exception("The Moss server didn't return a working link. Returned result was: " + result );
+                throw new Exception(result);
             }
             return result;
         }

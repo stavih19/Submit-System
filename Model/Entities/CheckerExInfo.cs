@@ -6,8 +6,7 @@ namespace Submit_System {
         public string ExName {get; set; }
         public string CourseName {get; set; }
         public int CourseNumber {get; set; }
-        public string CourseID {get; set; }
-        public int NumOfSubmissions {get; set; }
-        public int NumOfAppeals {get; set; }
+        public int ToCheck {get; set; }
+        public int Appeals {get; set; }
     }
 }

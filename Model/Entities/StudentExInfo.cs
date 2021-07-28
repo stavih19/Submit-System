@@ -14,17 +14,10 @@ namespace Submit_System {
         public DateTime DateSubmitted { get; set; }
         public List<SubmitDate> Dates {get; set; }
         public bool IsMultipleSubmission { get; set; }
-        private string folder;
+        public string ManualCheckInfo { get; set; }
         [JsonIgnore]
-        public string SubmissionFolder {
-            set
-            {
-                filenames = FileUtils.GetRelativePaths(value);
-                folder = value;
-            }
-            get => folder;
-         }
-        public List<string> filenames {get; set; }
+        public string SubmissionFolder { get; set; }
+        public List<string> Filenames {get; set; }
         public SubmissionState State {get; set; }
         public bool IsMainSubmitter { get; set; }
 

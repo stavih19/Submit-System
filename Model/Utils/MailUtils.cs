@@ -1,51 +1,63 @@
 using System;
 using System.Diagnostics;
-using System.Security.Cryptography;
-using System.Linq;
-using System.Text;
 using System.Net.Mail;
 using System.Net;
 using System.Collections.Generic;
+using Microsoft.Extensions.Configuration;
 namespace Submit_System
 {
     public static class MaleUtils
     {
-        const string ADDRESS = "submitsystem.proj@gmail.com";
-        const string PASSWORD = "fjoejf23o3r1de11";
-        const string REGISTER_SUBJECT =  "הרשמה למערכת סבמיט";
-        const string PASSWORD_RESET_SUBJECT = "מערכת סבמיט - שחזור סיסמא";
-        const string SMTP_SERVER = "smtp.gmail.com";
-        const int PORT = 587;
-
-        public static void SendMail(string sendTo, string subject, string text)
+        private static readonly string Address;
+        private static readonly string Password; //"fjoejf23o3r1de11";
+        private static readonly string REGISTER_SUBJECT =  "הרשמה למערכת סבמיט";
+        public static readonly string PASSWORD_RESET_SUBJECT = "מערכת סבמיט - שחזור סיסמא";
+        public static readonly string SmtpServer;
+        public static readonly int port;
+        static MaleUtils()
         {
-            try
+            var emailDetails = MyConfig.Configuration.GetSection("Email");
+            Address = emailDetails .GetValue<string>("Address");
+            Password = emailDetails.GetValue<string>("Password");
+            SmtpServer = emailDetails.GetValue<string>("Host");
+            port = emailDetails.GetValue<int>("Port");
+        }
+        public static bool SendMail(string sendTo, string subject, string text)
+        {
+            using(var smtp = new SmtpClient())
             {
-                using(var smtp = new SmtpClient())
+                smtp.Host = SmtpServer;
+                smtp.Port = port;
+                smtp.UseDefaultCredentials = false;
+                smtp.EnableSsl = true;
+                smtp.Credentials = new NetworkCredential(Address,Password);
+                using (var msg = new MailMessage(Address, sendTo, subject, text))
                 {
-                    smtp.Host = SMTP_SERVER;
-                    smtp.Port = PORT;
-                    smtp.UseDefaultCredentials = false;
-                    smtp.EnableSsl = true;
-                    smtp.Credentials = new NetworkCredential(ADDRESS,PASSWORD);
-                    smtp.Send(
-                        new MailMessage(ADDRESS, sendTo, subject, text)
-                    );
+                    try
+                    {
+                        smtp.Send(msg);
+                        return true;
+                    }
+                    catch(Exception e)
+                    {
+                        Debug.WriteLine(e.Message);
+                        return false;
+                    }
                 }
+                
             }
-            catch {}
         }
-        public static void SendRegistration(string sendTo, string link)
+        public static bool SendRegistration(string sendTo, string link)
         {
-            SendMail(sendTo, REGISTER_SUBJECT, link);
+            return SendMail(sendTo, REGISTER_SUBJECT, link);
         }
-        public static void PasswordReset(string sendTo, string link)
+        public static bool PasswordReset(string sendTo, string link)
         {
-            SendMail(sendTo, PASSWORD_RESET_SUBJECT, link);
+            return SendMail(sendTo, PASSWORD_RESET_SUBJECT, link);
         }
-        public static void SendCheckResult(string sendTo, string title, string headerText, List<CheckResult> results)
+        public static bool SendCheckResult(string sendTo, string title, string headerText, List<CheckResult> results)
         {
-
+            return false; 
         }
     }
 }

@@ -5,6 +5,10 @@ using System.IO.Compression;
 using System.Diagnostics;
 using System.Security;
 using System;
+using System.Linq;
+using System.Threading;
+using System.Text;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace Submit_System
 {
@@ -14,17 +18,26 @@ namespace Submit_System
     public static class FileUtils
     {
         const int MAX_LENGTH = 1024*1024 * 10;
-        public static readonly Dictionary<string, string[]> LangToExts = new Dictionary<string, string[]>
+
+        private static readonly Random _random;
+        public static readonly Dictionary<string, string[]> LangToExts;
+        private static readonly string[] codeExts = {".py", ".cs", ".cpp", ".c", ".cc", ".asm"};
+        static FileUtils()
         {
-            ["c"] = new string[] { "*.c", "*.h" },
-            ["cc"] = new string[] { "*.cpp", "*.h", "*.cc" },
-            ["ml"] = new string[] { "*.ml" },
-            ["java"] = new string[] { "*.java" },
-            ["csharp"] = new string[] { "*.cs" },
-            ["python"] = new string[] { "*.py" },
-            ["javascript"] = new string[] { "*.js" },
-            ["perl"] = new string[] { "*.pl" },
-        };
+            _random = new Random();
+            LangToExts = new Dictionary<string, string[]>
+            {
+                ["c"] = new string[] { "*.c", "*.h" },
+                ["cc"] = new string[] { "*.cpp", "*.h", "*.cc" },
+                ["ml"] = new string[] { "*.ml" },
+                ["java"] = new string[] { "*.java" },
+                ["csharp"] = new string[] { "*.cs" },
+                ["python"] = new string[] { "*.py" },
+                ["javascript"] = new string[] { "*.js" },
+                ["perl"] = new string[] { "*.pl" },
+            };
+            
+        }
         public static string[] GetExts(string language)
         {
             return LangToExts[language];
@@ -39,6 +52,16 @@ namespace Submit_System
         /// <param name="folder">the folder to get the files from</param>
         /// <param name="exts">the file extensions</param>
         /// <returns>All the files in the given folder with the given extensions</returns>
+        public static IEnumerable<string> EnumerateFiles(string folder, string[] exts)
+        {
+            var files = Enumerable.Empty<string>();
+            foreach (string ext in exts)
+            {
+                var newFiles = Directory.EnumerateFiles(folder, ext, SearchOption.AllDirectories);
+                files.Concat(newFiles);
+            }
+            return files;
+        }
         public static List<string> GetFiles(string folder, string[] exts)
         {
             var files = new List<string>();
@@ -87,18 +110,17 @@ namespace Submit_System
             string relPath = GetRelativePath(file, folder).Replace("/", "_-_");
             return folder + '/' + relPath;
         }
-
         /// <summary>
-        /// Checks if the file has a valid full path with respect to its directory
+        /// Combines Paths like Path.Combine, but throws an excpetion if the resulting file path is
+        /// is not within the first directory
         /// </summary>
         /// <param name="filename"> the name/relative path of the file from the directory</param>
-        /// <param name="dirPath">The path of the directory</param>
-        /// <param name="filePath"></param>
+        /// <param name="directory">The path of the directory</param>
         /// <returns></returns>
-        public static string GetFullPath(string filename, string dirPath)
+        public static string PathSafeCombine(string directory, string filename)
         {
-            var fullDirPath = Path.GetFullPath(dirPath);
-            var filePath = Path.Combine(dirPath, filename);
+            var fullDirPath = Path.GetFullPath(directory);
+            var filePath = Path.Combine(directory, filename);
             var fullFilePath = Path.GetFullPath(filePath);
             if(!fullFilePath.StartsWith(fullDirPath))
             {
@@ -106,28 +128,24 @@ namespace Submit_System
             }
             return filePath;
         }
-        private static void CopyToFile(Stream stream, string destPath)
-        {
-            using(Stream destStream = File.OpenWrite(destPath))
-            {
-                stream.CopyTo(destStream);
-            }
-        }
-        private static List<string> DecompressAndStore(Stream stream, string destDir)
+        private static List<string> DecompressAndStore(byte[] archive, string destDir)
         {   
             var files = new List<string>();
-            using (ZipArchive zip = new ZipArchive(stream))
+            using (Stream stream = new MemoryStream(archive))
             {
-                foreach(var entry in zip.Entries)
+                using (ZipArchive zip = new ZipArchive(stream))
                 {
-                    string newPath = GetFullPath(entry.FullName, destDir);
-                    entry.ExtractToFile(newPath, true);
-                    files.Add(newPath);
+                    foreach(var entry in zip.Entries)
+                    {
+                        string newPath = PathSafeCombine(destDir, entry.FullName);
+                        entry.ExtractToFile(newPath, true);
+                        files.Add(newPath);
+                    }
                 }
             }
             return files;
         }
-        public static List<string> SubmitFiles(List<SubmitFile> files, string destDir)
+        public static List<string> StoreFiles(List<SubmitFile> files, string destDir, bool deletePreviousFiles, bool unzip)
         {
             var submittedFiles = new List<string>();
             if(!Directory.Exists(destDir))
@@ -139,21 +157,22 @@ namespace Submit_System
                 foreach(var file in files)
                 {
                     byte[] content = System.Convert.FromBase64String(file.Content);
-                    using(Stream stream = new MemoryStream(content))
+                    if(Path.GetExtension(file.Name) == ".zip" && unzip)
                     {
-                        if(Path.GetExtension(file.Name) == ".zip")
-                        {
-                            submittedFiles.AddRange(DecompressAndStore(stream, destDir));
-                        }
-                        else
-                        {
-                            string destPath = GetFullPath(file.Name, destDir);
-                            CopyToFile(stream, destPath);
-                            submittedFiles.Add(destPath);
-                        }
+                        submittedFiles.AddRange(DecompressAndStore(content, destDir));
+                    }
+                    else
+                    {
+                        string destPath = PathSafeCombine(destDir, file.Name);
+                        File.WriteAllBytes(destPath, content);
+                        submittedFiles.Add(destPath);
                     }
                 }
-                var a = Directory.GetFiles(destDir, "*", SearchOption.AllDirectories);
+                if(!deletePreviousFiles)
+                {
+                    return GetRelativePaths(destDir, submittedFiles);
+                }
+                var a = Directory.EnumerateFiles(destDir, "*", SearchOption.AllDirectories);
                 foreach(var file in a )
                 {
                     if(!submittedFiles.Contains(file))
@@ -166,7 +185,7 @@ namespace Submit_System
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception e) when (deletePreviousFiles)
             {
                 Directory.Delete(destDir);
                 throw e;
@@ -210,12 +229,12 @@ namespace Submit_System
             }
             return fileList;
         }
-        public static byte[] ToArchiveBytes(string path)
+        public static byte[] ToArchive(string path)
         {
             byte[] result;
             if(!Directory.Exists(path))
             {
-                return null;
+                throw new DirectoryNotFoundException();
             }
             using(var stream = new MemoryStream())
             {
@@ -232,27 +251,70 @@ namespace Submit_System
             }
             return result;
         }
-        public static void StoreFiles(List<IFormFile> files, string destDir)
+        public static string GetMimeType(string filename)
         {
-            if(!Directory.Exists(destDir))
+            var provider = new FileExtensionContentTypeProvider();
+            string contentType;
+            bool success = provider.TryGetContentType(filename, out contentType);
+            if(success)
             {
-                Directory.CreateDirectory(destDir);
+               return contentType;
             }
-            foreach(var file in files)
+            else if(codeExts.Contains(Path.GetExtension(filename)))
             {
-                using(Stream stream = file.OpenReadStream())
-                {
-                    if(Path.GetExtension(file.FileName) == ".zip")
-                    {
-                        DecompressAndStore(stream, destDir);
-                    }
-                    else
-                    {
-                        string destPath = GetFullPath(file.FileName, destDir);
-                        CopyToFile(stream, destPath);
-                    }   
-                }           
-            }  
+                return "text/plain";
+            }
+            else
+            {
+                return "application/octet-stream";
+            }
         }
+        /// <summary>
+        /// Creates a directory with a unique
+        /// </summary>
+        /// <param name="dir"></param>
+        /// <param name="prefix"></param>
+        /// <returns></returns>
+        public static string CreateUniqueDirectory(string dir, string prefix)
+        {
+            const string chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+            string path;
+            var builder = new StringBuilder();
+            lock(_random)
+            {
+                do
+                {
+                    for (int i = 0; i < 6; i++)
+                    {
+                        builder.Append(chars[_random.Next(chars.Length)]);
+                    }
+                    string result = prefix + '_' + builder.ToString();
+                    path = Path.Combine(dir, result);
+                    builder.Clear();
+                } while (Directory.Exists(path));
+                Directory.CreateDirectory(path);
+            }
+            return path;
+        }
+       public static void CopyDirectory(string src, string dist)
+    {
+        DirectoryInfo dir = new DirectoryInfo(src);
+
+        DirectoryInfo[] dirs = dir.GetDirectories();
+        
+        Directory.CreateDirectory(dist);        
+
+        FileInfo[] files = dir.GetFiles();
+        foreach (FileInfo file in files)
+        {
+            string tempPath = Path.Combine(dist, file.Name);
+            file.CopyTo(tempPath, true);
+        }
+        foreach (DirectoryInfo subdir in dirs)
+        {
+            string tempPath = Path.Combine(dist, subdir.Name);
+            CopyDirectory(subdir.FullName, tempPath);
+        }
+    }
     }
 }

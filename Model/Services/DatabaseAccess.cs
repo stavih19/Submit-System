@@ -5,17 +5,40 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Caching;
 using System.IO;
+using System.Linq;
 using System.Data.SqlClient;
 using System.Threading;
 using System.Diagnostics;
 namespace Submit_System {
     public enum DBCode { OK, NotFound, Invalid, Error, NotAllowed, AlreadyExists }
-    public enum Role { Student, Checker, Teacher }
+    public enum Role { Student, Checker, Teacher, None }
     public class DatabaseAccess {
-        private readonly IMemoryCache _permissions;
-        public DatabaseAccess()
+        private readonly IMemoryCache _cache;
+
+        private UserPermissions _userPerms;
+        public string UserID { get; private set; } = "N/A";
+
+        public bool IsAdmin {get; private set; }
+        public string ErrorString { get; private set; }
+        public DatabaseAccess(IMemoryCache _userPermsCache)
         {
-            _permissions = new MemoryCache( new MemoryCacheOptions { SizeLimit = 100 });
+            _cache = _userPermsCache;
+        }
+        public void SetUser(string userId, bool isAdmin)
+        {
+            UserID = userId;
+            _userPerms = _cache.GetOrCreate(("UserPerm" + userId), entry => {
+                entry.SlidingExpiration = TimeSpan.FromMinutes(75);
+                entry.SetSize(1);
+                return new UserPermissions();
+            });
+            IsAdmin = isAdmin;
+        }
+        private (T, DBCode) Error<T>(string err, DBCode code)
+        {
+            ErrorString = err;
+            Trace.WriteLine(err);
+            return (default(T), code);
         }
         private void Log(string msg)
         {
@@ -26,6 +49,7 @@ namespace Submit_System {
             if(CheckError(output.code))
             {
                 Log(output.msg);
+                ErrorString = output.msg;
             }
             DBCode newCode = (output.code == 4) ?  DBCode.OK : (DBCode) output.code;
             return (output.obj, newCode);
@@ -35,137 +59,149 @@ namespace Submit_System {
             if(CheckError(output.code))
             {
                 Log(output.msg);
+                ErrorString = output.msg;
             }
             return (DBCode) output.code;
         }
-        private UserPermissions GetPermission(string userid)
+        private void CacheSubmissionDirectory(string submissionId, string folder)
         {
-            var perms = _permissions.GetOrCreate(userid, entry => {
-                entry.SlidingExpiration = TimeSpan.FromMinutes(75);
-                entry.SetSize(1);
-                return new UserPermissions();
-            });
-            return perms;
+            var options = new MemoryCacheEntryOptions { Size = 1 };
+            _cache.Set("SubDir" + submissionId, folder, options); 
         }
-        public DBCode CheckCoursePermission(string userid, string courseid, Role role)
+        private void CacheExerciseDirectory(string exerciseId, string folder)
         {
-            var perms = GetPermission(userid);
+            var options = new MemoryCacheEntryOptions { Size = 1 };
+            _cache.Set("ExDir" + exerciseId, folder, options); 
+        }
+        public DBCode CheckCoursePermission(string courseid, Role role)
+        {
             bool has = false;
-            Monitor.Enter(perms);
-            has = perms.CheckCoursePerm(courseid, role);
-            Monitor.Exit(perms);
+            if(_userPerms == null)
+            {
+                return DBCode.NotAllowed;
+            }
+            Monitor.Enter(_userPerms);
+            has = _userPerms.CheckCoursePerm(courseid, role);
+            Monitor.Exit(_userPerms);
             if(has) return DBCode.OK;
             // TODO do a real prmission check
             if(role == Role.Teacher) return DBCode.OK;
-            (bool inCourse, DBCode code) = Convert(DataBaseManager.IsStudentInCourse(courseid, userid));
-            if(inCourse)
+            DBCode code = CheckResourcePerms(courseid, role, ResourceType.Course);
+            if(code == DBCode.OK)
             {
-                AddCoursePerms(courseid, userid, Role.Student);
+                AddCoursePerms(courseid, Role.Student);
             }
             return code;
         }
-        public void AddCoursePerms(string courseid, string userid, Role role)
+        public void AddCoursePerms(string courseid, Role role)
         {
-            AddCoursePerms(new List<string>{courseid}, userid, Role.Student);
+            AddCoursePerms(new List<string>{courseid}, Role.Student);
         }
-        public void AddCoursePerms(List<string> courseids, string userid, Role role)
+
+        public void AddCoursePerms(List<string> courseids, Role role)
         {
-            var perms = GetPermission(userid);
-            Monitor.Enter(perms);
+            Monitor.Enter(_userPerms);
             foreach(var id in courseids)
             {
-                perms.SetCoursePerm(id, role);
+                _userPerms.SetCoursePerm(id, role);
             }
-            Monitor.Exit(perms);
+            Monitor.Exit(_userPerms);
         }
-        public void AddExercisePerm(string exerciseid, string userid, Role role)
+        public void AddExercisePerm(string exerciseid, Role role)
         {
-            var perms = GetPermission(userid);
-            Monitor.Enter(perms);
-            perms.SetExercisePerm(exerciseid, role);
-            Monitor.Exit(perms);
+            Monitor.Enter(_userPerms);
+            _userPerms.SetExercisePerm(exerciseid, role);
+            Monitor.Exit(_userPerms);
         }
-        public void AddExerciseTeacherPerm(string exerciseid, string userid, string exFolder)
+        public (string, DBCode) GetExerciseDirectory(string exerciseID)
         {
-            var perms = GetPermission(userid);
-            Monitor.Enter(perms);
-            perms.SetTeacherExercisePerm(exerciseid, exFolder);
-            Monitor.Exit(perms);
-        }
-        public (string, DBCode) GetExerciseDirectory(string exerciseID, string userID)
-        {
-            UserPermissions perms = GetPermission(userID);
-            string folder = perms.GetExerciseFolder(exerciseID);
-            if(folder == null)
+            string folder;
+            if(!_cache.TryGetValue("ExDir" + exerciseID, out folder))
             {
-                DBCode code = DBCode.OK; //CheckExercisePerm(exerciseID, userID, Role.Teacher);
+                (string path, DBCode code) = DataBaseManager.GetExDir(exerciseID);
                 if(CheckError(code))
                 {
                     return (null, code);
                 }
-                (Exercise ex, DBCode code2) = Convert(DataBaseManager.ReadExercise(exerciseID));
-                if(CheckError(code2))
-                {
-                    return (null, code);
-                }
-                AddExerciseTeacherPerm(exerciseID, userID, ex.FilesLocation);
-                return (ex.FilesLocation, DBCode.OK);
+                CacheExerciseDirectory(exerciseID, path);
+                return (path, DBCode.OK);
             }
             return (folder, DBCode.OK);
 
         }
-        public DBCode CheckExercisePerm(string exerciseid, string userid, Role role)
+        public DBCode CheckExercisePermission(string exerciseid, Role role)
         {
-            var perms = GetPermission(userid);
-            bool has;
-            Monitor.Enter(perms);
-            has = perms.CheckExercisePerm(exerciseid, role);
-            Monitor.Exit(perms);
+            if(_userPerms == null)
+            {
+                return DBCode.NotAllowed;
+            }
+            Monitor.Enter(_userPerms);
+            bool has = _userPerms.CheckExercisePerm(exerciseid, role);
+            Monitor.Exit(_userPerms);
             if(has)
             {
                 return DBCode.OK;
             }
-            return CheckResourcePerm(exerciseid, userid, role, ResourceType.Exercise);
+            DBCode code = CheckResourcePerms(exerciseid,role, ResourceType.Exercise);
+            if(code != DBCode.OK && role == Role.Teacher)
+            {
+                code = CheckResourcePerms(exerciseid, role, ResourceType.OldExercise);
+            }
+            if(code == DBCode.OK)
+            {
+                AddExercisePerm(exerciseid, role);
+            }
+            return code;
         }
-        public void AddSubmissionPerm(string submissionid, string userid, Role role, string folder)
+        public DBCode CheckSubmissionPerm(string submissionid, Role role)
         {
-            var perms = GetPermission(userid);
-            Monitor.Enter(perms);
-            perms.SetSubmissionPerm(submissionid, role, folder);
-            Monitor.Exit(perms);
-        }
-        public DBCode CheckSubmissionPerm(string submissionid, string userid, Role role)
-        {
-            var perms = GetPermission(userid);
-            bool has;
-            Monitor.Enter(perms);
-            has = perms.CheckSubmissionPerm(submissionid, role);
-            Monitor.Exit(perms);
+            if(_userPerms == null)
+            {
+                return DBCode.NotAllowed;
+            }
+            Monitor.Enter(_userPerms);
+            bool has = _userPerms.CheckSubmissionPerm(submissionid, role);
+            Monitor.Exit(_userPerms);
             if(has)
             {
                 return DBCode.OK;
             }
-            return CheckResourcePerm(submissionid, userid, role, ResourceType.Submission);
+            return CheckResourcePerms(submissionid,role, ResourceType.Submission);
         }
-        public DBCode CheckChatPerm(string chatid, string userid, Role role)
+        public DBCode CheckOtherStudentExercisePermission(string studentId, string exerciseid)
         {
-            var perms = GetPermission(userid);
-            bool has;
-            Monitor.Enter(perms);
-            has = perms.CheckSubmissionPerm(chatid, role);
-            Monitor.Exit(perms);
+            return DataBaseManager.CheckResourcePerms(exerciseid, studentId, Role.Student, ResourceType.Exercise);
+        }
+         public void AddSubmissionPerm(string submissionid, Role role)
+        {
+            Monitor.Enter(_userPerms);
+            _userPerms.SetSubmissionPerm(submissionid, role);
+            Monitor.Exit(_userPerms);
+        }
+        public DBCode CheckChatPerm(string chatid, Role role)
+        {
+            if(_userPerms == null)
+            {
+                return DBCode.NotAllowed;
+            }
+            Monitor.Enter(_userPerms);
+            bool has = _userPerms.CheckSubmissionPerm(chatid, role);
+            Monitor.Exit(_userPerms);
             if(has)
             {
                 return DBCode.OK;
             }
-            return CheckResourcePerm(chatid, userid, role, ResourceType.Chat);
+            return CheckResourcePerms(chatid, role, ResourceType.Chat);
         }
-        public void AddChatPerm(string chatid, string userid, Role role, bool isExt)
+        public void AddChatPerm(string chatid, Role role, bool isExt)
         {
-            var perms = GetPermission(userid);
-            Monitor.Enter(perms);
-            perms.SetChatPerm(chatid, role, isExt);
-            Monitor.Exit(perms);
+            Monitor.Enter(_userPerms);
+            _userPerms.SetChatPerm(chatid, role, isExt);
+            Monitor.Exit(_userPerms);
+        }
+        public DBCode CheckMessagePerm(int messageId, Role role)
+        {
+            return CheckResourcePerms(messageId, role, ResourceType.Message);
         }
         public bool CheckError(DBCode code)
         {
@@ -188,129 +224,157 @@ namespace Submit_System {
             }
             return (null, DBCode.NotFound);
         }
-        public (string, DBCode) GetSubmissionDirectory(string userid, string submisisonId, Role role)
+        public (string, DBCode) GetSubmissionDirectory(string submisisonId)
         {
-            var perm = GetPermission(userid);
-            var folder = perm.GetSubmissionFolder(submisisonId);
-            if(folder == null)
+            string folder;
+            if(!_cache.TryGetValue("SubDir" + submisisonId, out folder))
             {
-                (int type, DBCode code) = Convert(DataBaseManager.ReadTypeOfStudentInSubmission(submisisonId, userid));
-                if(CheckError(code))
+                (string path, DBCode code2) = DataBaseManager.GetSubDir(submisisonId);
+                if(CheckError(code2))
                 {
-                    return (null, code);
+                    return (null, code2);
                 }
-                (Submission submission, DBCode code2) = Convert(DataBaseManager.ReadSubmission(submisisonId));
-                folder = submission?.Files_Location;
-                AddSubmissionPerm(submisisonId, userid, role, folder);
-                return (folder,code2);
+                CacheExerciseDirectory(submisisonId, path);
+                folder = path;
             }
             return (folder, DBCode.OK);
         }
-        public (string, string, DBCode) CreateSubmissionPath(string userid, string exerciseId)
+        public ((string, string), DBCode) CreateSubmissionDirectory(string exerciseId)
         {
-           var ex = Convert(DataBaseManager.ReadExercise(exerciseId));
-           var subo = Convert(DataBaseManager.ReadSubmissionIdAndTypeOfStudentInExercise(userid, exerciseId));
-           if(subo.Item1.Item2 != 1)
+           (Exercise exer, DBCode exCode) = Convert(DataBaseManager.ReadExercise(exerciseId));
+           if(CheckError(exCode))
            {
-               return (null, null, DBCode.NotAllowed);
+               return ((null, null), (DBCode) exCode);
            }
-           var subosis = Convert(DataBaseManager.ReadSubmission(subo.Item1.Item1));
-           if(subosis.Item1.Submission_Status != 0 && ex.Item1.MultipleSubmission)
+           ((string submissionId, int submitterType), DBCode code) =
+                Convert(DataBaseManager.ReadSubmissionIdAndTypeOfStudentInExercise(UserID, exerciseId));
+           if(submitterType != 1)
            {
-               return (null, null, DBCode.NotAllowed);
+               ErrorString = "You are not the main submitter";
+               return ((null, null), DBCode.NotAllowed);
            }
-           if(CheckError(ex.Item2))
+           (Submission submission, DBCode code2) = Convert(DataBaseManager.ReadSubmission(submissionId));
+           if(CheckError(code2))
            {
-               return (null, null, (DBCode) ex.Item2);
+               return ((null, null), code);
            }
-           Exercise exer = ex.Item1;
-           var code = CheckCoursePermission(userid, exer.Course_ID, Role.Student);
-           if(code != DBCode.OK)
+           if(submission.SubmissionStatus != (int) SubmissionState.Unsubmitted && !exer.MultipleSubmission)
            {
-               return (null, null, code);
+               return Error<(string, string)>("Resubmission is not allowed for this assignment", DBCode.NotAllowed);
            }
-           string path = Path.Combine("Courses", exer.Course_ID, "Exercises", exer.Name, "Submissions", userid);
-           return (path, subosis.Item1.ID, DBCode.OK);
+           string path = Path.Combine("Courses", exer.CourseID, "Exercises", exer.Name, "Submissions", UserID);
+           CacheSubmissionDirectory(submissionId, path);
+           return ((path, submissionId), DBCode.OK);
 
         }
-        public (List<Course>, DBCode) GetCourses(string userid, Role role) {
-            return Convert(DataBaseManager.GetCoursesOfUser(userid, role));
+        public (List<Course>, DBCode) GetCourses(Role role) {
+            (List<Course> courseList, DBCode code) output = DataBaseManager.GetCoursesOfUser(UserID, role);
+            if(output.code != DBCode.OK)
+            {
+                return output;
+            }
+            List<string> ids = output.courseList.Select((Course course) => course.ID).ToList();
+            AddCoursePerms(ids, role);
+            return output;
         }
-        public (List<ExerciseLabel>, DBCode) GetCourseExercises(string courseId, string userid, Role role) {
+        public (List<ExerciseLabel>, DBCode) GetCourseExercises(string courseId) {
             
-            var result = CheckCoursePermission(userid, courseId, role);
-            if(CheckError(result))
-            {
-                return (null, result);
-            }
-            var exes = Convert(DataBaseManager.ReadExerciseLabelsOfCourse(courseId));
-            return exes;
+            return Convert(DataBaseManager.ReadExerciseLabelsOfCourse(courseId));
         }
 
-        public List<CheckerExInfo> GetExercises(string userid)
+        public (List<CheckerExInfo>, DBCode) GetCheckerExercises()
         {
-          return null;
+          return DataBaseManager.CheckerExercises(UserID);
         }
-        public (List<ExerciseGradeDisplay>, DBCode) GetStudentGrades(string userid)
+        public (List<ExerciseGradeDisplay>, DBCode) GetStudentGrades()
         {
-            return Convert(DataBaseManager.GetExerciseGrades(userid));
+            return Convert(DataBaseManager.GetExerciseGrades(UserID));
         }
 
-        public (SortedDictionary<string, List<ExerciseLabel>>, DBCode) GetAllExercises(string userid, string courseid)
+        public (SortedDictionary<string, List<ExerciseLabel>>, DBCode) GetAllExercises(string courseid)
         {
-            var res = CheckCoursePermission(userid, courseid, Role.Teacher);
-            if(CheckError(res))
-            {
-                return (null, res);
-            }
             return Convert(DataBaseManager.GetAllExercises(courseid));
         }
 
-        public (List<UserLabel>, DBCode) GetCourseTeachers(string userid, string courseid)
+        public (List<UserLabel>, DBCode) GetCourseTeachers(string courseid)
         {
-            return Convert(DataBaseManager.ReadUsersOfCourse(courseid, Role.Teacher));
+            return DataBaseManager.GetUsersOfCourse(courseid, Role.Teacher);
         }
-        public (List<UserLabel>, DBCode) GetCourseCheckers(string userid, string courseid)
+        public (List<UserLabel>, DBCode) GetCourseCheckers(string courseid)
         {
-            return Convert(DataBaseManager.ReadUsersOfCourse(courseid, Role.Checker));
+            return DataBaseManager.GetUsersOfCourse(courseid, Role.Checker);
         }
-        public Submission CreateSubmission(string studentId, string exId)
+        public (Submission, DBCode) CreateSubmission(string exId)
         {
             var s = new Submission {
-                ID = Submission.GenerateID(studentId, exId),
-                Exercise_ID = exId,
-                Submission_Status = (int) SubmissionState.Unchecked,
-                Auto_Grade = -1,
-                Style_Grade = -1,
-                Manual_Final_Grade = -1,
-                Time_Submitted = DateTime.MinValue,
+                ID = Submission.GenerateID(UserID, exId),
+                ExerciseID = exId,
+                SubmissionStatus = (int) SubmissionState.Unchecked,
+                AutoGrade = -1,
+                StyleGrade = -1,
+                ManualFinalGrade = -1,
+                ManualCheckData = null,
+                TimeSubmitted = DateTime.Now,
+                SubmissionDateId = -1
             };
+            DataBaseManager.AddStudentToSubmission(s.ID, UserID, 1, exId);
             DataBaseManager.AddSubmission(s);
-            DataBaseManager.AddStudentToSubmission(s.ID, studentId, 1, exId);
-            return s;
+            return (s, DBCode.OK);
         }
-        private DBCode CheckResourcePerm(string dateid, string userid, Role role, ResourceType resource)
+        private DBCode CheckResourcePerms(string resourceId, Role role, ResourceType resource)
         {
-            var a = Convert(DataBaseManager.CheckResourcePerms(dateid, userid, role, resource));
-            if(a.Item1)
+            if(IsAdmin)
             {
                 return DBCode.OK;
             }
-            else if(a.Item2 == DBCode.OK)
-            {
-                return DBCode.NotFound;
-            }
-            return a.Item2;
+            return DataBaseManager.CheckResourcePerms(resourceId, UserID, role, resource);
         }
-        public DBCode CheckDatePerm(string userid, string dateid)
+        private DBCode CheckResourcePerms(int resourceId, Role role, ResourceType resource)
         {
-            return CheckResourcePerm(dateid, userid, Role.Teacher, ResourceType.Date);
+            if(IsAdmin)
+            {
+                return DBCode.OK;
+            }
+            return DataBaseManager.CheckResourcePerms(resourceId, UserID, role, resource);
         }
-        public (List<ExerciseDateDisplay>, DBCode) GetExcercisesDates(string userId) {
-           var output = Convert(DataBaseManager.GetExerciseDates(userId));
+        public DBCode CheckTeacherDatePerm(int dateid)
+        {
+            return CheckResourcePerms(dateid, Role.Teacher, ResourceType.Date);
+        }
+        public DBCode CheckTestPerm(int testid, Role role)
+        {
+            if(IsAdmin)
+            {
+                return DBCode.OK;
+            }
+            DBCode code = CheckResourcePerms(testid, role, ResourceType.Test);
+            if(code != DBCode.OK && role == Role.Teacher)
+            {
+                code = CheckResourcePerms(testid, Role.Teacher, ResourceType.OldTest);
+            }
+            return code;
+        }
+        public (List<ExerciseDateDisplay>, DBCode) GetStudentExcercisesDates() {
+           var output = Convert(DataBaseManager.GetStudentExerciseDates(UserID));
            return output;
         }
-        public (StudentExInfo, DBCode) GetStudentSubmission(string userid, string exId)
+        public ((Submission, int), DBCode) GetStudentSubmission(string userID, string exerciseId)
+        {
+            ((string id, int type), DBCode code) = Convert(DataBaseManager.ReadSubmissionIdAndTypeOfStudentInExercise(UserID, exerciseId));
+            if(code == DBCode.NotFound) {
+                var a = CreateSubmission(exerciseId);
+                return ((a.Item1, 1), a.Item2);
+            }
+            (Submission submission, DBCode code2) = Convert(DataBaseManager.ReadSubmission(id));
+            if(code2 == DBCode.NotFound)
+            {
+                DataBaseManager.DeleteStudentFromSubmission(userID, exerciseId);
+                var a = CreateSubmission(exerciseId);
+                return ((a.Item1, 1), a.Item2);
+            }
+            return ((submission, type), code2);
+        }
+        public (StudentExInfo, DBCode) GetStudentExerciseInfo(string exId)
         {
             var exResult = Convert(DataBaseManager.ReadExercise(exId));
             if(CheckError(exResult.Item2))
@@ -318,43 +382,31 @@ namespace Submit_System {
                 return (null, exResult.Item2);
             }
             var ex = exResult.Item1;
-            AddExercisePerm(ex.ID, userid, Role.Student);
-            ((string id, int type), DBCode code) = Convert(DataBaseManager.ReadSubmissionIdAndTypeOfStudentInExercise(userid, exId));
-            Submission submission;
-            if(code == DBCode.NotFound) {
-                DBCode hasPerm = CheckCoursePermission(userid, ex.Course_ID, Role.Student);
-                submission = CreateSubmission(userid, exId);
-            }
-            if(CheckError(code))
-            {
-                 return (null, code);
-            }
-            (var submissionTemp, DBCode code2) = Convert(DataBaseManager.ReadSubmission(id));
-            submission = submissionTemp;
+            ((var submission, int type), DBCode code2) = GetStudentSubmission(UserID, exId);
             if(CheckError(code2))
             { 
                 return (null, code2);
             }
-            AddSubmissionPerm(id, userid, Role.Student, submission.Files_Location);
-            (var chats, DBCode code3) = Convert(DataBaseManager.ReadChatsOfSubmission(id));
+            AddSubmissionPerm(submission.ID, Role.Student);
+            (var chats, DBCode code3) = Convert(DataBaseManager.ReadChatsOfSubmission(submission.ID));
             if(CheckError(code3))
             { 
                 return (null, code3);
             }
             if(chats[ChatType.Extension] != null)
             {
-                AddChatPerm(chats[ChatType.Extension].ID, userid, Role.Student, true);
+                AddChatPerm(chats[ChatType.Extension].ID, Role.Student, true);
             }
              if(chats[ChatType.Appeal] != null)
             {
-                AddChatPerm(chats[ChatType.Appeal].ID, userid, Role.Student, false);
+                AddChatPerm(chats[ChatType.Appeal].ID, Role.Student, false);
             }
-            (var submitters, DBCode code4) = Convert(DataBaseManager.GetSubmitters(id));
+            (var submitters, DBCode code4) = Convert(DataBaseManager.GetSubmitters(submission.ID));
             if(CheckError(code4))
             { 
                 return (null, code4);
             }
-            (var dates, DBCode code5) = Convert(DataBaseManager.GetStudentExeriseDates(submission.Submission_Date_Id, exId));
+            (var dates, DBCode code5) = Convert(DataBaseManager.GetStudentExeriseDates(submission.SubmissionDateId, exId));
             if(CheckError(code5))
             {
                 return (null, code5);
@@ -376,98 +428,98 @@ namespace Submit_System {
                 SubmissionID = submission.ID,
                 ExID = ex.ID,
                 ExName = ex.Name,
-                DateSubmitted = submission.Time_Submitted,
+                DateSubmitted = submission.TimeSubmitted,
                 AutoWeight = ex.AutoTestGradeWeight,
                 StyleWeight = ex.StyleTestGradeWeight,
-                AutoGrade = submission.Auto_Grade,
-                StyleGrade = submission.Style_Grade,
-                ManualGrade = submission.Manual_Final_Grade,
-                SubmissionFolder = submission.Files_Location,
+                AutoGrade = submission.AutoGrade,
+                StyleGrade = submission.StyleGrade,
+                ManualGrade = submission.ManualFinalGrade,
+                SubmissionFolder = submission.FilesLocation,
+                Filenames = FileUtils.GetRelativePaths(submission.FilesLocation),
                 ExtensionChat = chats[ChatType.Extension],
-                LateSubmissionSettings = ex.LateSubmissionSettings,
+                Reductions = ex.Reductions,
                 AppealChat = chats[ChatType.Appeal],
                 MaxSubmitters = ex.MaxSubmitters,
                 Dates = dates,
+                ManualCheckInfo = submission.ManualCheckData,
                 IsMultipleSubmission = ex.MultipleSubmission,
-                State = (SubmissionState) submission.Submission_Status,
+                State = (SubmissionState) submission.SubmissionStatus,
                 InitReduction = r,
                 Submitters = submitters,
                 IsMainSubmitter = (type == 1)
             };
             return (info, DBCode.OK);
         }
-        public (List<Message>, DBCode) GetMesssages(string userId, string chatId, Role role)
+        public DBCode CreateExercise(Exercise exercise)
         {
-            DBCode res = CheckChatPerm(chatId, userId, role);
-            if(res != DBCode.OK)
+            DBCode code =  Convert(DataBaseManager.AddExercise(exercise));
+            if(CheckError(code))
             {
-                return (null, res);
+                return code;
             }
+            var date = new SubmitDate {
+                Group = 0,
+                Reduction = 0,
+                Date = exercise.MainDate,
+                ExerciseID = exercise.ID
+            };
+            return AddDate(date).Item2;
+
+        }
+        public (List<Message>, DBCode) GetMesssages(string chatId)
+        {
             return Convert(DataBaseManager.ReadMessagesOfChat(chatId));
         }
-        public DBCode Appeal(string userId, string submissionid, MessageInput firstMessage)
+        public (string, DBCode) Appeal(string submissionId)
         {
-            var code = CheckSubmissionPerm(submissionid, userId, Role.Student);
+            (var sub, DBCode code) = Convert(DataBaseManager.ReadSubmission(submissionId));
+            var state = (SubmissionState) sub.SubmissionStatus;
+            if(state != SubmissionState.Checked)
+            {
+                return Error<string>("Either this exericse was already appealed or it wasn't checked yet", DBCode.NotAllowed);
+            }
+            return AddRequestChat(submissionId, ChatType.Appeal);
+        }
+        public (string, DBCode) ExtensionRequest(string submissionId)
+        {
+            (var sub, DBCode code) = Convert(DataBaseManager.ReadSubmission(submissionId));
+            var state = (SubmissionState) sub.SubmissionStatus;
+            if(state != SubmissionState.Unchecked && state != SubmissionState.Unsubmitted)
+            {
+                return Error<string>("This submission was already checked", DBCode.NotAllowed);
+            }
+            return AddRequestChat(submissionId, ChatType.Extension);
+        }
+        private (string, DBCode) AddRequestChat(string submissionId, ChatType type)
+        {
+            var chat = new Chat(submissionId, ChatType.Appeal);
+            DBCode code = Convert(DataBaseManager.AddChat(chat));
+            bool isExt = (chat.Type == (int) ChatType.Extension);
+            if(!CheckError(code))
+            {
+                AddChatPerm(chat.ID, Role.Student, isExt);
+            }
+            return (chat.ID, DBCode.OK);
+        }
+        public (int, DBCode) InsertMessage(MessageInput input, bool isTeacher) {
+            var msg = new Message {
+                ChatID = input.ChatID,
+                Body = input.Text,
+                AttachedFilePath = input.FilePath,
+                IsTeacher = isTeacher,
+                SenderID = UserID,
+                Status = 0,
+            };
+            (Chat chat, DBCode code) = Convert(DataBaseManager.ReadChat(input.ChatID));
             if(CheckError(code))
             {
-                return code;
+                return (-1, code);
             }
-            var chat = new ChatData(submissionid, (int) ChatType.Appeal);
-            return AddChat(userId, chat, firstMessage);
-        }
-        public DBCode Extension(string userId, string submissionid, MessageInput firstMessage)
-        {
-            var chat = new ChatData(submissionid, (int) ChatType.Extension);
-            return AddChat(userId, chat, firstMessage);
-        }
-        private DBCode AddChat(string userId, ChatData chat, MessageInput firstMassage)
-        {
-            DBCode code = CheckSubmissionPerm(chat.Submission_ID, userId, Role.Student);
-            if(CheckError(code))
+            else if(chat.IsClosed)
             {
-                return code;
+                return (-1, DBCode.NotAllowed);
             }
-            code = Convert(DataBaseManager.AddChat(chat));
-            bool a = chat.Type == (int) ChatType.Extension;
-            AddChatPerm(chat.ID, userId, Role.Student, a);
-            if(CheckError(code))
-            {
-                return code;
-            }
-            return InsertStudentMessage(userId, chat.ID, firstMassage.Text);
-        }
-        public DBCode InsertStudentAttachment(string userId, string chatId, SubmitFile file) {
-            DBCode res = CheckChatPerm(chatId, userId, Role.Student);
-            if(res != DBCode.OK)
-            {
-                return res;
-            }
-            string hasho =  CryptoUtils.GetRandomBase64String(6).Replace('/', '-');
-            string path = Path.Combine("Requests", hasho);
-            while(Directory.Exists(path)) {
-                hasho =  CryptoUtils.GetRandomBase64String(6);
-            }
-            file.CreateFile(path);
-            var msg = new MessageData(chatId, DateTime.Now, 1, path, userId, 0, "userid");
             return Convert(DataBaseManager.AddMessage(msg));
-        }
-        public DBCode InsertStudentMessage(string userId, string chatId, string text) {
-            DBCode res = CheckChatPerm(chatId, userId, Role.Student);
-            if(res != DBCode.OK)
-            {
-                return res;
-            }
-            var msg = new MessageData(chatId, DateTime.Now, 0, text, userId, 0, "userid");
-            return Convert(DataBaseManager.AddMessage(msg));
-        }
-        public DBCode InsertTeacherMessage(string userId, string chatId, MessageInput msg) {
-            DBCode res = CheckChatPerm(chatId, userId, Role.Student);
-            if(res != DBCode.OK)
-            {
-                return res;
-            }
-            var msga = new MessageData();
-            return Convert(DataBaseManager.AddMessage(msga));
         }
         public DBCode MarkSubmitted(string submissionid, string path)
         {
@@ -477,134 +529,285 @@ namespace Submit_System {
                 return res.Item2;
             }
             var sub = res.Item1;
-            sub.Submission_Status = 1;
-            sub.Files_Location = path;
+            sub.SubmissionStatus = 1;
+            sub.FilesLocation = path;
+            sub.TimeSubmitted = DateTime.Now;
             return Convert(DataBaseManager.UpdateSubmission(sub));
         }
-        public DBCode AddTeacherToCourse(string userid, string courseid, string teacherid)
+        public DBCode AddTeacherToCourse(string courseid, string teacherid)
         {
-            DBCode code = CheckCoursePermission(userid, courseid, Role.Teacher);
-            if(code == DBCode.OK)
-            {
-                code = Convert(DataBaseManager.AddUserToCourse(courseid, teacherid, Role.Teacher));
-            }
-            return code;
+            return DataBaseManager.AddUserToCourse(courseid, teacherid, Role.Teacher);
         }
-        public DBCode AddCheckerToCourse(string userid, string courseid, string checkerid)
+        public DBCode AddCheckerToCourse(string courseid, string checkerid)
         {
-            DBCode code = CheckCoursePermission(userid, courseid, Role.Teacher);
-            if(code == DBCode.OK)
-            {
-                code = Convert(DataBaseManager.AddUserToCourse(courseid, checkerid, Role.Checker));
-            }
-            return code;
+            return DataBaseManager.AddUserToCourse(courseid, checkerid, Role.Checker);
         }
-        public DBCode DeleteCheckerFromCourse(string userid, string courseid, string checkerid)
+         public DBCode AddStudentToCourse(string courseid, string studentId)
         {
-            DBCode code = CheckCoursePermission(userid, courseid, Role.Teacher);
-            if(code == DBCode.OK)
-            {
-                code = Convert(DataBaseManager.DeleteUserFromCourse(courseid, checkerid, Role.Checker));
-            }
-            return code;
+            return DataBaseManager.AddUserToCourse(courseid, studentId, Role.Student);
         }
-        public DBCode AddCheckerToExercise(string userid, string courseid, string checkerid)
+        public DBCode DeleteCheckerFromCourse(string courseid, string checkerid)
         {
-            DBCode code = CheckCoursePermission(userid, courseid, Role.Teacher);
-            if(code == DBCode.OK)
-            {
-                code = Convert(DataBaseManager.AddCheckerToExercise(courseid, checkerid));
-            }
-            return code;
+            return DataBaseManager.DeleteUserFromCourse(courseid, checkerid, Role.Checker);
         }
-        public DBCode DeleteCheckerFromExercise(string userid, string courseid, string checkerid)
+        public DBCode AddCheckerToExercise(string courseid, string checkerid)
         {
-            DBCode code = CheckCoursePermission(userid, courseid, Role.Teacher);
-            if(code == DBCode.OK)
-            {
-                code = Convert(DataBaseManager.DeleteCheckerFromExercise(courseid, checkerid));
-            }
-            return code;
+            return DataBaseManager.AddCheckerToExercise(courseid, checkerid);
         }
-        public (List<UserLabel>, DBCode) GetExerciseCheckers(string userid, string exerciseid)
+        public DBCode DeleteCheckerFromExercise(string courseid, string checkerid)
+        {
+            return DataBaseManager.DeleteCheckerFromExercise(courseid, checkerid);
+        }
+        public (List<UserLabel>, DBCode) GetExerciseCheckers(string exerciseid)
         {
             return Convert(DataBaseManager.GetExerciseCheckers(exerciseid));
         }
-        public (List<Test>, DBCode) GetTests(string userid, string exerciseid)
+        public (List<Test>, DBCode) GetTests(string exerciseid)
         {
             return Convert(DataBaseManager.ReadTestsOfExercise(exerciseid));
         }
-        public DBCode AddTest(string userid, Test test)
+        public (int, DBCode) AddTest(Test test)
         {
-            if(CheckExercisePerm(test.Exercise_ID, userid, Role.Teacher) != DBCode.OK)
-            {
-                return DBCode.NotAllowed;
-            }
             return Convert(DataBaseManager.AddTest(test));
         }
-        public DBCode CloseChat(string userid, string chatid)
+        public DBCode CloseChat(string chatid)
         {
-            DBCode code = CheckChatPerm(chatid, userid, Role.Teacher);
+            return DataBaseManager.CloseChat(chatid);
+        }
+        public DBCode AcceptAppeal(string chatid)
+        {
+            (var chat, DBCode code2) = Convert(DataBaseManager.ReadChat(chatid));
+            if(CheckError(code2))
+            {
+                return code2;
+            }
+            if(chat.Type == ChatType.Appeal)
+            {
+                return DBCode.Invalid;
+            }
+            (var sub, DBCode code3) = Convert(DataBaseManager.ReadSubmission(chat.SubmissionID));
+            sub.SubmissionStatus = (int) SubmissionState.Appeal;
+            DBCode code4 = Convert(DataBaseManager.UpdateSubmission(sub));
+            if(CheckError(code2))
+            {
+                return code2;
+            }
+            return CloseChat(chatid);
+        }
+        public DBCode AcceptExtension(string chatid, SubmitDate date)
+        {
+            (var chat, DBCode code) = Convert(DataBaseManager.ReadChat(chatid));
             if(CheckError(code))
             {
                 return code;
             }
+            (int dateid, DBCode code2) = DataBaseManager.AddDate(date);
+            if(CheckError(code2))
+            {
+                return code2;
+            }
+            (Submission submission, DBCode code3) = Convert(DataBaseManager.ReadSubmission(chat.SubmissionID));
+            if(CheckError(code3))
+            {
+                return code3;
+            }
+            DBCode code4 = Convert(DataBaseManager.UpdateSubmission(submission));
+            if(CheckError(code4))
+            {
+                return code4;
+            }
             return CloseChat(chatid);
         }
-        private DBCode CloseChat(string chatid)
+        public (List<ExTeacherDisplay>, DBCode) GetTeacherExercises()
         {
-            return Convert(DataBaseManager.CloseChat(chatid));
-        }
-        public (List<ExTeacherDisplay>, DBCode) GetTeacherExercises(string userid)
-        {
-            return Convert(DataBaseManager.ReadTeacherExerciseLabels(userid));
+            return Convert(DataBaseManager.ReadTeacherExerciseLabels(UserID));
         }
         public void AddMossCheck(MossData data)
         {
             return;
         }
-        public (MossData, DBCode) GetMossCheck(string userID, string exerciseID)
-        {
-            DBCode code = CheckExercisePerm(exerciseID, userID, Role.Teacher);
-            if(CheckError(code))
-            {
-                return (null, code);
-            }
-            (MossData data, DBCode code2) = (null, DBCode.NotFound); // TODO: Get MossCheck from Database
-            if(CheckError(code2))
-            {
-                return (null, code2);
-            }
-            return (data, code2);
-        }
-        public (string, DBCode) GetExFolder(string exerciseID, string userID)
-        {
-            (string folder, DBCode code) = GetExerciseDirectory(exerciseID, userID);
-            if(CheckError(code))
-            {
-                return (null, code);
-            }
-            return (folder, DBCode.OK);
-        }
         public void DeletePasswordToken(string userID)
         {
             DataBaseManager.DeleteToken(userID);
         }
-        public bool CheckPasswordToken(string token)
+        public DBCode DeleteTest(int testId)
         {
-            return(CheckError(Convert(DataBaseManager.ReadToken(token)).Item2));
+            return DataBaseManager.DeleteTest(testId);
         }
-        public ((string, DateTime), DBCode) GetPasswordToken(string userID)
+        public DBCode UpdateTest(Test test)
         {
-            return Convert(DataBaseManager.ReadToken(userID));
+            return Convert(DataBaseManager.UpdateTest(test));
         }
-        public void AddPasswordToken(string userID, string token)
+        public string CheckPasswordToken(string token)
         {
-            DataBaseManager.AddPasswordToken(userID, token);
+            return(Convert(DataBaseManager.ReadTokenInfo(token)).Item1.Item1);
         }
-        public (List<RequestLabel>, DBCode) GetRequests(string exerciseID, string userid, ChatType type)
+        public void AddPasswordToken(string userID, string token, DateTime expiration)
         {
-            return Convert(DataBaseManager.GetRequests(exerciseID, type));
+            DataBaseManager.AddPasswordToken(userID, token, expiration);
+        }
+        public (List<RequestLabel>, DBCode) GetRequests(string exerciseID, ChatType type)
+        {
+            return DataBaseManager.GetRequests(exerciseID, type);
+        }
+          public (List<RequestLabelMainPage>, DBCode) GetRequests(ChatType type)
+        {
+            return DataBaseManager.GetRequestsMainPage(UserID, type);
+        }
+        public (Exercise, DBCode) GetExercise(string exerciseID)
+        {
+            return Convert(DataBaseManager.ReadExercise(exerciseID));
+        }
+         public (int, DBCode) AddDate(SubmitDate date)
+        {
+            return DataBaseManager.AddDate(date);
+        }
+        public DBCode UpdateDate(SubmitDate date)
+        {
+            return DataBaseManager.AddDate(date).Item2;
+        }
+        public DBCode DeleteDate(int dateId)
+        {
+            return DataBaseManager.DeleteDate(dateId);
+        }
+        public (List<TeacherDateDisplay>,DBCode) GetExerciseDates(string exerciseID)
+        {
+            return DataBaseManager.GetDatseOfExercise(exerciseID);
+        }
+        public DBCode MarkCopy(CopyForm copy)
+        {
+            return DataBaseManager.SetCopied(copy);
+        }
+        public (Dictionary<string, List<SubmissionLabel>>, DBCode) GetSubmissionLabels(string exerciseID)
+        {
+            (var dict, DBCode code) = Convert(DataBaseManager.GetSubmissionLabels(exerciseID));
+            dict.Values.ToList().ForEach(list =>
+                list.ForEach(label =>
+                    label.CheckState = GetCheckState(label.CurrentChecker)
+                )
+            );
+            return (dict, code);
+        }
+        /// <summary>
+        /// Gets a submission and marks the user as it's current checker. Only for teachers and checkers.
+        /// </summary>
+        /// <param name="submissionId"></param>
+        /// <returns></returns>
+        public (Submission, DBCode) GetSubmission(string submissionId)
+        {
+            (Submission submission, DBCode code) = Convert(DataBaseManager.ReadSubmission(submissionId));
+            if(CheckError(code))
+            {
+                return (submission, code);
+            }
+            submission.CheckState = GetCheckState(submission.CurrentCheckerId);
+            return (submission, code);
+           
+        }
+        public DBCode BeginChecking(string submisisonId)
+        {
+            return DataBaseManager.BeginChecking(submisisonId, UserID);
+        }
+        private CheckState GetCheckState(string checkerId)
+        {
+            if(checkerId == null)
+            {
+                return CheckState.NotBeingChecked;
+            }
+            else if(checkerId == UserID)
+            {
+                return CheckState.CheckedByYou;
+            }
+            else
+            {
+                return CheckState.CheckedByOther;
+            }
+        }
+        public (string, DBCode) GetMessageFile(int messageId)
+        {
+            return DataBaseManager.GetMessageFile(messageId);
+        }
+         public (string, DBCode) GetTestDir(int testId)
+        {
+            return DataBaseManager.GetTestDir(testId);
+        }
+        public DBCode EndChecking(Submission submission)
+        {
+            return DataBaseManager.EndChecking(submission);
+        }
+        public DBCode AddCourse(Course course)
+        {
+            return Convert(DataBaseManager.AddCourse(course));
+        }
+        public DBCode DetachStudent(string submissionId)
+        {
+            (int type, DBCode code) = Convert(DataBaseManager.ReadTypeOfStudentInSubmission(submissionId, UserID));
+            if(code != DBCode.OK)
+            {
+                return code;
+            }
+            if(type == 1)
+            {
+                return DBCode.NotAllowed;
+            }
+            return Convert(DataBaseManager.DeleteStudentFromSubmission(UserID, submissionId));
+        }
+        public (Dictionary<string, bool>, DBCode) ValidateSubmitters(string exerciseId, List<string> submitters)
+        {
+            var subDict = new Dictionary<string, string>();
+            var dict = new Dictionary<string ,bool>();
+            ((string submissionId, _), DBCode code) = Convert(DataBaseManager.ReadSubmissionIdAndTypeOfStudentInExercise(UserID, exerciseId));
+            if(code != DBCode.OK)
+            {
+                return (null, code);
+            }
+           foreach(string submitter in submitters)
+           {
+                ((string subId, _), DBCode code2) = Convert(DataBaseManager.ReadSubmissionIdAndTypeOfStudentInExercise(submitter, exerciseId));
+                if(code2 == DBCode.Error)
+                {
+                    return (null, DBCode.Error);
+                }
+                else if(code2 != DBCode.OK)
+                {
+                    dict[submitter] = true;
+                    continue;
+                }
+                subDict[submitter]  = subId;
+                (Submission sub, DBCode code3) = Convert(DataBaseManager.ReadSubmission(subId));
+                if(code2 != DBCode.OK)
+                {
+                    return (null, DBCode.Error);
+                }
+                dict[submitter] = ((SubmissionState) sub.SubmissionStatus == SubmissionState.Unsubmitted);
+           }
+           if(dict.Values.ToList().All((entry) => entry))
+           {
+                foreach(var studentAndSubmission in subDict)
+                {
+                    string subId = studentAndSubmission.Value;
+                    string student = studentAndSubmission.Key;
+                    var a = DataBaseManager.DeleteSubmission(subId);
+                    if(a != DBCode.OK)
+                    {
+                        return (null, a);
+                    }
+                    a = Convert(DataBaseManager.DeleteStudentFromSubmission(student, studentAndSubmission.Value));
+                    if(a != DBCode.OK)
+                    {
+                        return (null, a);
+                    }
+                }
+                foreach(string submitter in dict.Keys)
+                {
+                    code = Convert(DataBaseManager.AddStudentToSubmission(submissionId, submitter, 0, exerciseId));
+                    if(code != DBCode.OK)
+                    {
+                        return (null, DBCode.Error);
+                    }
+                }
+           }
+            return (dict, DBCode.OK);
         }
     }
 }
