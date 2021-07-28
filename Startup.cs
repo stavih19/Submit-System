@@ -30,7 +30,6 @@ namespace Submit_System
             var options = new MemoryCacheOptions { SizeLimit = 100 };
             services.AddSingleton<MemoryCache>(provider => new MemoryCache(options));
             services.AddTransient<AuthFilter>();
-            services.AddTransient<AutomaticTester, Python3Tester>();
             services.AddSingleton<MossClient>();
             services.AddMvc(options =>
             {
