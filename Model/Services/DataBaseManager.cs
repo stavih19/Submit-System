@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace Submit_System
 {
     public partial class DataBaseManager{
-        private static string connetionString = "Data Source=127.0.0.1;Initial Catalog=submit02;User ID=SA;Password=paSSwordius$";
+        private static string connetionString = "Data Source=127.0.0.1;Initial Catalog=submit02;User ID=SA;Password=HKCGHFKJ,GKG56fvfviW";
 
         private static int WAITING_TO_METARGEL = 0;
         public static (User,int,string) ReadUser(string id) {
@@ -444,9 +444,9 @@ namespace Submit_System
             command.Parameters["@SUBMITTED"].Value = submission.TimeSubmitted;
             try{
                 command.ExecuteReader();
-            } catch{
+            } catch(Exception e){
                 try{cnn.Close();}catch{}
-                return (2,"Addittion failed");
+                return (2,"Addittion failed "+e.Message);
             }
             try{cnn.Close();} catch{return (4,"Connection close failed");}
             return (0,"OK");
@@ -655,7 +655,7 @@ namespace Submit_System
             try{cnn.Open();} catch {return (3,"Connection failed");}
             String sql = @"UPDATE Submission SET exercise_id=@EID,files_location=@FL,auto_grade=@AG,style_grade=@SG,
                         manual_final_grade=@MFG,manual_check_data=@MD,submission_status=@STATUS,submission_date_id=@DID,
-                        time_submitted=@SUBMITTED WHERE submission_id = @ID;";
+                        time_submitted=@SUBMITTED, has_copied=@HC, current_checker_id=@CURRENT WHERE submission_id = @ID;";
             SqlCommand command = new SqlCommand(sql,cnn);
             command.Parameters.Add("@ID",System.Data.SqlDbType.NVarChar);
             command.Parameters.Add("@EID",System.Data.SqlDbType.NVarChar);
@@ -667,6 +667,8 @@ namespace Submit_System
             command.Parameters.Add("@STATUS",System.Data.SqlDbType.Int);
             command.Parameters.Add("@DID",System.Data.SqlDbType.Int);
             command.Parameters.Add("@SUBMITTED",System.Data.SqlDbType.DateTime);
+            command.Parameters.Add("@HC",System.Data.SqlDbType.Int);
+            command.Parameters.Add("@CURRENT",System.Data.SqlDbType.VarChar);
             command.Parameters["@ID"].Value = submission.ID;
             command.Parameters["@EID"].Value = submission.ExerciseID;
             command.Parameters["@FL"].Value = submission.FilesLocation;
@@ -677,6 +679,8 @@ namespace Submit_System
             command.Parameters["@STATUS"].Value = submission.SubmissionStatus;
             command.Parameters["@DID"].Value = submission.SubmissionDateId;
             command.Parameters["@SUBMITTED"].Value = submission.TimeSubmitted;
+            command.Parameters["@HC"].Value = submission.HasCopied ? 1 : 0;
+            command.Parameters["@CURRENT"].Value = submission.CurrentCheckerId;
             try{
                 command.ExecuteReader();
             } catch {
