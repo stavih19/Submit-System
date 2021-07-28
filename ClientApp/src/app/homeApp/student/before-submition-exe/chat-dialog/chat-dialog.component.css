@@ -19,10 +19,8 @@
 
 .mesasgeConverstion {
     border-style: ridge;
-}
-
-.mesasgeConverstion {
     height: 50%;
+    padding-top: 20px;
 }
 
 .newMessage {
@@ -41,10 +39,32 @@
     direction: rtl;
 }
 
+.studentMessage, .teacherMessage {
+    text-align: right;
+    border-radius: 8px;
+    border-color: black;
+    border-width: 5px;
+    width: 100%;
+    height: 100px;
+}
+
 .studentMessage {
+    padding-top: 10px;
+    padding-right: 10px;
+}
+
+.studentMessageContent {
     background-color: #25D366;
+    border-radius: 8px;
 }
 
 .teacherMessage {
+    padding-top: 10px;
+    padding-left: 10px;
+}
+
+.teacherMessageContent {
     background-color: #eee;
+    border-radius: 8px;
+    direction: rtl;
 }

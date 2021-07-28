@@ -1,0 +1,73 @@
+<div class="row">
+    <div class="col-3">
+        תרגילים
+        <div class="box">
+            <div *ngFor="let exeName of exeNameList; let i = index" class="exeBox">
+                <span class="exeLabel list-group-item list-group-item-action">
+                    {{ exeName }}
+                    <span class="editExe" (click)="editExe(i)">...</span>
+                    <span class="close" (click)="deleteExe(i)">&times;</span>
+                </span>
+            </div>
+        </div>
+        <div class="buttonBox">
+            <button class="addButton" mat-raised-button color="primary" (click)="createExe()">הוסף תרגיל</button>
+        </div>
+    </div>
+    <div class="col-3">
+        תרגילים לשעבר
+        <div class="box">
+            <div *ngFor="let exe of oldExeList">
+                שנה: <span class="year">{{ exe.year }}</span>
+                <div *ngFor="let exeName of exe.exeNameList" class="exeBox">
+                    <span class="list-group-item list-group-item-action">
+                        {{ exeName }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="buttonBox">
+            <button class="addButton" mat-raised-button color="primary" (click)="reCreateExe()">שחזר תרגיל</button>
+        </div>
+    </div>
+    <div class="col-3">
+        מתרגלים
+        <div class="shrotBox">
+            <div *ngFor="let teacherName of teacherNamesList; let i = index" class="nameBox">
+                <span class="list-group-item list-group-item-action">
+                    <span class="close" (click)="deleteTeacher(i)">&times;</span>
+                    {{ teacherName }}
+                </span>
+            </div>
+        </div>
+        <div class="addElement">
+            <mat-form-field class="example-full-width">
+                <mat-label>הקלד ת.ז</mat-label>
+                <input #teacherID matInput placeholder="הקלד ת.ז" value="">
+            </mat-form-field>
+        </div>
+        <div class="buttonBox">
+            <button class="addButton" mat-raised-button color="primary" (click)="addTeacher()">הוסף מתרגל</button>
+        </div>
+    </div>
+    <div class="col-3">
+        בודקים
+        <div class="shrotBox">
+            <div *ngFor="let checkerName of checkersNamesList; let i = index" class="nameBox">
+                <span class="list-group-item list-group-item-action">
+                    <span class="close" (click)="deleteChecker(i)">&times;</span>
+                    {{ checkerName }}
+                </span>
+            </div>
+        </div>
+        <div class="addElement">
+            <mat-form-field class="example-full-width">
+                <mat-label>הקלד ת.ז</mat-label>
+                <input #checkerID matInput placeholder="הקלד ת.ז" value="">
+            </mat-form-field>
+        </div>
+        <div class="buttonBox">
+            <button class="addButton" mat-raised-button color="primary" (click)="addChecker()">הוסף בודק</button>
+        </div>
+    </div>
+</div>

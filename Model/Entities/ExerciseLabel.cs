@@ -5,10 +5,5 @@ namespace Submit_System {
         
         public string ID {get; set; }
         public string Name { get; set; }
-        public ExerciseLabel(string id, string name)
-        {
-            ID = id;
-            Name = name;
-        }
     }
 }
