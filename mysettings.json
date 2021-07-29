@@ -1,0 +1,30 @@
+{
+    "Logging": {
+        "LogLevel": {
+        "Default": "Information",
+        "Microsoft": "Warning",
+        "Microsoft.Hosting.Lifetime": "Information"
+        }
+      },
+    "AllowedHosts": "*",
+    "Email": {
+        "Address": "submitsystem.proj@gmail.com",
+        "Password": "fjoejf23o3r1de11",
+        "Host": "smtp.gmail.com",
+        "Port": 587
+    },
+    "Moss": {
+        "UserID": 971614971,
+        "Server": "moss.stanford.edu",
+        "Port": 7690,
+        "MaxConcurrentRequests": 2
+    },
+    "Hash": {
+        "Iterations": 1000,
+        "Salt length": 8,
+        "Hash length": 20
+    },
+    "TokenExpirationTime": 60,
+    "TestMode": true
+    
+}
