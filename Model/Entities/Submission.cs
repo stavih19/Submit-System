@@ -2,34 +2,31 @@ using System;
 using System.Text.Json.Serialization;
 using System.Collections.Generic;
 namespace Submit_System {
+    public enum CheckState { NotBeingChecked, CheckedByYou, CheckedByOther }
     public class Submission{
         public string ID{get;set;}
         [JsonIgnore]
-        public string Exercise_ID{get;set;}
-        private string loc;
+        public string ExerciseID{get;set;}
         [JsonIgnore]
-        public string Files_Location {
-            get => loc;
-            set {
-                filenames = FileUtils.GetRelativePaths(value);
-                loc = value;
-            }
-        }
-        public List<string> filenames { get; set; }
-        public int Auto_Grade{get;set;}
-        public int Style_Grade{get;set;}
-        public int Manual_Final_Grade{get;set;}
-        public string Manual_Check_Data{get;set;}
-        public int Submission_Status {get;set;}
+        public string FilesLocation { get; set; }
+        public List<string> Filenames { get; set; }
+        public int AutoGrade{get;set;}
+        public int StyleGrade{get;set;}
+        public int ManualFinalGrade{get;set;}
+        public string ManualCheckData{get;set;}
+        public int SubmissionStatus {get;set;}
         [JsonIgnore]
-        public int Submission_Date_Id{get;set;}
+        public int SubmissionDateId{get;set;}
 
-        public DateTime Time_Submitted{get;set;}
+        public DateTime TimeSubmitted{get;set;}
         [JsonIgnore]
-        public string Chat_Late_ID{get;set;}
+        public string ChatLateID{get;set;}
         [JsonIgnore]
-        public string Chat_Appeal_ID{get;set;}
+        public string ChatAppealID{get;set;}
         public bool HasCopied {get; set;} = false;
+        [JsonIgnore]
+        public string CurrentCheckerId {get; set;}
+        public CheckState CheckState { get; set; }
         public static string GenerateID(string main_submitter_id,string exercise_id){
             return main_submitter_id + "_" + exercise_id;
         }

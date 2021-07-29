@@ -1,4 +1,3 @@
-using System.Text.Json.Serialization;
 namespace Submit_System {
     public class User{
         public User(string id,string password_hash,string name,string email){
@@ -7,9 +6,7 @@ namespace Submit_System {
             this.Name = name;
             this.Email = email;
         }
-        public User() {}
         public string ID{get;set;}
-        [JsonIgnore]
         public string PasswordHash{get;set;}
         public string Name{get;set;}
         public string Email{get;set;}
@@ -17,5 +14,10 @@ namespace Submit_System {
         public static bool IsValidID(string id){
             return (id.Length <= 10);
         }
+    }
+    public class UserLabel
+    {
+        public string ID  { get; set; }
+        public string Name { get; set; }
     }
 }
