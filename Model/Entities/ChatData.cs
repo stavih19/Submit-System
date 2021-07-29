@@ -6,7 +6,7 @@ namespace Submit_System {
             this.Status = status;
             this.Type = type;
         }
-        public ChatData(string submission_id,int type){
+         public ChatData(string submission_id,int type){
             this.SubmissionID = submission_id;
             this.Type = type;
             this.ID = GenerateID(submission_id, type);

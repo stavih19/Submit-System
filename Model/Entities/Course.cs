@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 namespace Submit_System {
     public class Course {
 
