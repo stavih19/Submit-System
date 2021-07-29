@@ -3,7 +3,11 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Diagnostics;
-
+using System.Web;
+using System.IO;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Microsoft.Extensions.Configuration;
 namespace Submit_System
 {
     /// <summary>
@@ -11,70 +15,112 @@ namespace Submit_System
     /// </summary>
     public class TokenStorage : IDisposable
     {
-        const int minute = 60;
         const int TOKENLENGTH = 24; 
-        private ConcurrentDictionary<string, Token> Tokens;
-        public volatile bool IsTestMode;
-        private readonly int ExpirationSeconds;
+        private ConcurrentDictionary<string, Token> _tokens;
+        public volatile bool _isTestMode;
+        private readonly TimeSpan _expiration;
+        private const string TokensFile = "tokens.txt";
         private readonly Timer timer;
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="test">Test mode or not (in test mode, tokens aren't verified</param>
         /// <param name="exp">Token expiration time in seconds</param>
-        public TokenStorage(bool test=false, int exp=30*minute)
+        public TokenStorage()
         {
-            Tokens = new ConcurrentDictionary<string, Token>();
-            IsTestMode = test;
-            ExpirationSeconds = exp;
+            int time = MyConfig.Configuration.GetSection("ExpirationTime").GetValue<int>("SessionTokenMinutes"); 
+            _isTestMode = MyConfig.Configuration.GetValue<bool>("TestMode");
+            _tokens = new ConcurrentDictionary<string, Token>();
             var startTimeSpan = TimeSpan.Zero;
-            var periodTimeSpan = TimeSpan.FromSeconds(ExpirationSeconds);
+            _expiration = TimeSpan.FromMinutes(time);
             timer = new System.Threading.Timer((e) =>
             {
                 RemoveExpired();
-            }, null, startTimeSpan, periodTimeSpan);
+            }, null, startTimeSpan, _expiration);
+            if(_isTestMode)
+            {
+                Deserialize();
+            }
         }
-        public string CreateToken(string userId)
+        public void Deserialize()
         {
-            var token = new Token(userId, GenerateTokenID());
-            Tokens[token.tokenID] = token;
+            if(!File.Exists(TokensFile))
+            {
+                return;
+            }
+            lock(TokensFile)
+            {
+                string content = File.ReadAllText(TokensFile);
+                using (var reader = File.OpenText(TokensFile))
+                {
+                    while(!reader.EndOfStream)
+                    {
+                        string line = reader.ReadLine();
+                        var comps = line.Split(' ');
+                        var token = new Token(comps[1], comps[0], Boolean.Parse(comps[2]));
+                        _tokens[token.tokenID] = token;
+                    }
+                }
+            }
+        }
+        public void Serialize()
+        {
+            Monitor.Enter(TokensFile);
+            using (var writer = File.CreateText(TokensFile))
+            {
+                foreach(var token in _tokens.Values)
+                {
+                    writer.WriteLine($"{token.tokenID} {token.UserID} {token.IsAdmin}");
+                }
+            }
+            Monitor.Exit(TokensFile);
+        }
+        public string CreateToken(string userId, bool isAdmin)
+        {
+            var token = new Token(userId, GenerateTokenID(), isAdmin || _isTestMode);
+            _tokens[token.tokenID] = token;
+            if(_isTestMode)
+            {
+                Serialize();
+            }
             return token.tokenID;
         }
         private string GenerateTokenID()
         {
             string result;
             do {
-                var tokenBytes = CryptoUtils.GetRandomBytes(TOKENLENGTH);
-                result = BitConverter.ToString(tokenBytes).Replace("-", "");
-            } while(Tokens.ContainsKey(result));
+                result = CryptoUtils.GetRandomBase64String(TOKENLENGTH);
+            } while(_tokens.ContainsKey(result));
             return result;
         }
-        public bool TryGetUserID(string tokenID, out string username)
+        public void RemoveByID(string userid)
         {
-            if(IsTestMode)
+            foreach(Token token in _tokens.Values)
             {
-                username = "Yosi";
-                return true;
-            };
+                if(token.UserID == userid)
+                {
+                    RemoveToken(token.tokenID);
+                }
+            }
+        }
+        public bool TryGetToken(string tokenID, out Token token)
+        {
             if(tokenID == null)
             {
-                username = null;
+                token = null;
                 return false;
             }
-            Token token;
-            bool result = Tokens.TryGetValue(tokenID, out token);
+            bool result = _tokens.TryGetValue(tokenID, out token);
             if(!result)
             {
-                username = null;
+                token = null;
                 return false;
             }
-            var diff = DateTime.Now.Subtract(token.LastEntry).TotalMinutes;
             if(IsExpired(token)) {
-               username = null;
+               token = null;
                return false;
             }
             token.LastEntry = DateTime.Now;
-            username = token.UserID;
             return true;
         }
         /// <summary>
@@ -84,8 +130,8 @@ namespace Submit_System
         /// <returns>True if the token is expired, false otherwise</returns>
         private bool IsExpired(Token token)
         {
-             var diff = DateTime.Now.Subtract(token.LastEntry).TotalSeconds;
-             bool expired = diff > ExpirationSeconds;
+             var diff = DateTime.Now.Subtract(token.LastEntry);
+             bool expired = diff > _expiration;
              if(expired)
              {
                 RemoveToken(token.tokenID);
@@ -98,7 +144,7 @@ namespace Submit_System
             {
                 return false;
             }
-            return Tokens.TryGetValue(tokenID, out _);
+            return _tokens.TryGetValue(tokenID, out _);
         }
         public void RemoveToken(string TokenID)
         {
@@ -106,12 +152,12 @@ namespace Submit_System
             {
                 return;
             }
-            Tokens.TryRemove(TokenID, out _);
+            _tokens.TryRemove(TokenID, out _);
             Trace.WriteLine("Removed token " + TokenID);
         }
         private void RemoveExpired()
         {
-            foreach(var token in Tokens.Values)
+            foreach(var token in _tokens.Values)
             {
                 IsExpired(token);
             }
