@@ -1,9 +1,16 @@
-CREATE DATABASE Submit02;
+IF DB_ID('submit02') IS NULL
+   CREATE DATABASE submit02;
 GO
-USE Submit02;
+USE submit02;
+DECLARE @sql NVARCHAR(max)=''
+SELECT @sql += ' Drop table ' + QUOTENAME(TABLE_SCHEMA) + '.'+ QUOTENAME(TABLE_NAME) + '; '
+FROM   INFORMATION_SCHEMA.TABLES
+WHERE  TABLE_TYPE = 'BASE TABLE'
+Exec Sp_executesql @sql
+GO
 CREATE TABLE Users (
-    user_id nvarchar(10),
-    password_hash nvarchar(48),
+    user_id nvarchar(10), 
+    password_hash nvarchar(64),
     name nvarchar(32),
     email nvarchar(64)
 );
@@ -38,7 +45,10 @@ CREATE TABLE Exercise(
     auto_test_grade_value int,
     style_test_grade_value int,
     is_active int,
-    multiple_submissions int
+    multiple_submissions int,
+    moss_number_of_matches int,
+    moss_max_match int,
+    moss_result_link varchar(256)
 );
 CREATE TABLE Checker_Exercise(
     user_id nvarchar(10),
@@ -46,11 +56,11 @@ CREATE TABLE Checker_Exercise(
 );
 
 CREATE TABLE Submission_Dates(
-    submission_date_id int,
     exercise_id nvarchar(48),
+    submission_date_id int IDENTITY(1, 1),
+    submission_date DATE,
     reduction int,
-    [group] int,
-    submission_date DATE
+    group_number int
 );
 CREATE TABLE Submission(
     submission_id nvarchar(60),
@@ -63,9 +73,10 @@ CREATE TABLE Submission(
     submission_status int,
     submission_date_id int,
     time_submitted DATETIME,
-    chat_late_id nvarchar(32),
-    chat_appeal_id nvarchar(32)
+    has_copied int,
+    current_checker_id varchar(10)
 );
+
 CREATE TABLE Submitters(
     user_id nvarchar(10),
     submission_id nvarchar(60),
@@ -79,11 +90,11 @@ CREATE TABLE Chat(
     chat_type int
 );
 CREATE TABLE Message(
-    message_id int IDENTITY(1,1),
+    message_id int IDENTITY(1,1) ,
     chat_id nvarchar(60),
-    message_time DATETIME,
-    message_type int,
-    message_value nvarchar(8000),
+    message_time DATETIME DEFAULT GETDATE(),
+    attached_file varchar(128),
+    message_text ntext,
     sender_user_id nvarchar(10),
     message_status int,
     course_id nvarchar(16),
@@ -114,3 +125,9 @@ CREATE TABLE Tokens(
     token varchar(64),
     expiry_date DATETIME
 );
+GO
+CREATE TRIGGER DELETE_DATE
+ON Submission_Dates
+AFTER DELETE
+AS
+    UPDATE Submission SET submission_date_id = null WHERE submission_date_id = Deleted.submission_date_id 
