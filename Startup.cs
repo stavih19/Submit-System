@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.SpaServices.AngularCli;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Caching.Memory;
+using System;
 
 namespace Submit_System
 {
@@ -22,9 +24,13 @@ namespace Submit_System
         {
             services.AddControllersWithViews();
             // In production, the Angular files will be served from this directory
-            services.AddSingleton<TokenStorage>(new TokenStorage(test : true, exp : 60*60));
-            services.AddSingleton<DatabaseAccess>();
-            services.AddScoped<AuthFilter>();
+            services.AddSingleton<TokenStorage>();
+            //services.AddSingleton<FakeDatabaseAccess>();
+            services.AddTransient<DatabaseAccess>();
+            var options = new MemoryCacheOptions { SizeLimit = 100 };
+            services.AddSingleton<MemoryCache>(provider => new MemoryCache(options));
+            services.AddTransient<AuthFilter>();
+            services.AddSingleton<MossClient>();
             services.AddMvc(options =>
             {
                 options.Filters.Add<ExceptionFilter>();
@@ -55,7 +61,6 @@ namespace Submit_System
             {
                 app.UseSpaStaticFiles();
             }
-
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
