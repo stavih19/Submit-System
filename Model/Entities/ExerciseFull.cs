@@ -16,5 +16,7 @@ namespace Submit_System {
         public bool IsActive { get; set; }
         public int MaxSubmitters { get; set; }
         public string CourseID { get; set; }
+        public int MaxLateDays { get; set; }
+        public int LateDayPenalty { get; set; }
     }
 }
