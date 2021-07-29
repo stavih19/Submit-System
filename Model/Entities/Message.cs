@@ -14,6 +14,7 @@ namespace Submit_System {
         public string AttachedFilePath { get; set; }
         public string Filename { get => (AttachedFilePath == null) ? null : FileUtils.GetFileName(AttachedFilePath); }
         public bool IsTeacher { get; set; }
-    
+
+     
     }
 }
