@@ -3,16 +3,24 @@ using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Linq;
 using System.Text;
+using Microsoft.Extensions.Configuration;
 namespace Submit_System
 {
-    public class CryptoUtils
+    public static class CryptoUtils
     {
-        private const int HASH_LEN = 20;
-        private const int SALT_START = HASH_LEN + sizeof(int);
-        private const int SALT_LEN = 8;
-        private const int ITER = 1000;
+        public static int HashLength { get; }
+        public static int DefaultSaltLength { get; }
+        public static int DefaultIterations { get; }
         private const string SEP = "$";
         private const string FORMAT = "{0}" + SEP + "{1}" + SEP +"{2}";
+
+        static CryptoUtils()
+        {
+            var conf = MyConfig.Configuration.GetSection("Hash");
+            DefaultIterations = conf.GetValue<int>("Iterations");
+            DefaultSaltLength = conf.GetValue<int>("Salt length");
+            HashLength = conf.GetValue<int>("Hash length");
+        }
         /// <summary>
         /// Hashes the given password with PBKDR2
         /// </summary>
@@ -25,9 +33,18 @@ namespace Submit_System
             byte[] hash;
             using (var hasher = new Rfc2898DeriveBytes(password, salt, iter))
             {
-                hash = hasher.GetBytes(HASH_LEN);
+                hash = hasher.GetBytes(HashLength);
             }
             return String.Format(FORMAT, Convert.ToBase64String(hash), Convert.ToBase64String(salt), iter.ToString());
+        }
+        public static string Sha256Hash(string str)
+        {
+            byte[] result_bytes;
+            using (var hasher = SHA256.Create())
+            {
+                result_bytes = hasher.ComputeHash(Encoding.ASCII.GetBytes(str));
+            }
+            return Convert.ToBase64String(result_bytes);
         }
         /// <summary>
         /// Overload. Gets Salt length.
@@ -36,9 +53,18 @@ namespace Submit_System
         /// <param name="saltLength"></param>
         /// <param name="iter">Iterations. Must be at least 1000.</param>
         /// <returns></returns>
-         public static string Hash(string passsword, int saltLength=SALT_LEN, int iter=ITER)
+        public static string KDFHash(string passsword, int saltLength, int iter)
         {
             return Hash(passsword, GetRandomBytes(saltLength), iter);
+        }
+        public static string KDFHash(string passsword)
+        {
+            return Hash(passsword, GetRandomBytes(DefaultSaltLength), DefaultIterations);
+        }
+        public static string GetRandomBase64String(int bytes_len)
+        {
+            var bytes = GetRandomBytes(bytes_len);
+            return Convert.ToBase64String(bytes);
         }
         public static byte[] GetRandomBytes(int len)
         {
@@ -49,6 +75,7 @@ namespace Submit_System
             }
             return rand;
         }
+
         /// <summary>
         /// Comapres the hash of an input password with the hash in the database
         /// </summary>
@@ -58,23 +85,23 @@ namespace Submit_System
         public static bool Verify(string password, string storedHash)
         {
             string[] components = storedHash.Split(SEP);
+            if(components.Length != 3) { return false; }
             string inputHash = Hash(password, Convert.FromBase64String(components[1]), Int32.Parse(components[2]));
             return inputHash == storedHash;
         }
         /// <summary>
-        /// Generate random password for testing purposes
+        /// Generate random weak random string
         /// </summary>
         public static string GeneratePassword()
         {
             var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            string str = "";
             var random = new Random();
-
+            var builder = new StringBuilder();
             for (int i = 0; i < 10; i++)
             {
-                str += chars[random.Next(chars.Length)];
+                builder.Append(chars[random.Next(chars.Length)]);
             }
-            return str;
+            return builder.ToString();
             
         }
         /// <summary>
@@ -82,7 +109,7 @@ namespace Submit_System
         /// </summary>
         public static void Test()
         {
-            const int num = 1000;
+            const int num = 10;
             int count = 0;
             int count2 = 0;
             var stop = new Stopwatch();
