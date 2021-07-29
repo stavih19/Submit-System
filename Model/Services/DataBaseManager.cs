@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace Submit_System
 {
     public partial class DataBaseManager{
-        private static string connetionString = "Data Source=127.0.0.1;Initial Catalog=submit02;User ID=SA;Password=paSSwordius$";
+        private static string connetionString = "Data Source=127.0.0.1;Initial Catalog=submit02;User ID=SA;Password=paSSwordius$";//"HKCGHFKJ,GKG56fvfviW"
 
         private static int WAITING_TO_METARGEL = 0;
         public static (User,int,string) ReadUser(string id) {
@@ -1172,11 +1172,11 @@ namespace Submit_System
             command.Parameters["@EID"].Value = test.ExerciseID;
             command.Parameters["@VALUE"].Value = test.Value;
             command.Parameters["@INPUT"].Value = test.Input;
-            command.Parameters["@EOUTPUT"].Value = test.Expected_Output;
-            command.Parameters["@OFNAME"].Value = test.Output_File_Name;
+            command.Parameters["@EOUTPUT"].Value = test.ExpectedOutput;
+            command.Parameters["@OFNAME"].Value = test.OutputFileName;
             command.Parameters["@ARGS"].Value = test.ArgumentsString;
-            command.Parameters["@TIMEOUT"].Value = test.Timeout_In_Seconds;
-            command.Parameters["@MAIN"].Value = test.Main_Sourse_File;
+            command.Parameters["@TIMEOUT"].Value = test.TimeoutInSeconds;
+            command.Parameters["@MAIN"].Value = test.MainSourseFile;
             command.Parameters["@ADD"].Value = test.AdittionalFilesLocation;
             try{
                 var reader = command.ExecuteReader();
