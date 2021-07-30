@@ -1,0 +1,38 @@
+.frame {
+    border-style: ridge;
+    height: 700px;
+    text-align: right;
+    display: grid;
+    row-gap: 0px;
+    grid-template-areas: 
+    'input1 input2'
+    'input3 input3'
+    'input5 input6'
+    'input7 input7'
+    'input7 input7';
+    grid-template-columns: 50% 50%;
+}
+.genrealDetails { grid-area: input1; }
+.gradesGrid { grid-area: input2; }
+.genralGrade { grid-area: input3; }
+.files { grid-area: input5; }
+.noteList { grid-area: input6; }
+.autoCheckResult { 
+    grid-area: input7; 
+}
+.example-full-width {
+    text-align: right;
+}
+.createButton {
+    text-align: center;
+}
+.autoResultHeader {
+    text-align: center;
+}
+.teamDateText, .teamHeader, .dateHeader {
+    text-align: right;
+    padding: 0px 10px 0px 10px;
+}
+.pointsCategorize {
+    padding-right: 330px;
+}

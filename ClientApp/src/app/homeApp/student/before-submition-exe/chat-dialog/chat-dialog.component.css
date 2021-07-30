@@ -51,6 +51,8 @@
 .studentMessage {
     padding-top: 10px;
     padding-right: 10px;
+    background-color: #25D366;
+    border-radius: 8px;
 }
 
 .studentMessageContent {
@@ -61,6 +63,9 @@
 .teacherMessage {
     padding-top: 10px;
     padding-left: 10px;
+    background-color: #eee;
+    border-radius: 8px;
+    direction: rtl;
 }
 
 .teacherMessageContent {

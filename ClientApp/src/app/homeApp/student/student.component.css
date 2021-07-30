@@ -3,37 +3,31 @@
     height: 500px;
     width: 100%;
 }
-
 .headersLine {
     height: 35px;
     text-align: right;
 }
-
 .coursesList {
     height: 465px;
     width: 100%;
     border-style: ridge;
     direction: rtl;
 }
-
 .exeToSubmitContent {
     height: 215px;
     width: 100%;
     border-style: ridge;
     overflow: scroll;
 }
-
 .gradeContent {
     height: 215px;
     width: 100%;
     border-style: ridge;
     overflow: scroll;
 }
-
 .courseDetails {
     color: black;
 }
-
 /* HeroesComponent's private CSS styles */
 .coursesEelemnts {
     margin: 0 0 2em 0;
@@ -85,31 +79,24 @@
     margin-right: .8em;
     border-radius: 4px 4px 4px 4px;
 }
-
 input {
     padding: .5rem;
 }
-
 .gap {
     height: 10px;
 }
-
 table {
     width: 100%;
 }
-
 .rowTable {
     cursor: pointer;
 }
-
 .rowTable:hover {
     background-color: #eee;
 }
-
 table {
     text-align: right;
 }
-
 .headerLabel {
     text-align: right;
 }

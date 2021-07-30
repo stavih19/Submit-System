@@ -67,7 +67,7 @@
                     <div>
                         <span class="close times"
                         (click)="eraseUploadFile(file)" style="cursor: pointer;">x&nbsp;&nbsp;</span>
-                        <span>{{ file.name }}</span>
+                        <span class="fileName" (click)="downloadFile(file.name)">{{ file }}</span>
                         <br>
                     </div>
                 </div>

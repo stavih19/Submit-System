@@ -1,0 +1,56 @@
+<div class="row" *ngIf="exeStatus !=='exeDetails'; else exeDisplay">
+    <div class="col-3">
+        תרגילים לבדיקה
+        <div class="box">
+            <div *ngFor="let exeName of exeNameList; let i = index" class="exeBox">
+                <span class="exeLabel list-group-item list-group-item-action"
+                    (click)="getExeDetails(exeName)">
+                    {{ exeName }}
+                    <!--<span class="editExe" (click)="editExe(i)">...</span>
+                    <span class="close" (click)="deleteExe(i)">&times;</span>-->
+                </span>
+            </div>
+        </div>
+        <!--<div class="buttonBox">
+            <button class="addButton" mat-raised-button color="primary" (click)="createExe()">הוסף תרגיל</button>
+        </div>-->
+    </div>
+    <div class="col-3">
+        תרגילים שנבדקו
+        <div class="box">
+            <div *ngFor="let exe of alreadyChecked" class="exeBox">
+                <span class="list-group-item list-group-item-action"
+                    (click)="getExeDetails(exeName)">
+                    {{ exe }}
+                </span>
+            </div>
+        </div>
+        <!--<div class="buttonBox">
+            <button class="addButton" mat-raised-button color="primary" (click)="reCreateExe()">שחזר תרגיל</button>
+        </div>-->
+    </div>
+    <div class="col-3">
+        תרגילים לבדיקה חוזרת
+        <div class="box">
+            <div *ngFor="let reCheck of reChecks; let i = index" class="nameBox">
+                <span class="list-group-item list-group-item-action"
+                    (click)="getExeDetails(exeName)">
+                    <!--<span class="close" (click)="deleteTeacher(i)">&times;</span>-->
+                    {{ reCheck }}
+                </span>
+            </div>
+        </div>
+        <!--<div class="addElement">
+            <mat-form-field class="example-full-width">
+                <mat-label>הקלד ת.ז</mat-label>
+                <input #teacherID matInput placeholder="הקלד ת.ז" value="">
+            </mat-form-field>
+        </div>
+        <div class="buttonBox">
+            <button class="addButton" mat-raised-button color="primary" (click)="addTeacher()">הוסף מתרגל</button>
+        </div>-->
+    </div>
+    <div class="col-3">
+        כפתורים
+    </div>
+</div>

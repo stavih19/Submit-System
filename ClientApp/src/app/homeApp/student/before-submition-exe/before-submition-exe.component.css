@@ -112,3 +112,7 @@
 .example-form {
     height: 100%;
 }
+.fileName {
+    color: black;
+    cursor: pointer;
+}

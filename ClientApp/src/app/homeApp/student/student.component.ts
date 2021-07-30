@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Course } from 'src/Modules/course';
 import { Router } from '@angular/router';
 import { ApprovalService } from 'src/app/approval.service';
@@ -6,6 +6,7 @@ import { ThrowStmt } from '@angular/compiler';
 import { HttpClient } from '@angular/common/http';
 import { SubmitTable } from 'src/Modules/submit-table';
 import { GradeTable } from 'src/Modules/grade-table';
+import { HomeSubmitionExeComponent } from './home-submition-exe/home-submition-exe.component';
 
 @Component({
   selector: 'app-student',
@@ -24,6 +25,7 @@ export class StudentComponent implements OnInit {
   gradeDataSource: GradeTable[];
   token: string;
 
+  @ViewChild(HomeSubmitionExeComponent, {static: false}) child: HomeSubmitionExeComponent;
 
   constructor(
     private appService: ApprovalService,
@@ -53,13 +55,14 @@ export class StudentComponent implements OnInit {
     this.selectExe = row;
     this.teacherName = row.teacherName;
     this.appService.updateExeStatus("before");
+    //this.child.onSelect(row);
   }
 
   getAfterEXE(row) {
     this.selectExe = row;
     this.teacherName = row.teacherName;
+    //this.child.onSelect(row);
     this.appService.updateExeStatus("before");
-    //this.appService.updateExeStatus("after");
   }
 
   getExeInfo() { }

@@ -8,6 +8,8 @@ import { StudentExInfo } from 'src/Modules/student-exInfo';
 import { MatDialog } from '@angular/material/dialog';
 import { FileSubmit } from 'src/Modules/file-submit';
 import { ChatDialogComponent } from './chat-dialog/chat-dialog.component';
+import { ChatDeclarationComponent } from './chat-declaration/chat-declaration.component';
+import { async } from '@angular/core/testing';
 
 @Component({
   selector: 'app-before-submition-exe',
@@ -169,7 +171,11 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
     }
   }
 
-  onSelect(exe) {
+  async onSelect(exe) {
+    const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
+    console.log("wait");
+    await sleep(100);
+    console.log("done");
     this.selectedExe = exe;
     console.log(exe.id);
 
@@ -177,12 +183,10 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {
-        this.selectedExeInfo = JSON.parse(data);
-        console.log(this.selectedExeInfo);
-        this.selectedExeInfo.filenames.forEach(fileName => {
+          this.selectedExeInfo = JSON.parse(data);
+          this.selectedExeInfo.filenames.forEach(fileName => {
           this.uploadFileList.push(fileName);
-          console.log(fileName);
-          const file = this.getFilebyName(fileName);
+          //const file = this.getFilebyName(fileName);
         });
         console.log(this.uploadFileList);
         
@@ -205,7 +209,6 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
           
         }
         this.fileSubmittersValue();
-        console.log(this.selectedExeInfo);
       }, error => {
         this.errorMessage(error.status + "   try again", "alert-danger");
       }
@@ -219,18 +222,15 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
     {responseType: 'text'}).toPromise().then(
       data => {     
         data = data.toString();
-        console.log();
-
-        var element = document.createElement('a');
-        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(data));
-        element.setAttribute('download', file);
-        element.style.display = "none";
-        document.body.appendChild(element);
-        element.click();
+        this.downloadAttributes(file, data);
       }, error => {
         this.errorMessage(error.status + "   try again", "alert-danger");
       }
     );
+  }
+
+  downloadFile(file: string) {
+    this.getFilebyName(file);
   }
 
   fileSubmittersValue() {
@@ -334,10 +334,18 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
     {responseType: 'text'}).toPromise().then(
       data => {
         console.log(data);
+        this.displayResults(data.toString());
       }, error => {
         this.errorMessage(error.status + "   try again", "alert-danger");
       }
     );
+  }
+
+  displayResults(data: string) {
+    const modalRef =  this.dialog.open(ChatDeclarationComponent);
+    this.modalRef = modalRef;
+
+    modalRef.componentInstance.data = data;
   }
 
   async checkSubmittersValidation(submitters) {
@@ -368,9 +376,20 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
     {responseType: 'text'}).toPromise().then(
       data => {
         console.log(data);
+        this.downloadAttributes("", data.toString());
       }, error => {
         this.errorMessage(error.status + "   try again", "alert-danger");
       }
     );
+  }
+
+  downloadAttributes(file: string, data: string) {
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(data));
+    element.setAttribute('download', file);
+    element.style.display = "none";
+    document.body.appendChild(element);
+    element.click();
+    element.remove();
   }
 }
