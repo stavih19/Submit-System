@@ -1027,7 +1027,7 @@ namespace Submit_System
             command.Parameters["@INPUT"].Value = test.Input;
             command.Parameters["@EOUTPUT"].Value = test.Expected_Output;
             command.Parameters["@OFNAME"].Value = test.Output_File_Name;
-            command.Parameters["@ARGS"].Value = test.ArgumentsString;
+            command.Parameters["@ARGS"].Value = test.Arguments_String;
             command.Parameters["@TIMEOUT"].Value = test.Timeout_In_Seconds;
             command.Parameters["@MAIN"].Value = test.Main_Sourse_File;
             try{

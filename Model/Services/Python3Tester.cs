@@ -55,9 +55,9 @@ namespace Submit_System {
             foreach(Test test in this.tests){
 
                 if(test.Has_Adittional_Files){
-                    ok = CopyAll(test.AdittionalFilesLocation,directory_path);
+                    ok = CopyAll(test.Adittional_Files_Location,directory_path);
                     if(!ok){
-                    return "Cannot Load files at "+test.AdittionalFilesLocation;
+                    return "Cannot Load files at "+test.Adittional_Files_Location;
                     }
                 }
                 ok = CopyAll(files_location,directory_path);
@@ -71,8 +71,8 @@ namespace Submit_System {
 
                 ProcessStartInfo start = new ProcessStartInfo();
                 start.FileName = exe_file_location;
-                if(test.ArgumentsString.Length > 0){
-                start.Arguments = string.Format("{0} {1}", test.Main_Sourse_File, test.ArgumentsString);
+                if(test.Arguments_String.Length > 0){
+                start.Arguments = string.Format("{0} {1}", test.Main_Sourse_File, test.Arguments_String);
                 } else{
                     start.Arguments = test.Main_Sourse_File;
                 }

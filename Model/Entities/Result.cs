@@ -4,12 +4,6 @@ using System.Web;
 using System;
 using System.Linq;
 namespace Submit_System {
-   public class SubmitResult
-   {
-       public string Message {get; set;}
-       public List<string> Files { get; set; }
-   }
-   public class CheckStyleResult  {}
    public class Result {
         public List<CheckResult> Test_Results{ get; set; }
         public CheckStyleResult Check_Style_Result{ get; set; }

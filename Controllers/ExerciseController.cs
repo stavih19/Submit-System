@@ -140,7 +140,7 @@ namespace Submit_System.Controllers
             (var t, DBCode cod3) = _access.GetTests(oldExerciseId);
             foreach(var test in t)
             {
-                test.AdittionalFilesLocation = test.AdittionalFilesLocation.Replace(oldPath, newPath);
+                test.Adittional_Files_Location = test.Adittional_Files_Location.Replace(oldPath, newPath);
                 _access.AddTest(test);
             }
             return exercise.ID;
@@ -230,7 +230,7 @@ namespace Submit_System.Controllers
                 return ServerError();
             }
             string testDir = FileUtils.CreateUniqueDirectory(path, "test");
-            test.AdittionalFilesLocation = testDir;
+            test.Adittional_Files_Location = testDir;
             (int id, DBCode code2) = _access.AddTest(test);
             if(code2 != DBCode.OK)
             {
