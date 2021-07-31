@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System;
+using System.Runtime.InteropServices;
 
 namespace Submit_System {
 
@@ -16,6 +17,13 @@ namespace Submit_System {
 
     public class Python3Tester : AutomaticTester
     {
+        static Python3Tester()
+        {
+            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                exe_file_location = MyConfig.Configuration.GetSection("WindowsPythonPath").Value;
+            }
+        }
         private static string exe_file_location = "/usr/bin/python3";
         private List<Test> tests;
         private List<CheckResult> results;
@@ -42,7 +50,7 @@ namespace Submit_System {
         {
             try{
             bool ok;
-            string directory_path = Directory.GetCurrentDirectory()+"/Test_"+test_location;
+            string directory_path = Path.Combine(Directory.GetCurrentDirectory(), "Tests","Test_"+test_location);
 
             foreach(Test test in this.tests){
 
@@ -97,7 +105,7 @@ namespace Submit_System {
                     if(test.Output_File_Name != "stdout")
                     {
                         try{
-                            output = File.ReadAllText(directory_path+"/"+test.Output_File_Name);
+                            output = File.ReadAllText(Path.Combine(directory_path, test.Output_File_Name));
                         } catch{
                             output = "";
                             errors = errors + "Cannot read the output file " + test.Output_File_Name + ".\n";

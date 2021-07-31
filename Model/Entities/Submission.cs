@@ -2,7 +2,6 @@ using System;
 using System.Text.Json.Serialization;
 using System.Collections.Generic;
 namespace Submit_System {
-    public enum CheckState { NotBeingChecked, CheckedByYou, CheckedByOther }
     public class Submission{
         public string ID{get;set;}
         [JsonIgnore]

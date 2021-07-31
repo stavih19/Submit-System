@@ -41,12 +41,12 @@ namespace Submit_System {
         public int StyleTestGradeWeight { get; set; }
         public int IsActive { get; set; }
         public bool MultipleSubmission{ get; set; }
-        public DateTime MainDate { get; set; }
         // number of matches between submissions shown
         public int MossShownMatches { get; set; }
         // number of times a code sequence can be found before it stops being counted
         public int MossMaxTimesMatch { get; set; }
         public string MossLink { get; set; } = "";
-        public List<SubmitFile> HelpFiles { get; set; }
+
+        public List<string> Filenames { get; set; }
     }
 }

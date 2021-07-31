@@ -31,6 +31,7 @@ namespace Submit_System
             services.AddSingleton<MemoryCache>(provider => new MemoryCache(options));
             services.AddTransient<AuthFilter>();
             services.AddSingleton<MossClient>();
+            services.AddScoped<TestManager>();
             services.AddMvc(options =>
             {
                 options.Filters.Add<ExceptionFilter>();

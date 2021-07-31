@@ -18,6 +18,10 @@ namespace Submit_System {
        
         public int CalculateGrade()
         {
+            if(AutoGrade < 0 || ManualGrade < 0)
+            {
+                return -1;
+            }
             if(copied)
             {
                 return 0;

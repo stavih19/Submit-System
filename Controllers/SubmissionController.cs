@@ -1,15 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using System.Diagnostics;
-using System.Net.Mime;
-using Microsoft.AspNetCore.StaticFiles;
-using System.Net.Http;
+using System.Web;
 using System.IO;
+using System.Text;
 
 namespace Submit_System.Controllers
 {
@@ -111,6 +107,7 @@ namespace Submit_System.Controllers
             {
                 return BadRequest();
             }
+            msg.Text = HttpUtility.HtmlEncode(msg.Text);
             string path = Path.Combine("Requests", msg.ChatID);
             // Create a randomly generated directory name. This prevents collisions if attached files have the same name
             path = FileUtils.CreateUniqueDirectory(path, "Attachment_");
@@ -172,13 +169,51 @@ namespace Submit_System.Controllers
             PostMessage(msg);
             return id;
         }
-         
+        public void SendResults(SubmitInfo info, List<User> submitters) 
+        {
+            foreach(User submitter in submitters)
+            {
+                string subject = $"Course {info.CourseID} Exercise {info.ExerciseName}";
+                MaleUtils.SendMail(submitter.Email, subject, info.Text);
+            }
+        }
         [Route("Student/DetachFromSubmission")]
         [HttpPost]        
         public ActionResult<SubmitResult> Detach(string submissionId)
         {
             return HandleDatabaseOutput(_access.DetachStudent(submissionId));
         }
+        private SubmitOutput GetTestResults(SubmitInfo info)
+        {
+            string date = DateTime.Now.ToString("m/dd/yyyy");
+            (List<CheckResult> checks, int c, string msg) = TestManager.Test(info.SubmissionID, 0);
+            StringBuilder builder = new StringBuilder($"Exercise Submitted successfully. Date Submitted: {date}");
+            if(c == 4)
+            {
+                builder.AppendLine("This submission will be checked later.");
+                builder.Replace("\n", "<br>");
+                return new SubmitOutput {
+                    Text = builder.ToString(),
+                    AutoGrade = -1,
+                    StyleGrade = -1
+                };
+            }
+            else if(c != 0)
+            {
+                throw new Exception();
+            }
+            else
+            {
+                Result result = new Result(checks);
+                builder.Append(HttpUtility.HtmlEncode(result.ToString()));
+                builder.Replace("\n", "<br>");
+                return new SubmitOutput {
+                    Text = builder.ToString(),
+                    AutoGrade = (int)Math.Round(result.GetTestsGrade()),
+                    StyleGrade = 0
+                };
+            }
+        } 
         [Route("Student/SubmitExercise")]
         [HttpPost]        
         public ActionResult<SubmitResult> Submit(string exerciseId, [FromBody] List<SubmitFile> files, bool final)
@@ -199,12 +234,12 @@ namespace Submit_System.Controllers
             {
                 return HandleDatabaseOutput(res);
             }
-            ((string path, string subid), DBCode code) =  _access.CreateSubmissionDirectory(exerciseId);
-            if(path == null) { return NotFound("Exercise not found"); }
+            (SubmitInfo info, DBCode code) =  _access.GetSubmitInfo(exerciseId);
+            if(info.Path == null) { return NotFound("Exercise not found"); }
             List<string> submittedFiles;
             try
             {
-                submittedFiles = FileUtils.StoreFiles(files, path, true, true);
+                submittedFiles = FileUtils.StoreFiles(files, info.Path, true, true);
             }
             catch(System.Security.SecurityException e)
             {
@@ -215,12 +250,13 @@ namespace Submit_System.Controllers
                 Debug.WriteLine(e.ToString());
                 return ServerError("There was an issue with uploading the files");
             }
+            SubmitOutput output = GetTestResults(info);
             if(final)
             {
-                _access.MarkSubmitted(subid, path);
+                _access.MarkSubmitted(info.SubmissionID, info.Path, output.StyleGrade);
             }
             return new SubmitResult {
-                Message = $"Exercise Submitted successfully.\n Date Submitted: {DateTime.Now.ToString("m/dd/yyyy")}",
+                Message = output.Text,
                 Files = submittedFiles
             };
         }

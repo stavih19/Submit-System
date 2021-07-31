@@ -55,8 +55,15 @@ namespace Submit_System.Controllers
         }
         [HttpPost]
         [Route("Teacher/CreateExercise")]
-        public ActionResult<ExOutput> CreateExercise(string courseid, [FromBody] Exercise exercise)
+        public ActionResult<ExOutput> CreateExercise(string courseid, [FromBody] ExerciseInput input)
         {
+            var exercise = input.Exercise;
+            exercise.MossMaxTimesMatch = MossClient.DEF_MAX_FOUND;
+            exercise.MossShownMatches = MossClient.DEF_SHOW;
+            if(IsAnyNull(exercise?.Name))
+            {
+                return BadRequest();
+            }
             DBCode code = _access.CheckCoursePermission(courseid, Role.Teacher);
             if(code != DBCode.OK)
             {
@@ -70,7 +77,7 @@ namespace Submit_System.Controllers
             }
             exercise.FilesLocation = path;
             exercise.GenerateID();
-            code = _access.CreateExercise(exercise);
+            code = _access.CreateExercise(input);
             if(code != DBCode.OK)
             {
                 return HandleDatabaseOutput(code);
@@ -80,7 +87,7 @@ namespace Submit_System.Controllers
             var output = new ExOutput { ID = exercise.ID };
             try
             {
-                output.Files = FileUtils.StoreFiles(exercise.HelpFiles, helpFiles, false, false);
+                output.Files = FileUtils.StoreFiles(input.HelpFiles, helpFiles, false, false);
             }
             catch(Exception)
             {
@@ -98,7 +105,8 @@ namespace Submit_System.Controllers
             {
                 return HandleDatabaseOutput(code);
             }
-            return HandleDatabaseOutput(_access.GetExercise(exerciseId));
+            var a = _access.GetExercise(exerciseId);
+            return HandleDatabaseOutput(a);
         }
         [HttpPost]
         [Route("Teacher/CopyExercise")]
@@ -114,7 +122,7 @@ namespace Submit_System.Controllers
             {
                 return HandleDatabaseOutput(code2);
             }
-            exercise.Name = exerciseName;
+            exercise.Name = exerciseName; 
             string newPath = System.IO.Path.Combine("Courses", courseid, "Exercises", exercise.Name);
             if(System.IO.Directory.Exists(newPath))
             {
@@ -124,7 +132,7 @@ namespace Submit_System.Controllers
             string oldPath = exercise.FilesLocation;
             exercise.FilesLocation = newPath;
             exercise.GenerateID();
-            code = _access.CreateExercise(exercise);
+            code = _access.CreateExercise(new ExerciseInput {Exercise = exercise});
             if(code != DBCode.OK)
             {
                 return HandleDatabaseOutput(code);
@@ -207,8 +215,9 @@ namespace Submit_System.Controllers
         }
         [HttpPost]
         [Route("Teacher/AddTest")]
-        public ActionResult<TestOutput> AddTest([FromBody] Test test)
+        public ActionResult<TestOutput> AddTest([FromBody] TestInput input)
         {
+            Test test = input.Test;
             DBCode code = _access.CheckExercisePermission(test.Exercise_ID, Role.Teacher);
             if(code != DBCode.OK)
             {
@@ -233,9 +242,9 @@ namespace Submit_System.Controllers
             };
             try
             {
-                if(test.Has_Adittional_Files)
+                if(input.AdditionalFiles != null)
                 {
-                    output.Files = FileUtils.StoreFiles(test.AdditionFiles, testDir, false, true);
+                    output.Files = FileUtils.StoreFiles(input.AdditionalFiles, testDir, false, true);
                 }
             }
             catch

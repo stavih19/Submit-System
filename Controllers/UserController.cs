@@ -45,9 +45,22 @@ namespace Submit_System
         public IActionResult SetPassword(string token, [FromBody] string password)
         {
             
-            // // (string userid, DBCode code) = _access.CheckPasswordToken(form.Token);
-            // // _access.DeletePasswordToken(userid);
-            //_storage.RemoveByID(userid);
+            (string userid, DBCode code) = _access.CheckPasswordToken(CryptoUtils.Sha256Hash(token));
+            if(code != DBCode.OK)
+            {
+                return HandleDatabaseOutput(code);
+            }
+            _storage.RemoveByID(userid);
+            code = _access.DeletePasswordToken(userid);
+            if(code != DBCode.OK)
+            {
+                return HandleDatabaseOutput(code);
+            }
+            code = _access.SetPassword(userid, CryptoUtils.KDFHash(password));
+            if(code != DBCode.OK)
+            {
+                return HandleDatabaseOutput(code);
+            }
             return Ok();
         }
         [HttpDelete]
@@ -61,7 +74,7 @@ namespace Submit_System
         [Route("User/CheckToken")]
         public IActionResult CheckToken(string token)
         {
-            token = token ?? Request.Cookies["token"];
+            token = Request.Cookies["token"];
             if(_storage.TryGetToken(token, out _))
             {
                 return Ok();
@@ -83,23 +96,17 @@ namespace Submit_System
             return Ok("Authentication enabled.");
         }
         [HttpPost]
-        [Route("Database/Reset")]
-        public IActionResult Reset()
-        {
-            bool isSuccess = false; // DataBaseManager.Reset();
-            return isSuccess ? Ok() : ServerError();
-        }
-        [HttpPost]
         [Route("Admin/AddUser")]
         public IActionResult AddUser([FromBody] User user)
         {
-            user.PasswordHash = "N/A";
+            user.PasswordHash = null;
             DataBaseManager.AddUser(user);
             string token = CryptoUtils.GetRandomBase64String(24);
             string tokenHash = CryptoUtils.Sha256Hash(token);
             string link =  String.Format(PASSWORD_LINK, HttpUtility.UrlEncode(token));
-            //_access.AddPasswordToken(user.ID, tokenHash);
-            //MaleUtils.SendRegistration(user.Email, link);
+            _access.AddPasswordToken(user.ID, tokenHash, DateTime.Now.AddDays(2));
+            string text = $"Password form link:<br>" + link;
+            MaleUtils.SendRegistration(user.Email, text);
             return Ok();
         }
     }  

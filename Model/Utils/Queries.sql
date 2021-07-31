@@ -216,7 +216,7 @@ FROM Submission_Dates AS D
         ON SS.submission_id = S.submission_id
     INNER JOIN Users as U
         ON SS.user_id = U.user_id
----Insert Date---
+---AddDate---
  IF EXISTS (SELECT 1 FROM Submission_Dates WHERE exercise_id = @EID AND group_number = @GR AND @GR != -1)
         SELECT -1
     ELSE
@@ -324,3 +324,10 @@ SELECT
         ON C.chat_id = M.chat_id
     INNER JOIN [FM]
         ON FM.id = M.message_id
+---AddToken---
+BEGIN TRAN
+    IF EXISTS(SELECT 1 FROM Tokens WHERE user_id=@ID)
+        UPDATE Tokens SET token = @TOKEN, expiry_date = @EXP WHERE user_id = @ID
+    ELSE
+        INSERT INTO Tokens VALUES (@ID, @TOKEN, @EXP)
+COMMIT TRAN

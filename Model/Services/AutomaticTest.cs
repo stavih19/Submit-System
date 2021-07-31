@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using System.Text;
 namespace Submit_System {
 
 
@@ -27,6 +28,7 @@ namespace Submit_System {
             this.Timeout_In_Seconds = timeout_in_seconds;
             this.Main_Sourse_File = main_sourse_file;
             this.AdittionalFilesLocation = adittional_files_location;
+            this.AdditionFiles = FileUtils.GetRelativePaths(adittional_files_location);
             this.Exercise_ID = exercise_id;
             this.Type = type;
         }
@@ -46,7 +48,7 @@ namespace Submit_System {
         [JsonIgnore]
         public string AdittionalFilesLocation { get; set; }
         
-        public List<SubmitFile> AdditionFiles {get; set; }
+        public List<string> AdditionFiles {get; set; }
 
 
         public bool Has_Adittional_Files{get{return AdittionalFilesLocation != "";}}

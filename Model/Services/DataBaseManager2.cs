@@ -519,29 +519,34 @@ namespace Submit_System
             try{cnn.Close();} catch{return (chats,4,"Connection close failed");}
             return (chats,0,"OK");   
         }
-        public static (List<UserLabel>,int,string) GetSubmitters(string submssionId) {
+        public static (List<User>,DBCode) GetSubmittersWithEmail(string submissionId) {
             var submitters = new List<UserLabel>();
-            SqlConnection cnn  = new SqlConnection(connetionString);
-            try{cnn.Open();} catch {return (null,3,"Connection failed");}
+            String sql = @"SELECT U.user_id, U.name, U.email FROM Submitters as SS INNER JOIN Users AS U
+                        ON SS.user_id = U.user_id WHERE SS.submission_id = @ID;";
+            SqlParameter[] parameters = { CreateParameter("@ID", SqlDbType.VarChar, submissionId) };
+            return MultiRecordQuery(sql, parameters, (SqlDataReader dataReader) => 
+                new User 
+                {
+                    ID = dataReader.GetValue(0).ToString(),
+                    Name = dataReader.GetValue(1).ToString(),
+                    Email = dataReader.GetValue(2).ToString(),
+                }
+            );
+            
+        }
+         public static (List<UserLabel>,DBCode) GetSubmitters(string submissionId) {
+            var submitters = new List<UserLabel>();
             String sql = @"SELECT U.user_id, U.name FROM Submitters as SS INNER JOIN Users AS U
                         ON SS.user_id = U.user_id WHERE SS.submission_id = @ID;";
-            SqlCommand command = new SqlCommand(sql,cnn);
-            command.Parameters.Add("@ID",System.Data.SqlDbType.VarChar);
-            command.Parameters["@ID"].Value = submssionId;
-            try{
-                SqlDataReader dataReader = command.ExecuteReader();
-                while(dataReader.Read()){
-                    submitters.Add( new UserLabel {
-                        ID = dataReader.GetValue(0).ToString(),
-                        Name = dataReader.GetValue(1).ToString(),
-                    });
+            SqlParameter[] parameters = { CreateParameter("@ID", SqlDbType.VarChar, submissionId) };
+            return MultiRecordQuery(sql, parameters, (SqlDataReader dataReader) => 
+                new UserLabel 
+                {
+                    ID = dataReader.GetValue(0).ToString(),
+                    Name = dataReader.GetValue(1).ToString(),
                 }
-            } catch {
-                try{cnn.Close();}catch{}
-                return (null,3,"Connection failed");
-            }
-            try{cnn.Close();} catch{return (submitters,4,"Connection close failed");}
-            return (submitters,0,"OK");   
+            );
+            
         }
 
         public static ((string,int),int,string) ReadSubmissionAndTypeOfStudentInExercise(string student_id,string exercise_id){
@@ -698,44 +703,23 @@ namespace Submit_System
             };
             return HandleNonQuery(sql, parameters);
         }
-        public static (int,string) UpdatePassword(string userid, string hash){
-            SqlConnection cnn  = new SqlConnection(connetionString);
-            try{cnn.Open();} catch {return (3,"Connection failed");}
-
+        public static DBCode UpdatePassword(string userid, string hash){
             string sql = "UPDATE Users SET password_hash=@HASH WHERE user_id = @ID;";
-            SqlCommand command = new SqlCommand(sql,cnn);
-            command.Parameters.Add("@ID",System.Data.SqlDbType.NVarChar);
-            command.Parameters.Add("@HASH",System.Data.SqlDbType.NVarChar);
-            command.Parameters["@ID"].Value = userid;
-            command.Parameters["@HASH"].Value = hash;
-            try{
-                command.ExecuteNonQuery();
-            } catch {
-                try{cnn.Close();}catch{}
-                return (2,"Update failed");
-            }
-            try{cnn.Close();} catch{return (4,"Connection close failed");}
-            return (0,"OK");
+            SqlParameter[] parameters = {
+                CreateParameter("@ID", SqlDbType.NVarChar, userid),
+                CreateParameter("@HASH", SqlDbType.NVarChar, hash)
+            };
+            return HandleNonQuery(sql, parameters);
+            
         }
-        public static (int,string) AddPasswordToken(string userid, string passwordToken, DateTime expiration){
-            SqlConnection cnn  = new SqlConnection(connetionString);
-            try{cnn.Open();} catch {return (3,"Connection failed");}
-            String sql = "IF EXISTS (SELECT 1 FROM Tokens WHERE user_id = @ID) INSERT INTO Tokens VALUES (@ID, @TOKEN, @DATE)";
-            SqlCommand command = new SqlCommand(sql,cnn);
-            command.Parameters.Add("@ID",System.Data.SqlDbType.NVarChar);
-            command.Parameters.Add("@TOKEN",System.Data.SqlDbType.NVarChar);
-            command.Parameters.Add("@DATE",System.Data.SqlDbType.DateTime);
-            command.Parameters["@ID"].Value = userid;
-            command.Parameters["@TOKEN"].Value = passwordToken;
-             command.Parameters["@DATE"].Value = expiration;
-            try{
-                command.ExecuteNonQuery();
-            } catch {
-                try{cnn.Close();}catch{}
-                return (2,"Update failed");
-            }
-            try{cnn.Close();} catch{return (4,"Connection close failed");}
-            return (0,"OK");
+        public static DBCode AddPasswordToken(string userid, string passwordToken, DateTime expiration){
+            string sql = LongQueries["AddToken"];
+                SqlParameter[] parameters = { 
+                CreateParameter("@ID", SqlDbType.VarChar, userid),
+                CreateParameter("@TOKEN", SqlDbType.NVarChar, passwordToken),
+                CreateParameter("@EXP", SqlDbType.DateTime, expiration)
+            };
+            return HandleNonQuery(sql, parameters);
         }
         public static (int,string) DeleteToken(string userid) {
             SqlConnection cnn  = new SqlConnection(connetionString);
@@ -753,29 +737,22 @@ namespace Submit_System
             try{cnn.Close();} catch{return (4,"Connection close failed");}
             return (0,"OK");
         }
-        public static ((string, DateTime),int,string) ReadTokenInfo(string passwordToken) {
-            SqlConnection cnn  = new SqlConnection(connetionString);
-            string id = null;
-            DateTime date = DateTime.MinValue;
-            try{cnn.Open();} catch {return ((id, date),3,"Connection failed");}
-            String sql = "SELECT user_id, creation_date FROM Users WHERE token = @TOKEN;";
-            SqlCommand command = new SqlCommand(sql,cnn);
-            command.Parameters.Add("@TOKEN",System.Data.SqlDbType.NVarChar);
-            command.Parameters["@TOKEN"].Value = passwordToken;
-            try{
-                SqlDataReader dataReader = command.ExecuteReader();
-                if(!dataReader.Read()){
-                    try{cnn.Close();}catch{}
-                    return ((id, date),2,"token does not exist");
-                }
-                id = (string) dataReader.GetValue(0);
-                date = (DateTime) dataReader.GetValue(1);
-            } catch {
-                try{cnn.Close();}catch{}
-                return ((id, date),3,"Connection failed");
+        public static (string, DBCode) CheckToken(string passwordToken) {
+            string sql = "SELECT user_id, expiry_date FROM Tokens wHERE @TOKEN = @TOKEN";
+            SqlParameter[] parameters = { CreateParameter("@TOKEN", SqlDbType.VarChar, passwordToken) };
+            ((string id, DateTime time), DBCode code) =
+                SingleRecordQuery(sql, parameters, (SqlDataReader dataReader) =>
+                    ((string) dataReader.GetValue(0), (DateTime) dataReader.GetValue(1)));
+            if(code != DBCode.OK)
+            {
+                return (null, code);
             }
-            try{cnn.Close();} catch{return ((id, date),4,"Connection close failed");}
-            return ((id, date),0,"OK");   
+            if(time > DateTime.Now)
+            {
+                DeleteToken(id);
+                return (null, DBCode.NotFound);
+            }
+            return (id, code);
         }
         public static (int, DBCode) AddExtension(SubmitDate date, string submissionId){
             String sql = LongQueries["AddExtension"];
@@ -866,7 +843,7 @@ namespace Submit_System
         {
             string sql = LongQueries["AddDate"];
             SqlParameter[] parameters =  { 
-                CreateParameter("@ID",System.Data.SqlDbType.Int, date.ID),
+                CreateParameter("@EID",System.Data.SqlDbType.VarChar, date.ExerciseID),
                 CreateParameter("@GR",System.Data.SqlDbType.Int, date.Group),
                 CreateParameter("@DATE",System.Data.SqlDbType.Date, date.Date),
                 CreateParameter("@RE",System.Data.SqlDbType.Int, date.Reduction)
