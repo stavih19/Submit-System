@@ -58,7 +58,7 @@ namespace Submit_System
             foreach (string ext in exts)
             {
                 var newFiles = Directory.EnumerateFiles(folder, ext, SearchOption.AllDirectories);
-                files.Concat(newFiles);
+                files = files.Concat(newFiles);
             }
             return files;
         }

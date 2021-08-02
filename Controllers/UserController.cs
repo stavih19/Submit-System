@@ -22,11 +22,10 @@ namespace Submit_System
         [Route("User/Login")]
         public ActionResult<List<string>> Login([FromBody]LoginData login)  
         {  
-            if (login == null || login?.Username == null || login?.Password == null)  
+            if (IsAnyNull(login?.Username, login?.Password))  
             {  
                 return BadRequest();
             }
-            
             var result = _access.AuthenticateUser(login.Username, login.Password);
             if(result.Item1 == null) {
                 return NotFound();
@@ -104,9 +103,9 @@ namespace Submit_System
             string token = CryptoUtils.GetRandomBase64String(24);
             string tokenHash = CryptoUtils.Sha256Hash(token);
             string link =  String.Format(PASSWORD_LINK, HttpUtility.UrlEncode(token));
-            _access.AddPasswordToken(user.ID, tokenHash, DateTime.Now.AddDays(2));
-            string text = $"Password form link:<br>" + link;
-            MaleUtils.SendRegistration(user.Email, text);
+            // _access.AddPasswordToken(user.ID, tokenHash, DateTime.Now.AddDays(2));
+            // string text = $"Password form link:<br>" + link;
+            //MaleUtils.SendRegistration(user.Email, text);
             return Ok();
         }
     }  

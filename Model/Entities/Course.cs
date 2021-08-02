@@ -1,14 +1,17 @@
 namespace Submit_System {
     public class Course {
 
-        public static  string GenerateID(int number,string name,int year,int semester){
-            return year.ToString()+semester.ToString()+number.ToString();
+        public static  string GenerateID(int number,int year){
+            return number + "_" + year + "_";
         }
-
+        public void GenerateID()
+        {
+            ID = GenerateID(this.Number, this.Year);
+        }
         public Course(){}
 
         public Course(int number,string name,int year,int semester){
-            this.ID = Course.GenerateID(number, name,year,semester);;
+            this.ID =  GenerateID(number, year);
             this.Number = number;
             this.Name = name;
             this.Year =year;

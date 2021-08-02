@@ -542,15 +542,15 @@ namespace Submit_System {
             sub.StyleGrade = styleGrade;
             return Convert(DataBaseManager.UpdateSubmission(sub));
         }
-        public DBCode AddTeacherToCourse(string courseid, string teacherid)
+        public (string, DBCode) AddTeacherToCourse(string courseid, string teacherid)
         {
             return DataBaseManager.AddUserToCourse(courseid, teacherid, Role.Teacher);
         }
-        public DBCode AddCheckerToCourse(string courseid, string checkerid)
+        public (string, DBCode) AddCheckerToCourse(string courseid, string checkerid)
         {
             return DataBaseManager.AddUserToCourse(courseid, checkerid, Role.Checker);
         }
-         public DBCode AddStudentToCourse(string courseid, string studentId)
+         public (string, DBCode) AddStudentToCourse(string courseid, string studentId)
         {
             return DataBaseManager.AddUserToCourse(courseid, studentId, Role.Student);
         }
@@ -824,6 +824,11 @@ namespace Submit_System {
         public DBCode SetPassword(string userid, string hash)
         {
             return DataBaseManager.UpdatePassword(userid, hash);
+        }
+
+        public DBCode UpdateExercise(Exercise exercise)
+        {
+            return Convert(DataBaseManager.UpdateExercise(exercise));
         }
     }
 }

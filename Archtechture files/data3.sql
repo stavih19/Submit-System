@@ -18,7 +18,10 @@ DECLARE @course_id1 AS VARCHAR(32) = N'89111_2021';
 DECLARE @course_id2 AS VARCHAR(32) = N'89112_2021';
 DECLARE @course_id3 AS VARCHAR(32) = N'89115_2021';
 INSERT INTO Users VALUES (@Danny, 'IjHzX+F5umurQ2u7ADFzi6qYz4U=$Jwv9yeDBSZw=$1000', N'דני דני', 'danny@gmail.com'),
-                        (@Yosi, 'IjHzX+F5umurQ2u7ADFzi6qYz4U=$Jwv9yeDBSZw=$1000', N'יוסי יוסי', 'yosi@gmail.com');
+                        ('250250375', 'IjHzX+F5umurQ2u7ADFzi6qYz4U=$Jwv9yeDBSZw=$1000', N'מאיה מאיה', 'm@qqfqq'),
+                        ('123456789', 'IjHzX+F5umurQ2u7ADFzi6qYz4U=$Jwv9yeDBSZw=$1000', N'י', 'yosi@gmail.com'),
+                        ('210584144', 'IjHzX+F5umurQ2u7ADFzi6qYz4U=$Jwv9yeDBSZw=$1000', N'יוסי יוסי', 'yosi@gmail.com'),
+                        ('23421-843', 'IjHzX+F5umurQ2u7ADFzi6qYz4U=$Jwv9yeDBSZw=$1000', N'יוסי יוסי', 'yosi@gmail.com');
 
 INSERT INTO Courses VALUES (@course_id1, 89111, @course_name1, 2021, 0),
                             (@course_id2, 89112, @course_name2, 2021, 0),

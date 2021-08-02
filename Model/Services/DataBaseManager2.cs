@@ -351,7 +351,7 @@ namespace Submit_System
             List<ExerciseLabel> lst = new List<ExerciseLabel>();
             SqlConnection cnn  = new SqlConnection(connetionString);
             try{cnn.Open();} catch {return (null,3,"Connection failed");}
-            String sql = "SELECT exercise_id,exercise_name FROM Exercise WHERE course_id = @ID ORDER BY exercise_id DESC;";
+            String sql = "SELECT exercise_id,exercise_name FROM Exercise WHERE course_id = @ID ORDER BY creation DESC;";
             SqlCommand command = new SqlCommand(sql,cnn);
             command.Parameters.Add("@ID",SqlDbType.VarChar);
             command.Parameters["@ID"].Value = course_id;
@@ -575,7 +575,13 @@ namespace Submit_System
             try{cnn.Close();} catch{return ((submission_id,type),4,"Connection close failed");}
             return ((submission_id,type),0,"OK");   
         }
-        public static DBCode AddUserToCourse(string courseId,string userId, Role role){
+        public static (string, DBCode) AddUserToCourse(string courseId,string userId, Role role){
+            var user = ReadUser(userId);
+            var code = (DBCode) user.Item2;
+            if(code != DBCode.OK)
+            {
+                return (null, code);
+            }
             String sql = "IF NOT EXISTS(SELECT 1 FROM @Table WHERE course_id=@CID AND user_id=@UID) INSERT INTO @Table VALUES (@UID, @CID);";
             sql = sql.Replace("@Table", RoleToCourseTable[role]);
 
@@ -590,15 +596,15 @@ namespace Submit_System
             }
             catch
             {
-                return DBCode.Error;
+                return (null, DBCode.Error);
             }
             if(success)
             {
-                return DBCode.OK;
+                return (user.Item1.Name, DBCode.OK);
             }
             else
             {
-                return DBCode.AlreadyExists;
+                return (null, DBCode.AlreadyExists);
             }
         }
         public static DBCode AddCheckerToExercise(string exerciseId,string userId){
@@ -805,7 +811,7 @@ namespace Submit_System
             String sql = LongQueries["GetRequestsMainPage"];
             SqlParameter[] parameters = {
                 CreateParameter("@ID",System.Data.SqlDbType.VarChar, userID),
-                CreateParameter("@TYPE",System.Data.SqlDbType.Int, type)
+                CreateParameter("@TYPE",System.Data.SqlDbType.Int, (int) type)
             };
             return MultiRecordQuery(sql, parameters, (SqlDataReader dataReader) =>
                 new RequestLabelMainPage {
@@ -920,13 +926,13 @@ namespace Submit_System
             return (lst, DBCode.OK);
         }  
         public static DBCode UpdateMoss(MossData data){
-            string sql = @"UPDATE Exercise SET moss_matches=@SHOW, moss_stuff=@MAX moss_link=@LINK 
+            string sql = @"UPDATE Exercise SET moss_number_of_matches=@SHOW, moss_max_match=@MAX moss_result_link=@LINK 
                             WHERE exercise_id = @ID;";
             SqlParameter[] parameters = {
                 CreateParameter("@ID",System.Data.SqlDbType.VarChar, data.ExerciseID),
-                new SqlParameter("@SHOW",System.Data.SqlDbType.Int) { Value = data.MatchesShow },
-                new SqlParameter("@MAX",System.Data.SqlDbType.Int) { Value = data.MaxFound},
-                new SqlParameter("@LINK",System.Data.SqlDbType.VarChar) { Value = data.Result }
+                CreateParameter("@SHOW",System.Data.SqlDbType.Int, data.MatchesShow),
+                CreateParameter("@MAX",System.Data.SqlDbType.Int, data.MaxFound),
+                CreateParameter("@Link",System.Data.SqlDbType.VarChar, data.Result)
             };
             return HandleNonQuery(sql, parameters);
         }    
@@ -987,7 +993,7 @@ namespace Submit_System
         }  
         public static (string, DBCode) GetExDir(string exerciseId)
         {
-            string sql = "SELECT test_files_location FROM Message WHERE message_id = @ID";
+            string sql = "SELECT test_files_location FROM Exercise WHERE exercise_id = @ID";
             SqlParameter[] parameters = { CreateParameter("@ID", SqlDbType.VarChar, exerciseId)};
             return SingleRecordQuery(sql, parameters, (SqlDataReader dataReader) => dataReader.GetString(0));
         }
@@ -1025,11 +1031,11 @@ namespace Submit_System
             command.Parameters["@TYPE"].Value = test.Type;
             command.Parameters["@WEIGHT"].Value = test.Value;
             command.Parameters["@INPUT"].Value = test.Input;
-            command.Parameters["@EOUTPUT"].Value = test.Expected_Output;
-            command.Parameters["@OFNAME"].Value = test.Output_File_Name;
-            command.Parameters["@ARGS"].Value = test.Arguments_String;
-            command.Parameters["@TIMEOUT"].Value = test.Timeout_In_Seconds;
-            command.Parameters["@MAIN"].Value = test.Main_Sourse_File;
+            command.Parameters["@EOUTPUT"].Value = test.ExpectedOutput;
+            command.Parameters["@OFNAME"].Value = test.OutputFileName;
+            command.Parameters["@ARGS"].Value = test.ArgumentsString;
+            command.Parameters["@TIMEOUT"].Value = test.TimeoutInSeconds;
+            command.Parameters["@MAIN"].Value = test.MainSourseFile;
             try{
                 var reader = command.ExecuteNonQuery();
             } catch {

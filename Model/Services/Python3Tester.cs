@@ -55,9 +55,9 @@ namespace Submit_System {
             foreach(Test test in this.tests){
 
                 if(test.Has_Adittional_Files){
-                    ok = CopyAll(test.Adittional_Files_Location,directory_path);
+                    ok = CopyAll(test.AdittionalFilesLocation,directory_path);
                     if(!ok){
-                    return "Cannot Load files at "+test.Adittional_Files_Location;
+                    return "Cannot Load files at "+test.AdittionalFilesLocation;
                     }
                 }
                 ok = CopyAll(files_location,directory_path);
@@ -71,10 +71,10 @@ namespace Submit_System {
 
                 ProcessStartInfo start = new ProcessStartInfo();
                 start.FileName = exe_file_location;
-                if(test.Arguments_String.Length > 0){
-                start.Arguments = string.Format("{0} {1}", test.Main_Sourse_File, test.Arguments_String);
+                if(test.ArgumentsString.Length > 0){
+                start.Arguments = string.Format("{0} {1}", test.MainSourseFile, test.ArgumentsString);
                 } else{
-                    start.Arguments = test.Main_Sourse_File;
+                    start.Arguments = test.MainSourseFile;
                 }
                 start.UseShellExecute = false;
                 start.RedirectStandardOutput = true;
@@ -91,24 +91,24 @@ namespace Submit_System {
                         stdin.Write(test.Input);
                     }
                     //wait until timeout:
-                    bool exited = process.WaitForExit(1000*test.Timeout_In_Seconds);
+                    bool exited = process.WaitForExit(1000*test.TimeoutInSeconds);
                     DateTime ended_at = DateTime.Now;
                     time = (ended_at - started_at).TotalMilliseconds;
                     if(!exited){
                         process.Kill();
-                        errors = "Timeout of "+test.Timeout_In_Seconds+" seconds\n";
+                        errors = "Timeout of "+test.TimeoutInSeconds+" seconds\n";
                     }
                     using(StreamReader reader = process.StandardOutput)
                     {
                         output = reader.ReadToEnd();
                     }
-                    if(test.Output_File_Name != "stdout")
+                    if(test.OutputFileName != "stdout")
                     {
                         try{
-                            output = File.ReadAllText(Path.Combine(directory_path, test.Output_File_Name));
+                            output = File.ReadAllText(Path.Combine(directory_path, test.OutputFileName));
                         } catch{
                             output = "";
-                            errors = errors + "Cannot read the output file " + test.Output_File_Name + ".\n";
+                            errors = errors + "Cannot read the output file " + test.OutputFileName + ".\n";
                         }
                     }
                     using(StreamReader reader = process.StandardError)
@@ -117,9 +117,9 @@ namespace Submit_System {
                     }
                 }
                 if(errors.Length > 0){
-                    this.results.Add(new CheckResult(test.Input,output,test.Expected_Output,test.Value,time,errors));
+                    this.results.Add(new CheckResult(test.Input,output,test.ExpectedOutput,test.Value,time,errors));
                 }else{
-                    this.results.Add(new CheckResult(test.Input,output,test.Expected_Output,test.Value,time));
+                    this.results.Add(new CheckResult(test.Input,output,test.ExpectedOutput,test.Value,time));
                 }
 
                 Directory.Delete(directory_path,true);

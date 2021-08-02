@@ -262,7 +262,8 @@ namespace Submit_System
             }
             SqlConnection cnn  = new SqlConnection(connetionString);
             try{cnn.Open();} catch {return (3,"Connection failed");}
-            String sql = "INSERT INTO Exercise VALUES (@ID,@NAME,@CID,@OEID,@MAX,@FILES,@LATEST,@LANG,@AUTO,@STYLE,@ACTIVE,@MULT, @SHOW, @MAXM, null);";
+            String sql = @"INSERT INTO Exercise VALUES
+                (@ID,@NAME,@CID,@OEID,@MAX,@FILES,@LATEST,@LANG,@AUTO,@STYLE,@ACTIVE,@MULT, @SHOW, @MAXM, null, GETDATE());";
             SqlCommand command = new SqlCommand(sql,cnn);
             command.Parameters.Add("@ID",System.Data.SqlDbType.NVarChar);
             command.Parameters.Add("@NAME",System.Data.SqlDbType.NVarChar);
@@ -1173,15 +1174,15 @@ namespace Submit_System
             command.Parameters.Add("@MAIN",System.Data.SqlDbType.NVarChar);
             command.Parameters.Add("@ADD",System.Data.SqlDbType.NVarChar);
             command.Parameters["@TYPE"].Value = test.Type;
-            command.Parameters["@EID"].Value = test.Exercise_ID;
+            command.Parameters["@EID"].Value = test.ExerciseID;
             command.Parameters["@VALUE"].Value = test.Value;
             command.Parameters["@INPUT"].Value = test.Input;
-            command.Parameters["@EOUTPUT"].Value = test.Expected_Output;
-            command.Parameters["@OFNAME"].Value = test.Output_File_Name;
-            command.Parameters["@ARGS"].Value = test.Arguments_String;
-            command.Parameters["@TIMEOUT"].Value = test.Timeout_In_Seconds;
-            command.Parameters["@MAIN"].Value = test.Main_Sourse_File;
-            command.Parameters["@ADD"].Value = test.Adittional_Files_Location;
+            command.Parameters["@EOUTPUT"].Value = test.ExpectedOutput;
+            command.Parameters["@OFNAME"].Value = test.OutputFileName;
+            command.Parameters["@ARGS"].Value = test.ArgumentsString;
+            command.Parameters["@TIMEOUT"].Value = test.TimeoutInSeconds;
+            command.Parameters["@MAIN"].Value = test.MainSourseFile;
+            command.Parameters["@ADD"].Value = test.AdittionalFilesLocation;
             try{
                 var reader = command.ExecuteReader();
                 if(!reader.Read()) {

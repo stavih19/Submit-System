@@ -42,11 +42,10 @@ namespace Submit_System {
         public int IsActive { get; set; }
         public bool MultipleSubmission{ get; set; }
         // number of matches between submissions shown
-        public int MossShownMatches { get; set; }
+        public int MossShownMatches { get; set; } = MossClient.DEF_SHOW;
         // number of times a code sequence can be found before it stops being counted
-        public int MossMaxTimesMatch { get; set; }
-        public string MossLink { get; set; } = "";
-
+        public int MossMaxTimesMatch { get; set; } = MossClient.DEF_MAX_FOUND;
+        public string MossLink { get; set; }
         public List<string> Filenames { get; set; }
     }
 }

@@ -172,7 +172,6 @@ FROM Tests as T
 WITH FM (id) AS (SELECT MIN(message_id) FROM [Message] GROUP BY chat_id)
 SELECT
     C.chat_id,
-    S.submission_id,
     M.sender_user_id,
     M.sender_name,
     M.message_text
