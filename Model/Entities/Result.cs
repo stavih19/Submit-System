@@ -31,30 +31,5 @@ namespace Submit_System {
             }
             return sum;
         }
-        public override string ToString()
-        {
-            StringBuilder builder = new StringBuilder();
-            double totalTime = Test_Results.Select(result => result.TimeInMs).Sum();
-            builder.AppendLine("Automatic Test:");
-            builder.AppendLine($"Total grade: {GetTestsGrade()} | Total run time: {totalTime}ms");
-            foreach(CheckResult result in Test_Results)
-            {
-                int grade = result.CalculateTestGrade(new BasicOutputComperator());
-                grade *= result.Weight / 100;
-                builder.AppendLine($"________________________________________________");
-                builder.AppendLine($"Test: Grade: {grade}/{result.Weight} | Run Time: {result.TimeInMs}ms");
-                builder.AppendLine("Input:");
-                builder.AppendLine(result.Input);
-                builder.AppendLine("Expected output:");
-                builder.AppendLine(result.Expected_Output);
-                builder.AppendLine($"Your output:\n{result.Output}");
-                if(result.Is_Error)
-                { 
-                    builder.AppendLine($"Error:{result.Error}");
-                }
-                builder.AppendLine($"________________________________________________");
-            }
-            return builder.ToString();
-        }
     }
 }

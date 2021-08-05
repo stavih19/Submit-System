@@ -22,6 +22,7 @@ namespace Submit_System {
         [JsonIgnore]
         public string CurrentCheckerId {get; set;}
         public CheckState CheckState { get; set; }
+        public int TotalGrade { get; set; }
         public static string GenerateID(string main_submitter_id,string exercise_id){
             return main_submitter_id + "_" + exercise_id;
         }

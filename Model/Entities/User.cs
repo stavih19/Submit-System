@@ -10,7 +10,7 @@ namespace Submit_System {
         public User() {}
         public string ID{get;set;}
         [JsonIgnore]
-        public string PasswordHash{get;set;}
+        public string PasswordHash{get;set;} = null;
         public string Name{get;set;}
         public string Email{get;set;}
 

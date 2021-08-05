@@ -26,6 +26,7 @@ FROM Submitters as SS
         ON C.course_id = E.course_id
     INNER JOIN DS
         ON DS.submission_id = S.submission_id
+ORDER BY DS.submission_date
 ---StudentGrades---
 --Selects everything needed to calcualte the student's grades
 SELECT
@@ -36,7 +37,6 @@ SELECT
     E.exercise_name,
     E.auto_test_grade_value,
     E.style_test_grade_value,
-    D.submission_date,
     S.time_submitted,
     E.late_submission_settings,
     S.auto_grade,
@@ -45,12 +45,22 @@ SELECT
 FROM Submitters as SS
     INNER JOIN Submission as S
         ON S.submission_id = SS.submission_id AND SS.user_id = @ID AND S.submission_status > 1
-    INNER JOIN Submission_Dates as D
-        ON S.submission_date_id = D.submission_date_id
+        AND DATEDIFF(year, GETDATE(), S.time_submitted ) > 0
     INNER JOIN Exercise as E
         ON S.exercise_id = E.exercise_id
     INNER JOIN Courses as C
         ON C.course_id = E.course_id
+ORDER BY S.time_submitted
+---StudentGrades2---
+SELECT 
+    E.exercise_id, D.submission_date, D.reduction
+FROM Submitters as SS
+    INNER JOIN Submission as S
+        ON S.submission_id = SS.submission_id AND SS.user_id = @ID AND S.submission_status > 1
+    INNER JOIN Exercise as E
+        ON S.exercise_id = E.exercise_id
+    INNER JOIN Submission_Dates as D
+            ON S.submission_date_id = D.submission_date_id OR (D.group_number = 0 AND E.exercise_id = D.exercise_id)
 ---AllExercises---
 -- Given a course id, returns the exercises of the course for every year
 SELECT C.year,
@@ -209,7 +219,7 @@ SELECT
 FROM Submission_Dates AS D
     INNER JOIN Submission as S
         ON D.submission_date_id = S.submission_date_id
-        AND D.submission_date_id = @ID
+        AND D.exercise_id = @ID
         AND D.group_number != 0
     INNER JOIN Submitters AS SS
         ON SS.submission_id = S.submission_id
@@ -330,3 +340,19 @@ BEGIN TRAN
     ELSE
         INSERT INTO Tokens VALUES (@ID, @TOKEN, @EXP)
 COMMIT TRAN
+---GetGradeComponents---
+--Selects everything needed to calcualte the student's grades
+SELECT TOP 1
+    E.auto_test_grade_value,
+    E.style_test_grade_value,
+    S.time_submitted,
+    E.late_submission_settings,
+    S.auto_grade,
+    S.style_grade,
+    S.manual_final_grade,
+    S.submission_date_id,
+    E.exercise_id
+    FROM Submission as S
+    INNER JOIN Exercise as E
+        ON S.exercise_id = E.exercise_id
+        AND S.submission_id = @ID

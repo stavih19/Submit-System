@@ -37,5 +37,44 @@ namespace Submit_System {
             int total = grade - InitReduction - reduction;
             return Math.Max(total, 0);
         }
+        public void SetDate(List<SubmitDate> dates)
+        {
+            SubmitDate realDate = null;
+            int reduction = 100;
+            int len = dates.Count;
+            for(int i = 0; i < len; i++)
+            {
+                var date = dates[i];
+                if(date.Date >= this.TimeSubmitted.Date)
+                {
+                    if(date.Reduction < reduction)
+                    {
+                        realDate = date;
+                        reduction = date.Reduction;
+                    }
+                    break;
+                }
+                else if(date.Date.AddDays(this.MaxLateDays) >= this.TimeSubmitted.Date)
+                {
+                    var diff = (this.TimeSubmitted.Date - date.Date).Days;
+                    int newReduction = this.Reductions[diff-1] + date.Reduction;
+                    if(newReduction < reduction)
+                    {
+                        reduction = newReduction;
+                        realDate = date;
+                    }
+                }
+            }
+            if(realDate == null)
+            {
+                Date = dates.Last().Date;
+                InitReduction = dates.Last().Reduction;
+            }
+            else
+            {
+                Date = realDate.Date;
+                InitReduction = realDate.Reduction;
+            }
+        }
     }
 }

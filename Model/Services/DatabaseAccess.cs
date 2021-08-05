@@ -361,7 +361,7 @@ namespace Submit_System {
             return code;
         }
         public (List<ExerciseDateDisplay>, DBCode) GetStudentExcercisesDates() {
-           var output = Convert(DataBaseManager.GetStudentExerciseDates(UserID));
+           var output = DataBaseManager.GetStudentExerciseDates(UserID);
            return output;
         }
         public ((Submission, int), DBCode) GetStudentSubmission(string userID, string exerciseId)
@@ -412,7 +412,7 @@ namespace Submit_System {
             { 
                 return (null, code4);
             }
-            (var dates, DBCode code5) = Convert(DataBaseManager.GetStudentExeriseDates(submission.SubmissionDateId, exId));
+            (var dates, DBCode code5) = DataBaseManager.GetStudentExerciseDates(submission.SubmissionDateId, exId);
             if(CheckError(code5))
             {
                 return (null, code5);
@@ -650,9 +650,9 @@ namespace Submit_System {
         {
             return DataBaseManager.CheckToken(token);
         }
-        public void AddPasswordToken(string userID, string token, DateTime expiration)
+        public DBCode AddPasswordToken(string userID, string token, DateTime expiration)
         {
-            DataBaseManager.AddPasswordToken(userID, token, expiration);
+            return DataBaseManager.AddPasswordToken(userID, token, expiration);
         }
         public (List<RequestLabel>, DBCode) GetRequests(string exerciseID, ChatType type)
         {
@@ -689,11 +689,16 @@ namespace Submit_System {
         public (Dictionary<string, List<SubmissionLabel>>, DBCode) GetSubmissionLabels(string exerciseID)
         {
             (var dict, DBCode code) = Convert(DataBaseManager.GetSubmissionLabels(exerciseID));
+            string appealCheckedStr = SubmissionState.AppealChecked.ToString();
+            var appealChecked = dict[appealCheckedStr];
+            dict.Remove(appealCheckedStr);
+            dict[SubmissionState.Checked.ToString()].AddRange(appealChecked);
             dict.Values.ToList().ForEach(list =>
                 list.ForEach(label =>
                     label.CheckState = GetCheckState(label.CurrentChecker)
                 )
             );
+            
             return (dict, code);
         }
         /// <summary>
@@ -709,6 +714,7 @@ namespace Submit_System {
                 return (submission, code);
             }
             submission.CheckState = GetCheckState(submission.CurrentCheckerId);
+            (submission.TotalGrade, code) = DataBaseManager.CalculateGrade(submissionId);
             return (submission, code);
            
         }
@@ -829,6 +835,14 @@ namespace Submit_System {
         public DBCode UpdateExercise(Exercise exercise)
         {
             return Convert(DataBaseManager.UpdateExercise(exercise));
+        }
+        public (User, DBCode) GetUser(string userID)
+        {
+            return Convert(DataBaseManager.ReadUser(userID));
+        }
+        public DBCode AddUser(User user)
+        {
+            return Convert(DataBaseManager.AddUser(user));
         }
     }
 }

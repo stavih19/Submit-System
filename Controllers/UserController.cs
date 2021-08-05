@@ -94,19 +94,39 @@ namespace Submit_System
             _storage._isTestMode = false;
             return Ok("Authentication enabled.");
         }
+        public ActionResult ResetPasswordRequest(string userID)
+        {
+            (User u, DBCode c) = _access.GetUser(userID);
+            if(c != DBCode.OK)
+            {
+                return HandleDatabaseOutput(c);
+            }
+            bool success = PasswordRequest(userID, u.Email);
+            return success ? Ok() : ServerError();
+        }
+        [NonAction]
+        private bool PasswordRequest(string userID, string email)
+        {
+            string token = CryptoUtils.GetRandomBase64String(24);
+            string tokenHash = CryptoUtils.Sha256Hash(token);
+            string link =  String.Format(PASSWORD_LINK, HttpUtility.UrlEncode(token));
+            DBCode code = _access.AddPasswordToken(userID, tokenHash, DateTime.Now.AddDays(2));
+            if(code != DBCode.OK)
+            {
+                return false;
+            }
+            string text = $"Password form link:<br>" + link;
+            MaleUtils.SendMail(email, "Submit Bar Ilan User registration" ,text);
+            return true;
+        }
         [HttpPost]
         [Route("Admin/AddUser")]
         public IActionResult AddUser([FromBody] User user)
         {
             user.PasswordHash = null;
             DataBaseManager.AddUser(user);
-            string token = CryptoUtils.GetRandomBase64String(24);
-            string tokenHash = CryptoUtils.Sha256Hash(token);
-            string link =  String.Format(PASSWORD_LINK, HttpUtility.UrlEncode(token));
-            // _access.AddPasswordToken(user.ID, tokenHash, DateTime.Now.AddDays(2));
-            // string text = $"Password form link:<br>" + link;
-            //MaleUtils.SendRegistration(user.Email, text);
-            return Ok();
+            bool success = PasswordRequest(user.ID, user.Email);
+            return success ? Ok() : ServerError();
         }
     }  
 }

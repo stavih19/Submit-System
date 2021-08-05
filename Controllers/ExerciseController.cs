@@ -511,6 +511,12 @@ namespace Submit_System.Controllers
             }
             return HandleArchiveSending(path, file);
         }
+        [HttpPut]
+        [Route("Teacher/PublishGrades")]
+        public ActionResult PublishGrades([FromBody] Dictionary<string, int> weight)
+        {
+            return Ok();
+        }
     }
 }
 

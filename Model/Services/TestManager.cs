@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Text;
+using System.Linq;
 namespace Submit_System {
 
     public class TestManager {
@@ -57,7 +59,33 @@ namespace Submit_System {
             List<CheckResult> lst = tester.GetCheckResults();
             return (lst,0,"Ok");
         }
+        public string ResultToString(Result result)
+        {
+            StringBuilder builder = new StringBuilder();
+            double totalTime = result.Test_Results.Select(result => result.TimeInMs).Sum();
+            builder.AppendLine("Automatic Test:");
+            builder.AppendLine($"Total grade: {result.GetTestsGrade()} | Total run time: {totalTime}ms");
+            foreach(CheckResult testResult in result.Test_Results)
+            {
+                int grade = testResult.CalculateTestGrade(new BasicOutputComperator());
+                grade *= testResult.Weight / 100;
+                builder.AppendLine($"________________________________________________");
+                builder.AppendLine($"Test: Grade: {grade}/{testResult.Weight} | Run Time: {testResult.TimeInMs}ms");
+                builder.AppendLine("Input:");
+                builder.AppendLine(testResult.Input);
+                builder.AppendLine("Expected output:");
+                builder.AppendLine(testResult.Expected_Output);
+                builder.AppendLine($"Your output:\n{testResult.Output}");
+                if(testResult.Is_Error)
+                { 
+                    builder.AppendLine($"Error:{testResult.Error}");
+                }
+                builder.AppendLine($"________________________________________________");
+            }
+            builder.AppendLine();
 
+            return builder.ToString();
+        }
     }
 }
 

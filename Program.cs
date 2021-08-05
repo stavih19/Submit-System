@@ -13,7 +13,8 @@ namespace Submit_System
     {
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            MaleUtils.SendMail("testotesto11@outlook.com", "hello", "<u><h3>yes</h3></u><hr><u><h3>yes</h3></u>");
+            //CreateHostBuilder(args).Build().Run();
         }
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)

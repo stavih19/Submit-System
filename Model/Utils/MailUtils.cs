@@ -33,6 +33,7 @@ namespace Submit_System
                 smtp.Credentials = new NetworkCredential(Address,Password);
                 using (var msg = new MailMessage(Address, sendTo, subject, text))
                 {
+                    msg.IsBodyHtml = true;
                     try
                     {
                         smtp.Send(msg);
@@ -47,15 +48,15 @@ namespace Submit_System
                 
             }
         }
-        public static bool SendRegistration(string sendTo, string link)
+        public static bool SendRegistration(string sendTo, string text)
         {
-            return SendMail(sendTo, REGISTER_SUBJECT, link);
+            return SendMail(sendTo, REGISTER_SUBJECT, text);
         }
         public static bool PasswordReset(string sendTo, string link)
         {
             return SendMail(sendTo, PASSWORD_RESET_SUBJECT, link);
         }
-        public static bool SendCheckResult(string sendTo, string title, string headerText, List<CheckResult> results)
+        public static bool SendCheckResult(string sendTo, string title, string headerText, Result results)
         {
             return false; 
         }
