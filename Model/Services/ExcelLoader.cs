@@ -35,7 +35,10 @@ namespace Submit_System {
                 User u = new User(user_data[0],null,user_data[2]+' '+user_data[1],user_data[11]);
                 int err = DataBaseManager.AddUser(u).Item1;
                 if(err == 0){
-                    PasswordRequest(u.ID, u.Email,_access);
+                    bool ok =PasswordRequest(u.ID, u.Email,_access);
+                    if(!ok){
+                        error_msg = "Added,Failed to send email";
+                    }
                 }
                 if(err == 1){
                     error_msg = "User is already exists";
