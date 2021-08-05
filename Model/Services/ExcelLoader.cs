@@ -135,6 +135,28 @@ namespace Submit_System {
             return true;
         }
 
+        public static string AddStudentsToCourse(string input_file_name,string course_id){
+            List<string[]> students;
+            string output = "Adding students to the course:\n";
+            try{
+                students = ReadExcel(input_file_name);
+            } catch {
+                return "Can't load the file "+input_file_name;
+            }
+            foreach(string[] student_data in students){
+                string error_msg = "Added";
+                int err = DataBaseManager.AddStudentToCourse(course_id,student_data[0]).Item1;
+                if(err == 1){
+                    error_msg = "User is already exists";
+                }
+                if(err == 2 || err == 3){
+                    error_msg = "Connection Error: try again";
+                }
+                string line = error_msg+' '+student_data[0]+'\n';
+                output = output+line;
+            }
+            return output;
+        }
     }
 
 }
