@@ -239,32 +239,38 @@ namespace Submit_System {
             }
             return (folder, DBCode.OK);
         }
-        public ((string, string), DBCode) CreateSubmissionDirectory(string exerciseId)
+        public (SubmitInfo, DBCode) GetSubmitInfo(string exerciseId)
         {
            (Exercise exer, DBCode exCode) = Convert(DataBaseManager.ReadExercise(exerciseId));
            if(CheckError(exCode))
            {
-               return ((null, null), (DBCode) exCode);
+               return (null, (DBCode) exCode);
            }
            ((string submissionId, int submitterType), DBCode code) =
                 Convert(DataBaseManager.ReadSubmissionIdAndTypeOfStudentInExercise(UserID, exerciseId));
            if(submitterType != 1)
            {
                ErrorString = "You are not the main submitter";
-               return ((null, null), DBCode.NotAllowed);
+               return (null, DBCode.NotAllowed);
            }
            (Submission submission, DBCode code2) = Convert(DataBaseManager.ReadSubmission(submissionId));
            if(CheckError(code2))
            {
-               return ((null, null), code);
+               return (null, code);
            }
            if(submission.SubmissionStatus != (int) SubmissionState.Unsubmitted && !exer.MultipleSubmission)
            {
-               return Error<(string, string)>("Resubmission is not allowed for this assignment", DBCode.NotAllowed);
+               return Error<SubmitInfo>("Resubmission is not allowed for this assignment", DBCode.NotAllowed);
            }
            string path = Path.Combine("Courses", exer.CourseID, "Exercises", exer.Name, "Submissions", UserID);
            CacheSubmissionDirectory(submissionId, path);
-           return ((path, submissionId), DBCode.OK);
+            SubmitInfo info = new SubmitInfo {
+                CourseID = exer.CourseID,
+                ExerciseName = exer.ID,
+                SubmissionID = submissionId,
+                Path = submission.FilesLocation
+            };
+           return (info, DBCode.OK);
 
         }
         public (List<Course>, DBCode) GetCourses(Role role) {
@@ -355,7 +361,7 @@ namespace Submit_System {
             return code;
         }
         public (List<ExerciseDateDisplay>, DBCode) GetStudentExcercisesDates() {
-           var output = Convert(DataBaseManager.GetStudentExerciseDates(UserID));
+           var output = DataBaseManager.GetStudentExerciseDates(UserID);
            return output;
         }
         public ((Submission, int), DBCode) GetStudentSubmission(string userID, string exerciseId)
@@ -401,12 +407,12 @@ namespace Submit_System {
             {
                 AddChatPerm(chats[ChatType.Appeal].ID, Role.Student, false);
             }
-            (var submitters, DBCode code4) = Convert(DataBaseManager.GetSubmitters(submission.ID));
+            (var submitters, DBCode code4) = DataBaseManager.GetSubmitters(submission.ID);
             if(CheckError(code4))
             { 
                 return (null, code4);
             }
-            (var dates, DBCode code5) = Convert(DataBaseManager.GetStudentExeriseDates(submission.SubmissionDateId, exId));
+            (var dates, DBCode code5) = DataBaseManager.GetStudentExerciseDates(submission.SubmissionDateId, exId);
             if(CheckError(code5))
             {
                 return (null, code5);
@@ -450,17 +456,18 @@ namespace Submit_System {
             };
             return (info, DBCode.OK);
         }
-        public DBCode CreateExercise(Exercise exercise)
+        public DBCode CreateExercise(ExerciseInput input)
         {
+            var exercise = input.Exercise;
             DBCode code =  Convert(DataBaseManager.AddExercise(exercise));
-            if(CheckError(code))
+            if(CheckError(code) || input.MainDate == null)
             {
                 return code;
             }
             var date = new SubmitDate {
                 Group = 0,
                 Reduction = 0,
-                Date = exercise.MainDate,
+                Date = (DateTime) input.MainDate,
                 ExerciseID = exercise.ID
             };
             return AddDate(date).Item2;
@@ -521,7 +528,7 @@ namespace Submit_System {
             }
             return Convert(DataBaseManager.AddMessage(msg));
         }
-        public DBCode MarkSubmitted(string submissionid, string path)
+        public DBCode MarkSubmitted(string submissionid, string path, int styleGrade)
         {
             var res = Convert(DataBaseManager.ReadSubmission(submissionid));
             if(CheckError(res.Item2))
@@ -532,17 +539,18 @@ namespace Submit_System {
             sub.SubmissionStatus = 1;
             sub.FilesLocation = path;
             sub.TimeSubmitted = DateTime.Now;
+            sub.StyleGrade = styleGrade;
             return Convert(DataBaseManager.UpdateSubmission(sub));
         }
-        public DBCode AddTeacherToCourse(string courseid, string teacherid)
+        public (string, DBCode) AddTeacherToCourse(string courseid, string teacherid)
         {
             return DataBaseManager.AddUserToCourse(courseid, teacherid, Role.Teacher);
         }
-        public DBCode AddCheckerToCourse(string courseid, string checkerid)
+        public (string, DBCode) AddCheckerToCourse(string courseid, string checkerid)
         {
             return DataBaseManager.AddUserToCourse(courseid, checkerid, Role.Checker);
         }
-         public DBCode AddStudentToCourse(string courseid, string studentId)
+         public (string, DBCode) AddStudentToCourse(string courseid, string studentId)
         {
             return DataBaseManager.AddUserToCourse(courseid, studentId, Role.Student);
         }
@@ -626,9 +634,9 @@ namespace Submit_System {
         {
             return;
         }
-        public void DeletePasswordToken(string userID)
+        public DBCode DeletePasswordToken(string userID)
         {
-            DataBaseManager.DeleteToken(userID);
+            return Convert(DataBaseManager.DeleteToken(userID));
         }
         public DBCode DeleteTest(int testId)
         {
@@ -638,13 +646,13 @@ namespace Submit_System {
         {
             return Convert(DataBaseManager.UpdateTest(test));
         }
-        public string CheckPasswordToken(string token)
+        public (string, DBCode) CheckPasswordToken(string token)
         {
-            return(Convert(DataBaseManager.ReadTokenInfo(token)).Item1.Item1);
+            return DataBaseManager.CheckToken(token);
         }
-        public void AddPasswordToken(string userID, string token, DateTime expiration)
+        public DBCode AddPasswordToken(string userID, string token, DateTime expiration)
         {
-            DataBaseManager.AddPasswordToken(userID, token, expiration);
+            return DataBaseManager.AddPasswordToken(userID, token, expiration);
         }
         public (List<RequestLabel>, DBCode) GetRequests(string exerciseID, ChatType type)
         {
@@ -681,11 +689,16 @@ namespace Submit_System {
         public (Dictionary<string, List<SubmissionLabel>>, DBCode) GetSubmissionLabels(string exerciseID)
         {
             (var dict, DBCode code) = Convert(DataBaseManager.GetSubmissionLabels(exerciseID));
+            string appealCheckedStr = SubmissionState.AppealChecked.ToString();
+            var appealChecked = dict[appealCheckedStr];
+            dict.Remove(appealCheckedStr);
+            dict[SubmissionState.Checked.ToString()].AddRange(appealChecked);
             dict.Values.ToList().ForEach(list =>
                 list.ForEach(label =>
                     label.CheckState = GetCheckState(label.CurrentChecker)
                 )
             );
+            
             return (dict, code);
         }
         /// <summary>
@@ -701,6 +714,7 @@ namespace Submit_System {
                 return (submission, code);
             }
             submission.CheckState = GetCheckState(submission.CurrentCheckerId);
+            (submission.TotalGrade, code) = DataBaseManager.CalculateGrade(submissionId);
             return (submission, code);
            
         }
@@ -808,6 +822,27 @@ namespace Submit_System {
                 }
            }
             return (dict, DBCode.OK);
+        }
+        public (List<User>, DBCode) GetSubmitters(string submissionId)
+        {
+            return DataBaseManager.GetSubmittersWithEmail(submissionId);
+        }
+        public DBCode SetPassword(string userid, string hash)
+        {
+            return DataBaseManager.UpdatePassword(userid, hash);
+        }
+
+        public DBCode UpdateExercise(Exercise exercise)
+        {
+            return Convert(DataBaseManager.UpdateExercise(exercise));
+        }
+        public (User, DBCode) GetUser(string userID)
+        {
+            return Convert(DataBaseManager.ReadUser(userID));
+        }
+        public DBCode AddUser(User user)
+        {
+            return Convert(DataBaseManager.AddUser(user));
         }
     }
 }

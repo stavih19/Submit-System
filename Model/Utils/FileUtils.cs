@@ -58,7 +58,7 @@ namespace Submit_System
             foreach (string ext in exts)
             {
                 var newFiles = Directory.EnumerateFiles(folder, ext, SearchOption.AllDirectories);
-                files.Concat(newFiles);
+                files = files.Concat(newFiles);
             }
             return files;
         }
@@ -107,7 +107,7 @@ namespace Submit_System
         /// <returns>The file path relative to the folder</returns>
         public static string FlattenFilePath(string folder, string file)
         {
-            string relPath = GetRelativePath(file, folder).Replace("/", "_-_");
+            string relPath = GetRelativePath(file, folder).Replace("/", "_-_").Replace("\\", "_-_");
             return folder + '/' + relPath;
         }
         /// <summary>
@@ -154,7 +154,7 @@ namespace Submit_System
             }
             try
             {
-                foreach(var file in files)
+                foreach(var file in  files)
                 {
                     byte[] content = System.Convert.FromBase64String(file.Content);
                     if(Path.GetExtension(file.Name) == ".zip" && unzip)

@@ -189,10 +189,10 @@ namespace Submit_System
                 }
             );
         }
-        public static (List<ExerciseDateDisplay>, int, string) GetStudentExerciseDates(string userid) {
+        public static (List<ExerciseDateDisplay>, DBCode) GetStudentExerciseDates(string userid) {
             var lst = new List<ExerciseDateDisplay>();
             SqlConnection cnn  = new SqlConnection(connetionString);
-            try{cnn.Open();} catch {return (null,3,"Connection failed");}
+            try{cnn.Open();} catch {return (null,DBCode.Error);}
             String sql = LongQueries["StudentDates"];
             SqlCommand command = new SqlCommand(sql,cnn);
             command.Parameters.Add("@ID",SqlDbType.VarChar);
@@ -213,10 +213,10 @@ namespace Submit_System
                 }
             } catch {
                 try{cnn.Close();}catch{}
-                return (null,3,"Connection failed");
+                return (null,DBCode.Error);
             }
-            try{cnn.Close();} catch{return (lst,4,"Connection close failed");}
-            return (lst,0,"OK");   
+            try{cnn.Close();} catch{}
+            return (lst, DBCode.OK);   
         }
         /*
             C.course_id, C.course_name, C.course_number, E.exercise_id, E.exercise_name,
@@ -225,6 +225,7 @@ namespace Submit_System
         */
         public static (List<ExerciseGradeDisplay>, int, string) GetExerciseGrades(string userid) {
             var lst = new List<ExerciseGradeDisplay>();
+            var dict = new Dictionary<string, (ExerciseGradeDisplay, GradeCalculator)>();
             SqlConnection cnn  = new SqlConnection(connetionString);
             try{cnn.Open();} catch {return (null,3,"Connection failed");}
             String sql = LongQueries["StudentGrades"];
@@ -255,9 +256,9 @@ namespace Submit_System
                         CourseName = dataReader.GetValue(1).ToString(),
                         CourseNumber = (int) dataReader.GetValue(2),
                         ExID = dataReader.GetValue(3).ToString(),
-                        ExName = dataReader.GetValue(4).ToString(),
-                        Grade = calc.CalculateGrade()
+                        ExName = dataReader.GetValue(4).ToString()
                     };
+                    dict[display.ExID] = (display, calc);
                     lst.Add(display);
                 }
             } catch {
@@ -351,7 +352,7 @@ namespace Submit_System
             List<ExerciseLabel> lst = new List<ExerciseLabel>();
             SqlConnection cnn  = new SqlConnection(connetionString);
             try{cnn.Open();} catch {return (null,3,"Connection failed");}
-            String sql = "SELECT exercise_id,exercise_name FROM Exercise WHERE course_id = @ID ORDER BY exercise_id DESC;";
+            String sql = "SELECT exercise_id,exercise_name FROM Exercise WHERE course_id = @ID ORDER BY creation DESC;";
             SqlCommand command = new SqlCommand(sql,cnn);
             command.Parameters.Add("@ID",SqlDbType.VarChar);
             command.Parameters["@ID"].Value = course_id;
@@ -487,6 +488,13 @@ namespace Submit_System
                 }
                 subLabels[stateString].Add(keyVal.Value);
             }
+            foreach(var a in Enum.GetNames(typeof(SubmissionState)))
+            {
+                if(!subLabels.ContainsKey(a))
+                {
+                    subLabels.Add(a, new List<SubmissionLabel>());
+                }
+            }
             return (subLabels,0,"OK");   
         }
         public static (Dictionary<ChatType, Chat>,int,string) ReadChatsOfSubmission(string id) {
@@ -519,29 +527,34 @@ namespace Submit_System
             try{cnn.Close();} catch{return (chats,4,"Connection close failed");}
             return (chats,0,"OK");   
         }
-        public static (List<UserLabel>,int,string) GetSubmitters(string submssionId) {
+        public static (List<User>,DBCode) GetSubmittersWithEmail(string submissionId) {
             var submitters = new List<UserLabel>();
-            SqlConnection cnn  = new SqlConnection(connetionString);
-            try{cnn.Open();} catch {return (null,3,"Connection failed");}
+            String sql = @"SELECT U.user_id, U.name, U.email FROM Submitters as SS INNER JOIN Users AS U
+                        ON SS.user_id = U.user_id WHERE SS.submission_id = @ID;";
+            SqlParameter[] parameters = { CreateParameter("@ID", SqlDbType.VarChar, submissionId) };
+            return MultiRecordQuery(sql, parameters, (SqlDataReader dataReader) => 
+                new User 
+                {
+                    ID = dataReader.GetValue(0).ToString(),
+                    Name = dataReader.GetValue(1).ToString(),
+                    Email = dataReader.GetValue(2).ToString(),
+                }
+            );
+            
+        }
+         public static (List<UserLabel>,DBCode) GetSubmitters(string submissionId) {
+            var submitters = new List<UserLabel>();
             String sql = @"SELECT U.user_id, U.name FROM Submitters as SS INNER JOIN Users AS U
                         ON SS.user_id = U.user_id WHERE SS.submission_id = @ID;";
-            SqlCommand command = new SqlCommand(sql,cnn);
-            command.Parameters.Add("@ID",System.Data.SqlDbType.VarChar);
-            command.Parameters["@ID"].Value = submssionId;
-            try{
-                SqlDataReader dataReader = command.ExecuteReader();
-                while(dataReader.Read()){
-                    submitters.Add( new UserLabel {
-                        ID = dataReader.GetValue(0).ToString(),
-                        Name = dataReader.GetValue(1).ToString(),
-                    });
+            SqlParameter[] parameters = { CreateParameter("@ID", SqlDbType.VarChar, submissionId) };
+            return MultiRecordQuery(sql, parameters, (SqlDataReader dataReader) => 
+                new UserLabel 
+                {
+                    ID = dataReader.GetValue(0).ToString(),
+                    Name = dataReader.GetValue(1).ToString(),
                 }
-            } catch {
-                try{cnn.Close();}catch{}
-                return (null,3,"Connection failed");
-            }
-            try{cnn.Close();} catch{return (submitters,4,"Connection close failed");}
-            return (submitters,0,"OK");   
+            );
+            
         }
 
         public static ((string,int),int,string) ReadSubmissionAndTypeOfStudentInExercise(string student_id,string exercise_id){
@@ -570,7 +583,13 @@ namespace Submit_System
             try{cnn.Close();} catch{return ((submission_id,type),4,"Connection close failed");}
             return ((submission_id,type),0,"OK");   
         }
-        public static DBCode AddUserToCourse(string courseId,string userId, Role role){
+        public static (string, DBCode) AddUserToCourse(string courseId,string userId, Role role){
+            var user = ReadUser(userId);
+            var code = (DBCode) user.Item2;
+            if(code != DBCode.OK)
+            {
+                return (null, code);
+            }
             String sql = "IF NOT EXISTS(SELECT 1 FROM @Table WHERE course_id=@CID AND user_id=@UID) INSERT INTO @Table VALUES (@UID, @CID);";
             sql = sql.Replace("@Table", RoleToCourseTable[role]);
 
@@ -585,15 +604,15 @@ namespace Submit_System
             }
             catch
             {
-                return DBCode.Error;
+                return (null, DBCode.Error);
             }
             if(success)
             {
-                return DBCode.OK;
+                return (user.Item1.Name, DBCode.OK);
             }
             else
             {
-                return DBCode.AlreadyExists;
+                return (null, DBCode.AlreadyExists);
             }
         }
         public static DBCode AddCheckerToExercise(string exerciseId,string userId){
@@ -633,7 +652,7 @@ namespace Submit_System
             return HandleNonQuery(sql, parameters);
         }
         public static DBCode DeleteUserFromCourse(string courseId,string userId, Role role){
-             SqlParameter[] parameters = {
+            SqlParameter[] parameters = {
                 CreateParameter("@UID",System.Data.SqlDbType.NVarChar, userId),
                 CreateParameter("@CID",System.Data.SqlDbType.NVarChar, courseId)
             };
@@ -650,41 +669,39 @@ namespace Submit_System
             sql = sql.Replace("@Table", RoleToCourseTable[role]);
             return HandleNonQuery(sql, parameters);
         }
-        public static (List<SubmitDate>,int,string) GetStudentExeriseDates(int dateID, string exerciseID){
+        public static (List<SubmitDate>,DBCode) GetStudentExerciseDates(int dateID, string exerciseID){
             var dates = new List<SubmitDate>();
-            SqlConnection cnn  = new SqlConnection(connetionString);
-            try{cnn.Open();} catch {return (null,3,"Connection failed");}
             String sql = @"SELECT submission_date, reduction, group_number FROM Submission_Dates
                         WHERE submission_date_id = @DID OR (exercise_id = @EID AND group_number = 0)
                         ORDER BY submission_date, reduction;";
-            SqlCommand command = new SqlCommand(sql,cnn);
-            command.Parameters.Add("@DID",System.Data.SqlDbType.Int);
-            command.Parameters["@DID"].Value = dateID;
-            command.Parameters.Add("@EID",System.Data.SqlDbType.VarChar);
-            command.Parameters["@EID"].Value = exerciseID;
+           SqlParameter[] parameters = {
+                CreateParameter("@DID",System.Data.SqlDbType.Int, dateID),
+                CreateParameter("@EID",System.Data.SqlDbType.VarChar, exerciseID)
+            };
             // Only retrieve dates after the latest date with no reduction
+            int firstRelevantDateIndex = 0;
             try{
-                SqlDataReader dataReader = command.ExecuteReader();
-                int firstRelevantDateIndex = 0;
-                while(dataReader.Read()){
-                    int reduction = (int) dataReader.GetValue(1);
-                    if(reduction == 0) 
-                    {
-                        firstRelevantDateIndex = dates.Count;
+                Query(sql, parameters, (SqlDataReader dataReader) => {
+                        int reduction = (int) dataReader.GetValue(1);
+                        if(reduction == 0) 
+                        {
+                            firstRelevantDateIndex = dates.Count;
+                        }
+                        dates.Add( new SubmitDate {
+                                Date = (DateTime) dataReader.GetValue(0),
+                                Reduction = reduction,
+                                Group = (int) dataReader.GetValue(2)
+                            });
                     }
-                    dates.Add( new SubmitDate {
-                            Date = (DateTime) dataReader.GetValue(0),
-                            Reduction = reduction,
-                            Group = (int) dataReader.GetValue(2)
-                        });
-                }
+                );
                 dates.RemoveRange(0, firstRelevantDateIndex);
-            } catch{
-                try{cnn.Close();}catch{}
-                return (null,3,"Connection failed");
+                return (dates, DBCode.OK);
             }
-            try{cnn.Close();} catch{return (dates,4,"Connection close failed");}
-            return (dates,0,"OK");   
+            catch
+            {
+                return (null, DBCode.Error);
+            }
+
         }
         public static (int,DBCode) GetMainDate(string exerciseID){
             string sql = @"SELECT submission_date_id FROM Submission_Dates WHERE exercise_id=@EID AND group_number=0";
@@ -698,44 +715,23 @@ namespace Submit_System
             };
             return HandleNonQuery(sql, parameters);
         }
-        public static (int,string) UpdatePassword(string userid, string hash){
-            SqlConnection cnn  = new SqlConnection(connetionString);
-            try{cnn.Open();} catch {return (3,"Connection failed");}
-
+        public static DBCode UpdatePassword(string userid, string hash){
             string sql = "UPDATE Users SET password_hash=@HASH WHERE user_id = @ID;";
-            SqlCommand command = new SqlCommand(sql,cnn);
-            command.Parameters.Add("@ID",System.Data.SqlDbType.NVarChar);
-            command.Parameters.Add("@HASH",System.Data.SqlDbType.NVarChar);
-            command.Parameters["@ID"].Value = userid;
-            command.Parameters["@HASH"].Value = hash;
-            try{
-                command.ExecuteNonQuery();
-            } catch {
-                try{cnn.Close();}catch{}
-                return (2,"Update failed");
-            }
-            try{cnn.Close();} catch{return (4,"Connection close failed");}
-            return (0,"OK");
+            SqlParameter[] parameters = {
+                CreateParameter("@ID", SqlDbType.NVarChar, userid),
+                CreateParameter("@HASH", SqlDbType.NVarChar, hash)
+            };
+            return HandleNonQuery(sql, parameters);
+            
         }
-        public static (int,string) AddPasswordToken(string userid, string passwordToken, DateTime expiration){
-            SqlConnection cnn  = new SqlConnection(connetionString);
-            try{cnn.Open();} catch {return (3,"Connection failed");}
-            String sql = "IF EXISTS (SELECT 1 FROM Tokens WHERE user_id = @ID) INSERT INTO Tokens VALUES (@ID, @TOKEN, @DATE)";
-            SqlCommand command = new SqlCommand(sql,cnn);
-            command.Parameters.Add("@ID",System.Data.SqlDbType.NVarChar);
-            command.Parameters.Add("@TOKEN",System.Data.SqlDbType.NVarChar);
-            command.Parameters.Add("@DATE",System.Data.SqlDbType.DateTime);
-            command.Parameters["@ID"].Value = userid;
-            command.Parameters["@TOKEN"].Value = passwordToken;
-             command.Parameters["@DATE"].Value = expiration;
-            try{
-                command.ExecuteNonQuery();
-            } catch {
-                try{cnn.Close();}catch{}
-                return (2,"Update failed");
-            }
-            try{cnn.Close();} catch{return (4,"Connection close failed");}
-            return (0,"OK");
+        public static DBCode AddPasswordToken(string userid, string passwordToken, DateTime expiration){
+            string sql = LongQueries["AddToken"];
+                SqlParameter[] parameters = { 
+                CreateParameter("@ID", SqlDbType.VarChar, userid),
+                CreateParameter("@TOKEN", SqlDbType.NVarChar, passwordToken),
+                CreateParameter("@EXP", SqlDbType.DateTime, expiration)
+            };
+            return HandleNonQuery(sql, parameters);
         }
         public static (int,string) DeleteToken(string userid) {
             SqlConnection cnn  = new SqlConnection(connetionString);
@@ -753,29 +749,22 @@ namespace Submit_System
             try{cnn.Close();} catch{return (4,"Connection close failed");}
             return (0,"OK");
         }
-        public static ((string, DateTime),int,string) ReadTokenInfo(string passwordToken) {
-            SqlConnection cnn  = new SqlConnection(connetionString);
-            string id = null;
-            DateTime date = DateTime.MinValue;
-            try{cnn.Open();} catch {return ((id, date),3,"Connection failed");}
-            String sql = "SELECT user_id, creation_date FROM Users WHERE token = @TOKEN;";
-            SqlCommand command = new SqlCommand(sql,cnn);
-            command.Parameters.Add("@TOKEN",System.Data.SqlDbType.NVarChar);
-            command.Parameters["@TOKEN"].Value = passwordToken;
-            try{
-                SqlDataReader dataReader = command.ExecuteReader();
-                if(!dataReader.Read()){
-                    try{cnn.Close();}catch{}
-                    return ((id, date),2,"token does not exist");
-                }
-                id = (string) dataReader.GetValue(0);
-                date = (DateTime) dataReader.GetValue(1);
-            } catch {
-                try{cnn.Close();}catch{}
-                return ((id, date),3,"Connection failed");
+        public static (string, DBCode) CheckToken(string passwordToken) {
+            string sql = "SELECT user_id, expiry_date FROM Tokens wHERE @TOKEN = @TOKEN";
+            SqlParameter[] parameters = { CreateParameter("@TOKEN", SqlDbType.VarChar, passwordToken) };
+            ((string id, DateTime time), DBCode code) =
+                SingleRecordQuery(sql, parameters, (SqlDataReader dataReader) =>
+                    ((string) dataReader.GetValue(0), (DateTime) dataReader.GetValue(1)));
+            if(code != DBCode.OK)
+            {
+                return (null, code);
             }
-            try{cnn.Close();} catch{return ((id, date),4,"Connection close failed");}
-            return ((id, date),0,"OK");   
+            if(time > DateTime.Now)
+            {
+                DeleteToken(id);
+                return (null, DBCode.NotFound);
+            }
+            return (id, code);
         }
         public static (int, DBCode) AddExtension(SubmitDate date, string submissionId){
             String sql = LongQueries["AddExtension"];
@@ -828,7 +817,7 @@ namespace Submit_System
             String sql = LongQueries["GetRequestsMainPage"];
             SqlParameter[] parameters = {
                 CreateParameter("@ID",System.Data.SqlDbType.VarChar, userID),
-                CreateParameter("@TYPE",System.Data.SqlDbType.Int, type)
+                CreateParameter("@TYPE",System.Data.SqlDbType.Int, (int) type)
             };
             return MultiRecordQuery(sql, parameters, (SqlDataReader dataReader) =>
                 new RequestLabelMainPage {
@@ -866,7 +855,7 @@ namespace Submit_System
         {
             string sql = LongQueries["AddDate"];
             SqlParameter[] parameters =  { 
-                CreateParameter("@ID",System.Data.SqlDbType.Int, date.ID),
+                CreateParameter("@EID",System.Data.SqlDbType.VarChar, date.ExerciseID),
                 CreateParameter("@GR",System.Data.SqlDbType.Int, date.Group),
                 CreateParameter("@DATE",System.Data.SqlDbType.Date, date.Date),
                 CreateParameter("@RE",System.Data.SqlDbType.Int, date.Reduction)
@@ -922,6 +911,9 @@ namespace Submit_System
                     return display;
                 });
                 sql = LongQueries["SubmittersOfDate"];
+                parameters =  new SqlParameter[] {
+                    CreateParameter("@ID",System.Data.SqlDbType.VarChar, exercise_id)
+                };
                 Query(sql, parameters, (SqlDataReader dataReader) => {
                     int id = (int)dataReader.GetValue(0);
                     var label = new UserLabel {
@@ -943,13 +935,13 @@ namespace Submit_System
             return (lst, DBCode.OK);
         }  
         public static DBCode UpdateMoss(MossData data){
-            string sql = @"UPDATE Exercise SET moss_matches=@SHOW, moss_stuff=@MAX moss_link=@LINK 
+            string sql = @"UPDATE Exercise SET moss_number_of_matches=@SHOW, moss_max_match=@MAX moss_result_link=@LINK 
                             WHERE exercise_id = @ID;";
             SqlParameter[] parameters = {
                 CreateParameter("@ID",System.Data.SqlDbType.VarChar, data.ExerciseID),
-                new SqlParameter("@SHOW",System.Data.SqlDbType.Int) { Value = data.MatchesShow },
-                new SqlParameter("@MAX",System.Data.SqlDbType.Int) { Value = data.MaxFound},
-                new SqlParameter("@LINK",System.Data.SqlDbType.VarChar) { Value = data.Result }
+                CreateParameter("@SHOW",System.Data.SqlDbType.Int, data.MatchesShow),
+                CreateParameter("@MAX",System.Data.SqlDbType.Int, data.MaxFound),
+                CreateParameter("@Link",System.Data.SqlDbType.VarChar, data.Result)
             };
             return HandleNonQuery(sql, parameters);
         }    
@@ -1010,7 +1002,7 @@ namespace Submit_System
         }  
         public static (string, DBCode) GetExDir(string exerciseId)
         {
-            string sql = "SELECT test_files_location FROM Message WHERE message_id = @ID";
+            string sql = "SELECT test_files_location FROM Exercise WHERE exercise_id = @ID";
             SqlParameter[] parameters = { CreateParameter("@ID", SqlDbType.VarChar, exerciseId)};
             return SingleRecordQuery(sql, parameters, (SqlDataReader dataReader) => dataReader.GetString(0));
         }
@@ -1048,11 +1040,11 @@ namespace Submit_System
             command.Parameters["@TYPE"].Value = test.Type;
             command.Parameters["@WEIGHT"].Value = test.Value;
             command.Parameters["@INPUT"].Value = test.Input;
-            command.Parameters["@EOUTPUT"].Value = test.Expected_Output;
-            command.Parameters["@OFNAME"].Value = test.Output_File_Name;
+            command.Parameters["@EOUTPUT"].Value = test.ExpectedOutput;
+            command.Parameters["@OFNAME"].Value = test.OutputFileName;
             command.Parameters["@ARGS"].Value = test.ArgumentsString;
-            command.Parameters["@TIMEOUT"].Value = test.Timeout_In_Seconds;
-            command.Parameters["@MAIN"].Value = test.Main_Sourse_File;
+            command.Parameters["@TIMEOUT"].Value = test.TimeoutInSeconds;
+            command.Parameters["@MAIN"].Value = test.MainSourseFile;
             try{
                 var reader = command.ExecuteNonQuery();
             } catch {
@@ -1075,6 +1067,44 @@ namespace Submit_System
                 CreateParameter("@ID",System.Data.SqlDbType.VarChar, submissionId)
             };
             return HandleNonQuery(sql, parameters);
-        }                        
+        }
+        public static (int, DBCode) CalculateGrade(string submissionId)
+        {
+            string sql = LongQueries["GetGradeComponents"];
+            SqlParameter[] parameters = { CreateParameter("@ID", SqlDbType.VarChar, submissionId) };
+            int dateId = -1;
+            string exerciseId = null;
+            // E.auto_test_grade_value,
+            // E.style_test_grade_value,
+            // S.time_submitted,
+            // E.late_submission_settings,
+            // S.auto_grade,
+            // S.style_grade,
+            // S.manual_final_grade
+            (GradeCalculator calc, DBCode code) = SingleRecordQuery(sql, parameters, (SqlDataReader dataReader) => {
+                    var calc = new GradeCalculator {
+                        AutoWeight = (int) dataReader.GetValue(0),
+                        StyleWeight = (int) dataReader.GetValue(1),
+                        TimeSubmitted = (DateTime) dataReader.GetValue(2),
+                        Reductions = Exercise.ParseLateSettings(dataReader.GetValue(3).ToString()),
+                        AutoGrade = (int) dataReader.GetValue(4),
+                        StyleGrade = (int) dataReader.GetValue(5),
+                        ManualGrade = (int) dataReader.GetValue(6),
+                    };
+                    dateId = (int) dataReader.GetValue(7);
+                    exerciseId = dataReader.GetValue(8).ToString();
+                    return calc;
+                }
+            );
+            if(code != DBCode.OK)
+            {
+                return (0, code);
+            }
+            (List<SubmitDate> dates, DBCode code2) = GetStudentExerciseDates(dateId, exerciseId);
+            
+            calc.SetDate(dates);
+            return(calc.CalculateGrade(), DBCode.OK);
+
+        }                
     }
 }

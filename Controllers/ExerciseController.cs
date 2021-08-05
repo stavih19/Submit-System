@@ -55,8 +55,13 @@ namespace Submit_System.Controllers
         }
         [HttpPost]
         [Route("Teacher/CreateExercise")]
-        public ActionResult<ExOutput> CreateExercise(string courseid, [FromBody] Exercise exercise)
+        public ActionResult<ExOutput> CreateExercise(string courseid, [FromBody] ExerciseInput input)
         {
+            var exercise = input.Exercise;
+            if(IsAnyNull(exercise?.Name))
+            {
+                return BadRequest();
+            }
             DBCode code = _access.CheckCoursePermission(courseid, Role.Teacher);
             if(code != DBCode.OK)
             {
@@ -70,7 +75,7 @@ namespace Submit_System.Controllers
             }
             exercise.FilesLocation = path;
             exercise.GenerateID();
-            code = _access.CreateExercise(exercise);
+            code = _access.CreateExercise(input);
             if(code != DBCode.OK)
             {
                 return HandleDatabaseOutput(code);
@@ -80,7 +85,7 @@ namespace Submit_System.Controllers
             var output = new ExOutput { ID = exercise.ID };
             try
             {
-                output.Files = FileUtils.StoreFiles(exercise.HelpFiles, helpFiles, false, false);
+                output.Files = FileUtils.StoreFiles(input.HelpFiles, helpFiles, false, false);
             }
             catch(Exception)
             {
@@ -88,7 +93,17 @@ namespace Submit_System.Controllers
             }
             return output;
         }
-        
+        [HttpPut]
+        [Route("Teacher/UpdateExercise")]
+        public ActionResult UpdateExercise([FromBody] Exercise exercise)
+        {
+            DBCode code = _access.CheckExercisePermission(exercise.ID, Role.Teacher);
+            if(code != DBCode.OK)
+            {
+                return HandleDatabaseOutput(code);
+            }
+            return HandleDatabaseOutput(_access.UpdateExercise(exercise));
+        }
         [HttpGet]
         [Route("Teacher/ExerciseDetails")]
         public ActionResult<Exercise> GetExerciseDetails(string exerciseId)
@@ -98,7 +113,8 @@ namespace Submit_System.Controllers
             {
                 return HandleDatabaseOutput(code);
             }
-            return HandleDatabaseOutput(_access.GetExercise(exerciseId));
+            var a = _access.GetExercise(exerciseId);
+            return HandleDatabaseOutput(a);
         }
         [HttpPost]
         [Route("Teacher/CopyExercise")]
@@ -114,7 +130,7 @@ namespace Submit_System.Controllers
             {
                 return HandleDatabaseOutput(code2);
             }
-            exercise.Name = exerciseName;
+            exercise.Name = exerciseName; 
             string newPath = System.IO.Path.Combine("Courses", courseid, "Exercises", exercise.Name);
             if(System.IO.Directory.Exists(newPath))
             {
@@ -124,7 +140,7 @@ namespace Submit_System.Controllers
             string oldPath = exercise.FilesLocation;
             exercise.FilesLocation = newPath;
             exercise.GenerateID();
-            code = _access.CreateExercise(exercise);
+            code = _access.CreateExercise(new ExerciseInput {Exercise = exercise});
             if(code != DBCode.OK)
             {
                 return HandleDatabaseOutput(code);
@@ -183,7 +199,7 @@ namespace Submit_System.Controllers
             }
             return HandleDatabaseOutput(_access.GetTests(exerciseId));
         }
-        [HttpPost]
+        [HttpPut]
         [Route("Teacher/UpdateTest")]
         public ActionResult<TestOutput> UpdateTest([FromBody] Test test)
         {
@@ -207,8 +223,9 @@ namespace Submit_System.Controllers
         }
         [HttpPost]
         [Route("Teacher/AddTest")]
-        public ActionResult<TestOutput> AddTest([FromBody] Test test)
+        public ActionResult<TestOutput> AddTest([FromBody] TestInput input)
         {
+            Test test = input.Test;
             DBCode code = _access.CheckExercisePermission(test.ExerciseID, Role.Teacher);
             if(code != DBCode.OK)
             {
@@ -233,9 +250,9 @@ namespace Submit_System.Controllers
             };
             try
             {
-                if(test.Has_Adittional_Files)
+                if(input.AdditionalFiles != null)
                 {
-                    output.Files = FileUtils.StoreFiles(test.AdditionalFiles, testDir, false, true);
+                    output.Files = FileUtils.StoreFiles(input.AdditionalFiles, testDir, false, true);
                 }
             }
             catch
@@ -284,6 +301,17 @@ namespace Submit_System.Controllers
             }
             return HandleDatabaseOutput(_access.GetExerciseDates(exerciseId));
         }
+        [HttpPut]
+        [Route("Teacher/UpdateDate")]
+        public ActionResult UpDate([FromBody] SubmitDate date)
+        {
+            DBCode code = _access.CheckExercisePermission(date.ExerciseID, Role.Teacher);
+            if(code != DBCode.OK)
+            {
+                return HandleDatabaseOutput(code);
+            }
+            return HandleDatabaseOutput(_access.UpdateDate(date));
+        }
         [NonAction]
         private ActionResult GetHelpFile(string exerciseId, string filename, Role role)
         {
@@ -297,7 +325,7 @@ namespace Submit_System.Controllers
             return FileDownload(path, filename);
         }
         [NonAction]
-        private ActionResult DownloadHelpFiles(string exerciseId, string filename, Role role)
+        private ActionResult DownloadHelpFiles(string exerciseId, Role role)
         {
             DBCode code = _access.CheckExercisePermission(exerciseId, role);
             if(code != DBCode.OK)
@@ -305,14 +333,15 @@ namespace Submit_System.Controllers
                 return HandleDatabaseOutput(code);
             }
             (string path, DBCode code2) = _access.GetExerciseDirectory(exerciseId);
+
             path = Path.Combine(path, "Help");
-            return HandleArchiveSending(path, filename);
+            return HandleArchiveSending(path, "help.zip");
         }
         [HttpGet]
         [Route("Teacher/GetHelpFile")]
-        public ActionResult TeacherGetHelpFile(string exerciseId, string filename)
+        public ActionResult TeacherGetHelpFile(string exerciseId, string file)
         {
-            return GetHelpFile(exerciseId, filename, Role.Teacher);
+            return GetHelpFile(exerciseId, file, Role.Teacher);
         }
         [HttpGet]
         [Route("Student/GetHelpFile")]
@@ -330,23 +359,23 @@ namespace Submit_System.Controllers
         [Route("Teacher/DownloadHelpFiles")]
         public ActionResult TeacherDownloadHelpFiles(string exerciseId, string filename)
         {
-            return DownloadHelpFiles(exerciseId, filename, Role.Teacher);
+            return DownloadHelpFiles(exerciseId, Role.Teacher);
         }
         [HttpGet]
         [Route("Student/DownloadHelpFiles")]
         public ActionResult StudentDownloadHelpFiles(string exerciseId, string filename)
         {
-            return DownloadHelpFiles(exerciseId, filename, Role.Student);
+            return DownloadHelpFiles(exerciseId, Role.Student);
         }   
         [HttpGet]
         [Route("Checker/DownloadHelpFiles")]
         public ActionResult CheckerDownloadHelpFiles(string exerciseId, string filename)
         {
-            return DownloadHelpFiles(exerciseId, filename, Role.Checker);
+            return DownloadHelpFiles(exerciseId, Role.Checker);
         }
         [HttpPost]
-        [Route("Teacher/AddHelpFile")]
-        public ActionResult<List<string>> AddHelpFile(string exerciseId, [FromBody] List<SubmitFile> files)
+        [Route("Teacher/AddHelpFiles")]
+        public ActionResult<List<string>> AddHelpFiles(string exerciseId, [FromBody] List<SubmitFile> files)
         {
             DBCode code = _access.CheckExercisePermission(exerciseId, Role.Teacher);
             if(code != DBCode.OK)
@@ -354,6 +383,10 @@ namespace Submit_System.Controllers
                 return HandleDatabaseOutput(code);
             }
             (string path, DBCode code2) = _access.GetExerciseDirectory(exerciseId);
+            if(code2 != DBCode.OK)
+            {
+                return HandleDatabaseOutput(code2);
+            }
             path = Path.Combine(path, "Help");
             try
             {
@@ -477,6 +510,12 @@ namespace Submit_System.Controllers
                 return HandleDatabaseOutput(code2);
             }
             return HandleArchiveSending(path, file);
+        }
+        [HttpPut]
+        [Route("Teacher/PublishGrades")]
+        public ActionResult PublishGrades([FromBody] Dictionary<string, int> weight)
+        {
+            return Ok();
         }
     }
 }

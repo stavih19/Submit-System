@@ -1,7 +1,7 @@
-using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using System.Linq;
 using System;
-using System.Text.Json.Serialization;
+using System.Collections.Generic;
 namespace Submit_System {
     public class Exercise {
 
@@ -34,19 +34,18 @@ namespace Submit_System {
         {
             return String.Join<int>("_", reductions);
         }
-
+        
+        
         public string ProgrammingLanguage { get; set; }
         public int AutoTestGradeWeight { get; set; }
         public int StyleTestGradeWeight { get; set; }
         public int IsActive { get; set; }
         public bool MultipleSubmission{ get; set; }
-
-         public DateTime MainDate { get; set; }
         // number of matches between submissions shown
-        public int MossShownMatches { get; set; }
+        public int MossShownMatches { get; set; } = MossClient.DEF_SHOW;
         // number of times a code sequence can be found before it stops being counted
-        public int MossMaxTimesMatch { get; set; }
-        public string MossLink { get; set; } = "";
-        public List<SubmitFile> HelpFiles { get; set; }
+        public int MossMaxTimesMatch { get; set; } = MossClient.DEF_MAX_FOUND;
+        public string MossLink { get; set; }
+        public List<string> Filenames { get; set; }
     }
 }

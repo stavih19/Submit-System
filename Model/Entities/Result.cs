@@ -1,7 +1,10 @@
-using System;
 using System.Collections.Generic;
+using System.Text;
+using System.Web;
+using System;
+using System.Linq;
 namespace Submit_System {
-    public class Result {
+   public class Result {
         public List<CheckResult> Test_Results{ get; set; }
         public CheckStyleResult Check_Style_Result{ get; set; }
 
@@ -19,18 +22,14 @@ namespace Submit_System {
         }
 
         public double GetTestsGrade(){
-            return this.GetTestsGrade(new BasicOutputComperator());
-        }
-        public double GetTestsGrade(OutputComperator comperator){
             if(Test_Results.Count ==0){
                 return -1;
             }
             double sum = 0;
             foreach(CheckResult c in Test_Results){
-                sum = sum + (c.Weight/(double)100) * c.CalculateTestGrade(comperator);
+                sum = sum + (c.Weight/(double)100) * c.CalculateTestGrade(new BasicOutputComperator());
             }
             return sum;
         }
-
     }
 }

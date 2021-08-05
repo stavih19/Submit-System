@@ -37,9 +37,9 @@ INSERT INTO Courses VALUES (@course_id1, 89111, @course_name1, 2021, 0),
 INSERT INTO Student_Course VALUES (@Yosi,@course_id1), (@Yosi, @course_id2), (@Danny, @course_id3);
 
 INSERT INTO Metargel_Course VALUES (@Yosi,@course_id3), (@Danny,@course_id1);
-INSERT INTO Exercise VALUES (@exercise1, 'ex1', @course_id1, '?', 1, 'Courses\89111_2021\Exercises\ex1\', '10_20', 'python', 60, 20, 1, 1, 250, 10, null),
-                            (@exercise2, 'ex2', @course_id1, '?', 1, 'Courses\89111_2021\Exercises\ex2\', '10_20', 'python', 60, 20, 1, 1, 250, 10, null),
-                            (@exercise3, 'ex1', @course_id3, '?', 1, 'Courses\89115_2021\Exercises\ex1\', '10_20', 'python', 60, 20, 1, 1, 250, 10, null);
+INSERT INTO Exercise VALUES (@exercise1, 'ex1', @course_id1, '?', 1, 'Courses\89111_2021\Exercises\ex1\', '10_20', 'python', 60, 20, 1, 1, 250, 10, null, GETDATE()),
+                            (@exercise2, 'ex2', @course_id1, '?', 1, 'Courses\89111_2021\Exercises\ex2\', '10_20', 'python', 60, 20, 1, 1, 250, 10, null, GETDATE()),
+                            (@exercise3, 'ex1', @course_id3, '?', 1, 'Courses\89115_2021\Exercises\ex1\', '10_20', 'python', 60, 20, 1, 1, 250, 10, null, GETDATE());
 
 
 INSERT INTO Submission_Dates(exercise_id, submission_date, reduction, group_number)

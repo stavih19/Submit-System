@@ -48,7 +48,8 @@ CREATE TABLE Exercise(
     multiple_submissions int,
     moss_number_of_matches int,
     moss_max_match int,
-    moss_result_link varchar(256)
+    moss_result_link varchar(256),
+    creation DATETIME
 );
 CREATE TABLE Checker_Exercise(
     user_id nvarchar(10),
@@ -130,4 +131,4 @@ CREATE TRIGGER DELETE_DATE
 ON Submission_Dates
 AFTER DELETE
 AS
-    UPDATE Submission SET submission_date_id = null WHERE submission_date_id = Deleted.submission_date_id 
+    UPDATE Submission SET submission_date_id = null FROM Submission AS S INNER JOIN Deleted ON S.submission_date_id = Deleted.submission_date_id 

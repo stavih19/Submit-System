@@ -163,11 +163,7 @@ namespace Submit_System
         private static bool CheckUrl(string url)
         {
             bool valid = Uri.TryCreate(url, UriKind.Absolute, out Uri result);
-            if (valid == true && result != null)
-            {
-                return true;
-            }
-            return false;
+            return valid == true && result != null && url.StartsWith("http");
         }
 
         /// <summary>

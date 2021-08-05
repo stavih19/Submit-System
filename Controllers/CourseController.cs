@@ -1,10 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using Submit_System;
 namespace Submit_System.Controllers
 {
     [ServiceFilter(typeof(AuthFilter))]
@@ -27,7 +23,7 @@ namespace Submit_System.Controllers
         }
         [HttpPost]
         [Route("Teacher/AddTeacher")]
-        public ActionResult AddTeacher(string courseid, string teacherid)
+        public ActionResult<string> AddTeacher(string courseid, string teacherid)
         {
             DBCode code = _access.CheckCoursePermission(courseid, Role.Teacher);
             if(code != DBCode.OK)
@@ -38,7 +34,7 @@ namespace Submit_System.Controllers
         }
         [HttpPost]
         [Route("Teacher/AddChecker")]
-        public ActionResult AddChecker(string courseid, string checkerid)
+        public ActionResult<string> AddChecker(string courseid, string checkerid)
         {
              DBCode code = _access.CheckCoursePermission(courseid, Role.Teacher);
             if(code != DBCode.OK)
@@ -92,7 +88,14 @@ namespace Submit_System.Controllers
             int year = DateTime.Now.Year;
             course.Year =  (month >= 9) ? year : year - 1;
             course.Semester = (month <= 2 || month >= 10) ? 1 : 2;
-            return HandleDatabaseOutput(_access.AddCourse(course));
+            course.GenerateID();
+            DBCode code = _access.AddCourse(course);
+            if(code != DBCode.OK)
+            {
+                return HandleDatabaseOutput(code);
+            }
+            return course.ID;
+
         }
         [HttpPost]
         [Route("Teacher/AddStudent")]

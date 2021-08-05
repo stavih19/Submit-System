@@ -1,6 +1,7 @@
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
+using System.Text;
 namespace Submit_System {
-
     public interface AutomaticTester{
 
         public void SetTestLocation(string submissin_id);
@@ -12,6 +13,4 @@ namespace Submit_System {
 
         public List<CheckResult> GetCheckResults();
     }
-
-    
 }

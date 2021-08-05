@@ -1,11 +1,12 @@
 using System;
 using System.Data.SqlClient;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Submit_System
 {
     public partial class DataBaseManager{
-        private static string connetionString = "Data Source=127.0.0.1;Initial Catalog=submit02;User ID=SA;Password=paSSwordius$";//"HKCGHFKJ,GKG56fvfviW"
+        private static string connetionString = MyConfig.Configuration.GetSection("ConnectionString").Value;
 
         private static int WAITING_TO_METARGEL = 0;
         public static (User,int,string) ReadUser(string id) {
@@ -26,9 +27,9 @@ namespace Submit_System
                     return (null,1,"User does not exist");
                 }
                 u = new User(dataReader.GetValue(0).ToString(),
-                dataReader.GetValue(1).ToString(),
-                dataReader.GetValue(2).ToString(),
-                dataReader.GetValue(3).ToString()
+                dataReader.GetValue(1)?.ToString(),
+                dataReader.GetValue(2)?.ToString(),
+                dataReader.GetValue(3)?.ToString()
                 );
             } catch {
                 try{cnn.Close();}catch{}
@@ -52,7 +53,7 @@ namespace Submit_System
             command.Parameters.Add("@NAME",System.Data.SqlDbType.NVarChar);
             command.Parameters.Add("@EMAIL",System.Data.SqlDbType.NVarChar);
             command.Parameters["@ID"].Value = user.ID;
-            command.Parameters["@PWD"].Value = user.PasswordHash;
+            command.Parameters["@PWD"].Value = OrNull(user.PasswordHash);
             command.Parameters["@NAME"].Value = user.Name;
             command.Parameters["@EMAIL"].Value = user.Email;
             try{
@@ -243,7 +244,8 @@ namespace Submit_System
                 ex.MultipleSubmission = (int)dataReader.GetValue(11) == 1;
                 ex.MossShownMatches = (int) dataReader.GetValue(12);
                 ex.MossMaxTimesMatch = (int) dataReader.GetValue(13);
-                ex.MossLink = dataReader.GetValue(0)?.ToString() ?? null;
+                ex.MossLink = dataReader.GetValue(14)?.ToString();
+                ex.Filenames = FileUtils.GetRelativePaths(Path.Combine(ex.FilesLocation, "Help"));
                 
             } catch {
                 try{cnn.Close();}catch{}
@@ -260,7 +262,8 @@ namespace Submit_System
             }
             SqlConnection cnn  = new SqlConnection(connetionString);
             try{cnn.Open();} catch {return (3,"Connection failed");}
-            String sql = "INSERT INTO Exercise VALUES (@ID,@NAME,@CID,@OEID,@MAX,@FILES,@LATEST,@LANG,@AUTO,@STYLE,@ACTIVE,@MULT, @SHOW, @MAX, @LINK);";
+            String sql = @"INSERT INTO Exercise VALUES
+                (@ID,@NAME,@CID,@OEID,@MAX,@FILES,@LATEST,@LANG,@AUTO,@STYLE,@ACTIVE,@MULT, @SHOW, @MAXM, null, GETDATE());";
             SqlCommand command = new SqlCommand(sql,cnn);
             command.Parameters.Add("@ID",System.Data.SqlDbType.NVarChar);
             command.Parameters.Add("@NAME",System.Data.SqlDbType.NVarChar);
@@ -275,12 +278,11 @@ namespace Submit_System
             command.Parameters.Add("@ACTIVE",System.Data.SqlDbType.Int);
             command.Parameters.Add("@MULT",System.Data.SqlDbType.Int);
             command.Parameters.Add("@SHOW",System.Data.SqlDbType.Int);
-            command.Parameters.Add("@MAX",System.Data.SqlDbType.Int);
-            command.Parameters.Add("@LINK",System.Data.SqlDbType.VarChar);
+            command.Parameters.Add("@MAXM",System.Data.SqlDbType.Int);
             command.Parameters["@ID"].Value = exercise.ID;
             command.Parameters["@NAME"].Value = exercise.Name;
             command.Parameters["@CID"].Value = exercise.CourseID;
-            command.Parameters["@OEID"].Value = exercise.OriginalExerciseID;
+            command.Parameters["@OEID"].Value = OrNull(exercise.OriginalExerciseID);
             command.Parameters["@MAX"].Value = exercise.MaxSubmitters;
             command.Parameters["@FILES"].Value = exercise.FilesLocation;
             command.Parameters["@LATEST"].Value = exercise.LateSubmissionSettings;
@@ -290,8 +292,7 @@ namespace Submit_System
             command.Parameters["@ACTIVE"].Value = exercise.IsActive;
             command.Parameters["@MULT"].Value = exercise.MultipleSubmission ? 1 : 0;
             command.Parameters["@SHOW"].Value = exercise.MossShownMatches;
-            command.Parameters["@MAX"].Value = exercise.MossMaxTimesMatch;
-            command.Parameters["@LINK"].Value = exercise.MossLink;
+            command.Parameters["@MAXM"].Value = exercise.MossMaxTimesMatch;
             try{
                 command.ExecuteReader();
             } catch {
@@ -444,9 +445,9 @@ namespace Submit_System
             command.Parameters["@SUBMITTED"].Value = submission.TimeSubmitted;
             try{
                 command.ExecuteReader();
-            } catch{
+            } catch(Exception e){
                 try{cnn.Close();}catch{}
-                return (2,"Addittion failed");
+                return (2,"Addittion failed "+e.Message);
             }
             try{cnn.Close();} catch{return (4,"Connection close failed");}
             return (0,"OK");
@@ -655,7 +656,7 @@ namespace Submit_System
             try{cnn.Open();} catch {return (3,"Connection failed");}
             String sql = @"UPDATE Submission SET exercise_id=@EID,files_location=@FL,auto_grade=@AG,style_grade=@SG,
                         manual_final_grade=@MFG,manual_check_data=@MD,submission_status=@STATUS,submission_date_id=@DID,
-                        time_submitted=@SUBMITTED WHERE submission_id = @ID;";
+                        time_submitted=@SUBMITTED, has_copied=@HC, current_checker_id=@CURRENT WHERE submission_id = @ID;";
             SqlCommand command = new SqlCommand(sql,cnn);
             command.Parameters.Add("@ID",System.Data.SqlDbType.NVarChar);
             command.Parameters.Add("@EID",System.Data.SqlDbType.NVarChar);
@@ -667,6 +668,8 @@ namespace Submit_System
             command.Parameters.Add("@STATUS",System.Data.SqlDbType.Int);
             command.Parameters.Add("@DID",System.Data.SqlDbType.Int);
             command.Parameters.Add("@SUBMITTED",System.Data.SqlDbType.DateTime);
+            command.Parameters.Add("@HC",System.Data.SqlDbType.Int);
+            command.Parameters.Add("@CURRENT",System.Data.SqlDbType.VarChar);
             command.Parameters["@ID"].Value = submission.ID;
             command.Parameters["@EID"].Value = submission.ExerciseID;
             command.Parameters["@FL"].Value = submission.FilesLocation;
@@ -677,6 +680,8 @@ namespace Submit_System
             command.Parameters["@STATUS"].Value = submission.SubmissionStatus;
             command.Parameters["@DID"].Value = submission.SubmissionDateId;
             command.Parameters["@SUBMITTED"].Value = submission.TimeSubmitted;
+            command.Parameters["@HC"].Value = submission.HasCopied ? 1 : 0;
+            command.Parameters["@CURRENT"].Value = submission.CurrentCheckerId;
             try{
                 command.ExecuteReader();
             } catch {

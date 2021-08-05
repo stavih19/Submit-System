@@ -22,11 +22,10 @@ namespace Submit_System
         [Route("User/Login")]
         public ActionResult<List<string>> Login([FromBody]LoginData login)  
         {  
-            if (login == null || login?.Username == null || login?.Password == null)  
+            if (IsAnyNull(login?.Username, login?.Password))  
             {  
                 return BadRequest();
             }
-            
             var result = _access.AuthenticateUser(login.Username, login.Password);
             if(result.Item1 == null) {
                 return NotFound();
@@ -45,9 +44,22 @@ namespace Submit_System
         public IActionResult SetPassword(string token, [FromBody] string password)
         {
             
-            // // (string userid, DBCode code) = _access.CheckPasswordToken(form.Token);
-            // // _access.DeletePasswordToken(userid);
-            //_storage.RemoveByID(userid);
+            (string userid, DBCode code) = _access.CheckPasswordToken(CryptoUtils.Sha256Hash(token));
+            if(code != DBCode.OK)
+            {
+                return HandleDatabaseOutput(code);
+            }
+            _storage.RemoveByID(userid);
+            code = _access.DeletePasswordToken(userid);
+            if(code != DBCode.OK)
+            {
+                return HandleDatabaseOutput(code);
+            }
+            code = _access.SetPassword(userid, CryptoUtils.KDFHash(password));
+            if(code != DBCode.OK)
+            {
+                return HandleDatabaseOutput(code);
+            }
             return Ok();
         }
         [HttpDelete]
@@ -61,7 +73,7 @@ namespace Submit_System
         [Route("User/CheckToken")]
         public IActionResult CheckToken(string token)
         {
-            token = token ?? Request.Cookies["token"];
+            token = Request.Cookies["token"];
             if(_storage.TryGetToken(token, out _))
             {
                 return Ok();
@@ -82,25 +94,39 @@ namespace Submit_System
             _storage._isTestMode = false;
             return Ok("Authentication enabled.");
         }
-        [HttpPost]
-        [Route("Database/Reset")]
-        public IActionResult Reset()
+        public ActionResult ResetPasswordRequest(string userID)
         {
-            bool isSuccess = false; // DataBaseManager.Reset();
-            return isSuccess ? Ok() : ServerError();
+            (User u, DBCode c) = _access.GetUser(userID);
+            if(c != DBCode.OK)
+            {
+                return HandleDatabaseOutput(c);
+            }
+            bool success = PasswordRequest(userID, u.Email);
+            return success ? Ok() : ServerError();
+        }
+        [NonAction]
+        private bool PasswordRequest(string userID, string email)
+        {
+            string token = CryptoUtils.GetRandomBase64String(24);
+            string tokenHash = CryptoUtils.Sha256Hash(token);
+            string link =  String.Format(PASSWORD_LINK, HttpUtility.UrlEncode(token));
+            DBCode code = _access.AddPasswordToken(userID, tokenHash, DateTime.Now.AddDays(2));
+            if(code != DBCode.OK)
+            {
+                return false;
+            }
+            string text = $"Password form link:<br>" + link;
+            MaleUtils.SendMail(email, "Submit Bar Ilan User registration" ,text);
+            return true;
         }
         [HttpPost]
         [Route("Admin/AddUser")]
         public IActionResult AddUser([FromBody] User user)
         {
-            user.PasswordHash = "N/A";
+            user.PasswordHash = null;
             DataBaseManager.AddUser(user);
-            string token = CryptoUtils.GetRandomBase64String(24);
-            string tokenHash = CryptoUtils.Sha256Hash(token);
-            string link =  String.Format(PASSWORD_LINK, HttpUtility.UrlEncode(token));
-            //_access.AddPasswordToken(user.ID, tokenHash);
-            //MaleUtils.SendRegistration(user.Email, link);
-            return Ok();
+            bool success = PasswordRequest(user.ID, user.Email);
+            return success ? Ok() : ServerError();
         }
     }  
 }

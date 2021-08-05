@@ -1,12 +1,13 @@
 using System.Collections.Generic;
+using System.Text;
+using System.Linq;
 namespace Submit_System {
 
     public class TestManager {
 
         public interface TesterFactory
         {
-            public AutomaticTester CreateTester();
-            public CheckStyleTester CreateChecker();
+            public AutomaticTester Create();
         }
 
         private static  Dictionary<string,TesterFactory> facts = new Dictionary<string, TesterFactory>();
@@ -43,7 +44,7 @@ namespace Submit_System {
             if(!facts.ContainsKey(exercise.ProgrammingLanguage)){
                 return (null,4,"Tester doesn't exist");
             }
-            AutomaticTester tester = facts[exercise.ProgrammingLanguage].CreateTester();
+            AutomaticTester tester = facts[exercise.ProgrammingLanguage].Create();
             tester.SetTestLocation(submission_id);
             foreach(Test t in tests){
                 if(t.Type == test_type){
@@ -58,33 +59,33 @@ namespace Submit_System {
             List<CheckResult> lst = tester.GetCheckResults();
             return (lst,0,"Ok");
         }
+        public string ResultToString(Result result)
+        {
+            StringBuilder builder = new StringBuilder();
+            double totalTime = result.Test_Results.Select(result => result.TimeInMs).Sum();
+            builder.AppendLine("Automatic Test:");
+            builder.AppendLine($"Total grade: {result.GetTestsGrade()} | Total run time: {totalTime}ms");
+            foreach(CheckResult testResult in result.Test_Results)
+            {
+                int grade = testResult.CalculateTestGrade(new BasicOutputComperator());
+                grade *= testResult.Weight / 100;
+                builder.AppendLine($"________________________________________________");
+                builder.AppendLine($"Test: Grade: {grade}/{testResult.Weight} | Run Time: {testResult.TimeInMs}ms");
+                builder.AppendLine("Input:");
+                builder.AppendLine(testResult.Input);
+                builder.AppendLine("Expected output:");
+                builder.AppendLine(testResult.Expected_Output);
+                builder.AppendLine($"Your output:\n{testResult.Output}");
+                if(testResult.Is_Error)
+                { 
+                    builder.AppendLine($"Error:{testResult.Error}");
+                }
+                builder.AppendLine($"________________________________________________");
+            }
+            builder.AppendLine();
 
-        public static (CheckStyleResult,int,string) Check(string submission_id){
-            (Submission submission,int err,string errstr) = DataBaseManager.ReadSubmission(submission_id);
-            if(err != 0){
-                return (null,1,"Can't Read Submission "+errstr);
-            }
-            Exercise exercise;
-            (exercise,err,errstr) = DataBaseManager.ReadExercise(submission.ExerciseID);
-            if(err != 0){
-                return (null,2,"Can't Read Exercise "+errstr);
-            }
-            if(!facts.ContainsKey(exercise.ProgrammingLanguage)){
-                return (null,6,"Checker doesn't exist");
-            }
-            CheckStyleTester checker = facts[exercise.ProgrammingLanguage].CreateChecker();
-            checker.SetCheckLocation(submission_id);
-            checker.SetFilesLocation(submission.FilesLocation);
-            errstr = checker.RunCheck();
-            if(errstr != "OK"){
-                return (null,7,"Checking process failed "+errstr);
-            }
-            CheckStyleResult result =checker.GetCheckResult();
-            return (result,0,"Ok");
+            return builder.ToString();
         }
-
-        
-
     }
 }
 

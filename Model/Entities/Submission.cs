@@ -2,7 +2,6 @@ using System;
 using System.Text.Json.Serialization;
 using System.Collections.Generic;
 namespace Submit_System {
-    public enum CheckState { NotBeingChecked, CheckedByYou, CheckedByOther }
     public class Submission{
         public string ID{get;set;}
         [JsonIgnore]
@@ -19,14 +18,11 @@ namespace Submit_System {
         public int SubmissionDateId{get;set;}
 
         public DateTime TimeSubmitted{get;set;}
-        [JsonIgnore]
-        public string ChatLateID{get;set;}
-        [JsonIgnore]
-        public string ChatAppealID{get;set;}
         public bool HasCopied {get; set;} = false;
         [JsonIgnore]
         public string CurrentCheckerId {get; set;}
         public CheckState CheckState { get; set; }
+        public int TotalGrade { get; set; }
         public static string GenerateID(string main_submitter_id,string exercise_id){
             return main_submitter_id + "_" + exercise_id;
         }
