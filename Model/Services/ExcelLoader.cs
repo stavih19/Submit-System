@@ -54,11 +54,11 @@ namespace Submit_System {
             string token = CryptoUtils.GetRandomBase64String(24);
             string tokenHash = CryptoUtils.Sha256Hash(token);
             string link =  String.Format(UserController.PASSWORD_LINK, HttpUtility.UrlEncode(token));
-            /*DBCode code = _access.AddPasswordToken(userID, tokenHash, DateTime.Now.AddDays(2));
+            DBCode code = _access.AddPasswordToken(userID, tokenHash, DateTime.Now.AddDays(2));
             if(code != DBCode.OK)
             {
                 return false;
-            }*/
+            }
             string text = $"Password form link:<br>" + link;
             MaleUtils.SendMail(email, "Submit Bar Ilan User registration" ,text);
             return true;
