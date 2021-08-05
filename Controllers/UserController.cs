@@ -12,7 +12,7 @@ namespace Submit_System
 {
     public class UserController : AbstractController 
     {  
-        private const string PASSWORD_LINK = "https://localhost:5000/SetPassword?token={0}";
+        public const string PASSWORD_LINK = "https://localhost:5000/SetPassword?token={0}";
         private readonly TokenStorage _storage;
         public UserController(TokenStorage storage, DatabaseAccess access) : base(access)
         {
