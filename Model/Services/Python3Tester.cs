@@ -1,11 +1,14 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
 using System;
+using System.Runtime.InteropServices;
 
 namespace Submit_System {
 
+    /*
+    * Class that implements the TesterFactory interface for testing python3 excercises.
+    */
     public class Python3TesterFactory : TestManager.TesterFactory
     {
         public AutomaticTester CreateTester()
@@ -19,10 +22,11 @@ namespace Submit_System {
         }
     }
 
-
+    /*
+    * Class that implements the AutomaticTester interface for testing python3 excercises.
+    */
     public class Python3Tester : AutomaticTester
     {
-        private static string exe_file_location = "/usr/bin/python3";
         static Python3Tester()
         {
             if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -30,6 +34,7 @@ namespace Submit_System {
                 exe_file_location = MyConfig.Configuration.GetSection("WindowsPythonPath").Value;
             }
         }
+        private static string exe_file_location = "/usr/bin/python3";
         private List<Test> tests;
         private List<CheckResult> results;
 
@@ -58,7 +63,7 @@ namespace Submit_System {
         {
             try{
             bool ok;
-            string directory_path = Path.Combine(Directory.GetCurrentDirectory(), ("Test_"+test_location));
+            string directory_path = Path.Combine(Directory.GetCurrentDirectory(), "Tests","Test_"+test_location);
 
             foreach(Test test in this.tests){
 
@@ -116,7 +121,7 @@ namespace Submit_System {
                     if(test.OutputFileName != "stdout")
                     {
                         try{
-                            output = File.ReadAllText(Path.Combine(directory_path,test.OutputFileName));
+                            output = File.ReadAllText(Path.Combine(directory_path, test.OutputFileName));
                         } catch{
                             output = "";
                             errors = errors + "Cannot read the output file " + test.OutputFileName + ".\n";
@@ -184,6 +189,9 @@ namespace Submit_System {
 
     }
 
+    /*
+    * Class that implements the CheckStyleTester interface for testing python3 excercises.
+    */
     public class Python3CheckStyleTester : CheckStyleTester
     {
 
@@ -205,7 +213,7 @@ namespace Submit_System {
         {
             try{
                 bool ok;
-                string directory_path = Path.Combine(Directory.GetCurrentDirectory(),("Check_"+check_location));
+                string directory_path = Directory.GetCurrentDirectory()+"/Check_"+check_location;
                 ok = CopyAll(files_location,directory_path);
                 if(!ok){
                     return "Cannot Load files at "+files_location;
@@ -289,6 +297,4 @@ namespace Submit_System {
         }
 
     }
-
-
 }

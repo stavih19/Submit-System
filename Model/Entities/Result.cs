@@ -38,34 +38,40 @@ namespace Submit_System {
         public override string ToString()
         {
             StringBuilder builder = new StringBuilder();
-            double totalTime = Test_Results.Select(result => result.TimeInMs).Sum();
-            builder.AppendLine("<u><h3>Automatic Test:</h3></u>");
-            builder.AppendLine($"<b>Total grade: {GetTestsGrade()} | Total run time: {totalTime}ms</b>");
-            foreach(CheckResult testResult in Test_Results)
+            if(Test_Results != null)
             {
-                int grade = testResult.CalculateTestGrade(new BasicOutputComperator());
-                grade *= testResult.Weight / 100;
-                builder.AppendLine("<hr>");
-                builder.AppendLine($"Test: Grade: {grade}/{testResult.Weight} | Run Time: {testResult.TimeInMs}ms");
-                builder.AppendLine("<u><h5>Input:</h5></u>");
-                builder.AppendLine(HttpUtility.HtmlEncode(testResult.Input));
-                builder.AppendLine("<u><h5>Expected output:</h5></u>");
-                builder.AppendLine(HttpUtility.HtmlEncode(testResult.Expected_Output));
-                builder.AppendLine("<u><h5>Your output:</h5></u>");
-                builder.AppendLine(HttpUtility.HtmlEncode(testResult.Output));
-                if(testResult.Is_Error)
-                { 
-                    builder.AppendLine("<u><h5>Error:</h5></u>");
-                    builder.AppendLine(HttpUtility.HtmlEncode(testResult.Error));
+                double totalTime = Test_Results.Select(result => result.TimeInMs).Sum();
+                builder.AppendLine("<u><h3>Automatic Test:</h3></u>");
+                builder.AppendLine($"<b>Total grade: {GetTestsGrade()} | Total run time: {totalTime}ms</b>");
+                foreach(CheckResult testResult in Test_Results)
+                {
+                    int grade = testResult.CalculateTestGrade(new BasicOutputComperator());
+                    grade *= testResult.Weight / 100;
+                    builder.AppendLine("<hr>");
+                    builder.AppendLine($"Test: Grade: {grade}/{testResult.Weight} | Run Time: {testResult.TimeInMs}ms");
+                    builder.AppendLine("<u><h5>Input:</h5></u>");
+                    builder.AppendLine(HttpUtility.HtmlEncode(testResult.Input));
+                    builder.AppendLine("<u><h5>Expected output:</h5></u>");
+                    builder.AppendLine(HttpUtility.HtmlEncode(testResult.Expected_Output));
+                    builder.AppendLine("<u><h5>Your output:</h5></u>");
+                    builder.AppendLine(HttpUtility.HtmlEncode(testResult.Output));
+                    if(testResult.Is_Error)
+                    { 
+                        builder.AppendLine("<u><h5>Error:</h5></u>");
+                        builder.AppendLine(HttpUtility.HtmlEncode(testResult.Error));
+                    }
+                    builder.AppendLine("<hr>");
                 }
-                builder.AppendLine("<hr>");
             }
-            builder.AppendLine("<u><h3>Coding Style Test:</h3></u>");
-            int styleGrade = Check_Style_Result.IsOk ? 100 : 0;
-            builder.AppendLine($"Grade: {styleGrade}");
-            builder.AppendLine("<u><h3>Results:</h3></u>");
-            builder.Append(Check_Style_Result.Output);
-            builder = builder.Replace("\r\n", "<br>").Replace("\n", "<br>");
+            if(Check_Style_Result != null)
+            {
+                builder.AppendLine("<u><h3>Coding Style Test:</h3></u>");
+                int styleGrade = Check_Style_Result.IsOk ? 100 : 0;
+                builder.AppendLine($"Grade: {styleGrade}");
+                builder.AppendLine("<u><h3>Results:</h3></u>");
+                builder.Append(Check_Style_Result.Output);
+                builder = builder.Replace("\r\n", "<br>").Replace("\n", "<br>");
+            }
             return builder.ToString();
         }   
     }
