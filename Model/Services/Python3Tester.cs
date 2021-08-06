@@ -6,15 +6,25 @@ using System.Runtime.InteropServices;
 
 namespace Submit_System {
 
+    /*
+    * Class that implements the TesterFactory interface for testing python3 excercises.
+    */
     public class Python3TesterFactory : TestManager.TesterFactory
     {
-        public AutomaticTester Create()
+        public AutomaticTester CreateTester()
         {
             return new Python3Tester();
         }
+
+        public CheckStyleTester CreateChecker()
+        {
+            return new Python3CheckStyleTester();
+        }
     }
 
-
+    /*
+    * Class that implements the AutomaticTester interface for testing python3 excercises.
+    */
     public class Python3Tester : AutomaticTester
     {
         static Python3Tester()
@@ -144,6 +154,114 @@ namespace Submit_System {
         public void SetTestLocation(string submissin_id)
         {
             this.test_location = submissin_id;
+        }
+
+        private static bool CopyAll(string source, string target){
+            try
+            {
+                CopyAll(new DirectoryInfo(source),new DirectoryInfo(target));
+                return true;
+            } catch{
+                return false;
+            }
+        }
+        private static void CopyAll(DirectoryInfo source, DirectoryInfo target)
+        {
+            // Check if the target directory exists, if not, create it.
+            if (Directory.Exists(target.FullName) == false)
+            {
+                Directory.CreateDirectory(target.FullName);
+            }
+
+            // Copy each file into it's new directory.
+            foreach (FileInfo fi in source.GetFiles())
+            {
+                fi.CopyTo(Path.Combine(target.ToString(), fi.Name), true);
+            }
+
+            // Copy each subdirectory using recursion.
+            foreach (DirectoryInfo diSourceSubDir in source.GetDirectories())
+            {
+                DirectoryInfo nextTargetSubDir = target.CreateSubdirectory(diSourceSubDir.Name);
+                CopyAll(diSourceSubDir, nextTargetSubDir);
+            }
+        }
+
+    }
+
+    /*
+    * Class that implements the CheckStyleTester interface for testing python3 excercises.
+    */
+    public class Python3CheckStyleTester : CheckStyleTester
+    {
+
+        private static string exe_file_location = "/home/nadav/.local/bin/pycodestyle";
+        private string files_location;
+        private string check_location;
+
+        private CheckStyleResult result;
+        public void SetFilesLocation(string path)
+        {
+            this.files_location = path;      }
+
+        public void SetCheckLocation(string submissin_id)
+        {
+            this.check_location = submissin_id;
+        }
+
+        public string RunCheck()
+        {
+            try{
+                bool ok;
+                string directory_path = Directory.GetCurrentDirectory()+"/Check_"+check_location;
+                ok = CopyAll(files_location,directory_path);
+                if(!ok){
+                    return "Cannot Load files at "+files_location;
+                }
+                string output = "";
+                string errors = "";
+
+                ProcessStartInfo start = new ProcessStartInfo();
+                start.FileName = exe_file_location;
+                start.Arguments = directory_path;
+                start.UseShellExecute = false;
+                start.RedirectStandardOutput = true;
+                start.RedirectStandardError = true;
+                start.RedirectStandardInput = true;
+                start.WorkingDirectory = Directory.GetCurrentDirectory();
+
+                using(Process process = Process.Start(start))
+                {
+                    //wait until timeout:
+                    bool exited = process.WaitForExit(5000);
+                    if(!exited){
+                        return "Timeout";
+                    }
+                    using(StreamReader reader = process.StandardOutput)
+                    {
+                        output = reader.ReadToEnd();
+                    }
+                    using(StreamReader reader = process.StandardError)
+                    {
+                        errors = errors + reader.ReadToEnd();
+                    }
+                }
+                if(errors.Length > 0){
+                    return "Error: "+errors;
+                }else{
+                    bool is_ok = (output == "");
+                    this.result = new CheckStyleResult(is_ok,output);
+                }
+                Directory.Delete(directory_path,true);
+                return "OK";
+            }catch(Exception ex){
+                return "Exception "+ex.Message;
+            }
+        }
+
+        public CheckStyleResult GetCheckResult()
+        {
+            return this.result;
         }
 
         private static bool CopyAll(string source, string target){
