@@ -43,6 +43,9 @@ namespace Submit_System {
 
         public void AddTest(Test test)
         {
+            if(test.MainSourseFile == ""){
+                test.MainSourseFile = "*.py";
+            }
             this.tests.Add(test);
         }
 
@@ -80,6 +83,9 @@ namespace Submit_System {
                 start.Arguments = string.Format("{0} {1}", test.MainSourseFile, test.ArgumentsString);
                 } else{
                     start.Arguments = test.MainSourseFile;
+                    if(test.MainSourseFile == ""){
+                        return "Main sourse file name is missing";
+                    }
                 }
                 start.UseShellExecute = false;
                 start.RedirectStandardOutput = true;

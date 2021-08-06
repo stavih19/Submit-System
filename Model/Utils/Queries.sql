@@ -104,7 +104,7 @@ FROM Checker_Exercise AS CE
         AND CE.exercise_id = @EID
 ---SubmissionLabels---
 SELECT
-    S.submission_id, SS.user_id, U.name, S.submission_status
+    S.submission_id, SS.user_id, U.name, S.submission_status, S.current_checker_id
 FROM Submission AS S
     INNER JOIN Submitters as SS
         ON SS.submission_id = S.submission_id
