@@ -1,22 +1,28 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System;
 using System.Runtime.InteropServices;
+using System;
 
 namespace Submit_System {
 
     public class Python3TesterFactory : TestManager.TesterFactory
     {
-        public AutomaticTester Create()
+        public AutomaticTester CreateTester()
         {
             return new Python3Tester();
+        }
+
+        public CheckStyleTester CreateChecker()
+        {
+            return new Python3CheckStyleTester();
         }
     }
 
 
     public class Python3Tester : AutomaticTester
     {
+        private static string exe_file_location = "/usr/bin/python3";
         static Python3Tester()
         {
             if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -24,7 +30,6 @@ namespace Submit_System {
                 exe_file_location = MyConfig.Configuration.GetSection("WindowsPythonPath").Value;
             }
         }
-        private static string exe_file_location = "/usr/bin/python3";
         private List<Test> tests;
         private List<CheckResult> results;
 
@@ -50,7 +55,7 @@ namespace Submit_System {
         {
             try{
             bool ok;
-            string directory_path = Path.Combine(Directory.GetCurrentDirectory(), "Tests","Test_"+test_location);
+            string directory_path = Path.Combine(Directory.GetCurrentDirectory(), ("Test_"+test_location));
 
             foreach(Test test in this.tests){
 
@@ -105,7 +110,7 @@ namespace Submit_System {
                     if(test.OutputFileName != "stdout")
                     {
                         try{
-                            output = File.ReadAllText(Path.Combine(directory_path, test.OutputFileName));
+                            output = File.ReadAllText(Path.Combine(directory_path,test.OutputFileName));
                         } catch{
                             output = "";
                             errors = errors + "Cannot read the output file " + test.OutputFileName + ".\n";
@@ -172,4 +177,112 @@ namespace Submit_System {
         }
 
     }
+
+    public class Python3CheckStyleTester : CheckStyleTester
+    {
+
+        private static string exe_file_location = MyConfig.Configuration.GetSection("PyCodeStylePath").Value;
+        private string files_location;
+        private string check_location;
+
+        private CheckStyleResult result;
+        public void SetFilesLocation(string path)
+        {
+            this.files_location = path;      }
+
+        public void SetCheckLocation(string submissin_id)
+        {
+            this.check_location = submissin_id;
+        }
+
+        public string RunCheck()
+        {
+            try{
+                bool ok;
+                string directory_path = Path.Combine(Directory.GetCurrentDirectory(),("Check_"+check_location));
+                ok = CopyAll(files_location,directory_path);
+                if(!ok){
+                    return "Cannot Load files at "+files_location;
+                }
+                string output = "";
+                string errors = "";
+
+                ProcessStartInfo start = new ProcessStartInfo();
+                start.FileName = exe_file_location;
+                start.Arguments = directory_path;
+                start.UseShellExecute = false;
+                start.RedirectStandardOutput = true;
+                start.RedirectStandardError = true;
+                start.RedirectStandardInput = true;
+                start.WorkingDirectory = Directory.GetCurrentDirectory();
+
+                using(Process process = Process.Start(start))
+                {
+                    //wait until timeout:
+                    bool exited = process.WaitForExit(5000);
+                    if(!exited){
+                        return "Timeout";
+                    }
+                    using(StreamReader reader = process.StandardOutput)
+                    {
+                        output = reader.ReadToEnd();
+                    }
+                    using(StreamReader reader = process.StandardError)
+                    {
+                        errors = errors + reader.ReadToEnd();
+                    }
+                }
+                output = output.Replace(directory_path, "");
+                if(errors.Length > 0){
+                    return "Error: "+errors;
+                }else{
+                    bool is_ok = (output == "");
+                    this.result = new CheckStyleResult(is_ok,output);
+                }
+                Directory.Delete(directory_path,true);
+                return "OK";
+            }catch(Exception ex){
+                return "Exception "+ex.Message;
+            }
+        }
+
+        public CheckStyleResult GetCheckResult()
+        {
+            return this.result;
+        }
+
+        private static bool CopyAll(string source, string target){
+            try
+            {
+                CopyAll(new DirectoryInfo(source),new DirectoryInfo(target));
+                return true;
+            } catch{
+                return false;
+            }
+        }
+        private static void CopyAll(DirectoryInfo source, DirectoryInfo target)
+        {
+            // Check if the target directory exists, if not, create it.
+            if (Directory.Exists(target.FullName) == false)
+            {
+                Directory.CreateDirectory(target.FullName);
+            }
+
+            // Copy each file into it's new directory.
+            foreach (FileInfo fi in source.GetFiles())
+            {
+                fi.CopyTo(Path.Combine(target.ToString(), fi.Name), true);
+            }
+
+            // Copy each subdirectory using recursion.
+            foreach (DirectoryInfo diSourceSubDir in source.GetDirectories())
+            {
+                DirectoryInfo nextTargetSubDir = target.CreateSubdirectory(diSourceSubDir.Name);
+                CopyAll(diSourceSubDir, nextTargetSubDir);
+            }
+        }
+
+    }
+
+
 }

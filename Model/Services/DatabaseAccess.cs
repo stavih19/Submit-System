@@ -268,7 +268,8 @@ namespace Submit_System {
                 CourseID = exer.CourseID,
                 ExerciseName = exer.ID,
                 SubmissionID = submissionId,
-                Path = submission.FilesLocation
+                Path = submission.FilesLocation,
+                ExerciseID = exerciseId
             };
            return (info, DBCode.OK);
 
@@ -294,7 +295,7 @@ namespace Submit_System {
         }
         public (List<ExerciseGradeDisplay>, DBCode) GetStudentGrades()
         {
-            return Convert(DataBaseManager.GetExerciseGrades(UserID));
+            return DataBaseManager.GetExerciseGrades(UserID);
         }
 
         public (SortedDictionary<string, List<ExerciseLabel>>, DBCode) GetAllExercises(string courseid)
@@ -451,6 +452,7 @@ namespace Submit_System {
                 IsMultipleSubmission = ex.MultipleSubmission,
                 State = (SubmissionState) submission.SubmissionStatus,
                 InitReduction = r,
+                HasCopied = submission.HasCopied,
                 Submitters = submitters,
                 IsMainSubmitter = (type == 1)
             };
@@ -595,6 +597,7 @@ namespace Submit_System {
             }
             (var sub, DBCode code3) = Convert(DataBaseManager.ReadSubmission(chat.SubmissionID));
             sub.SubmissionStatus = (int) SubmissionState.Appeal;
+            sub.HasCopied = false;
             DBCode code4 = Convert(DataBaseManager.UpdateSubmission(sub));
             if(CheckError(code2))
             {

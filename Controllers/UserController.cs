@@ -104,6 +104,17 @@ namespace Submit_System
             bool success = PasswordRequest(userID, u.Email);
             return success ? Ok() : ServerError();
         }
+        [HttpPost]
+        [Route("User/ResetPassword")]
+        public ActionResult ResetPassword(string id)
+        {
+            (User user, DBCode code) = _access.GetUser(id);
+            if(code != DBCode.OK)
+            {
+                return(HandleDatabaseOutput(code));
+            }
+            return PasswordRequest(id, user.Email) ? Ok() : ServerError();
+        }
         [NonAction]
         private bool PasswordRequest(string userID, string email)
         {
@@ -116,7 +127,7 @@ namespace Submit_System
                 return false;
             }
             string text = $"Password form link:<br>" + link;
-            MaleUtils.SendMail(email, "Submit Bar Ilan User registration" ,text);
+            MaleUtils.SendMail(email, "Submit Bar Ilan Reset Password" ,text);
             return true;
         }
         [HttpPost]
@@ -124,7 +135,11 @@ namespace Submit_System
         public IActionResult AddUser([FromBody] User user)
         {
             user.PasswordHash = null;
-            DataBaseManager.AddUser(user);
+            DBCode code = _access.AddUser(user);
+            if(code != DBCode.OK)
+            {
+                return HandleDatabaseOutput(code);
+            }
             bool success = PasswordRequest(user.ID, user.Email);
             return success ? Ok() : ServerError();
         }

@@ -9,7 +9,7 @@ namespace Submit_System {
         public int ManualGrade {get; set; }
         public int StyleWeight {get; set; } 
         public int AutoWeight {get; set; }
-        public bool copied { get; set; } = false;
+        public bool HasCopied { get; set; } = false;
         public int[] Reductions {get; set;}
         public int InitReduction {get; set; } = 0;
         public int MaxLateDays { get => Reductions?.Length ?? 0; }
@@ -22,7 +22,7 @@ namespace Submit_System {
             {
                 return -1;
             }
-            if(copied)
+            if(HasCopied)
             {
                 return 0;
             }

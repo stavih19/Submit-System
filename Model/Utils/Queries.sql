@@ -45,22 +45,24 @@ SELECT
 FROM Submitters as SS
     INNER JOIN Submission as S
         ON S.submission_id = SS.submission_id AND SS.user_id = @ID AND S.submission_status > 1
-        AND DATEDIFF(year, GETDATE(), S.time_submitted ) > 0
+        AND DATEDIFF(year, GETDATE(), S.time_submitted ) < 1
     INNER JOIN Exercise as E
         ON S.exercise_id = E.exercise_id
     INNER JOIN Courses as C
         ON C.course_id = E.course_id
-ORDER BY S.time_submitted
+ORDER BY S.time_submitted DESC
 ---StudentGrades2---
 SELECT 
     E.exercise_id, D.submission_date, D.reduction
 FROM Submitters as SS
     INNER JOIN Submission as S
         ON S.submission_id = SS.submission_id AND SS.user_id = @ID AND S.submission_status > 1
+        AND DATEDIFF(year, GETDATE(), S.time_submitted ) < 1
     INNER JOIN Exercise as E
         ON S.exercise_id = E.exercise_id
     INNER JOIN Submission_Dates as D
             ON S.submission_date_id = D.submission_date_id OR (D.group_number = 0 AND E.exercise_id = D.exercise_id)
+ORDER BY D.submission_date, D.reduction
 ---AllExercises---
 -- Given a course id, returns the exercises of the course for every year
 SELECT C.year,
@@ -243,7 +245,7 @@ WHERE submission_date_id = @ID
 DELETE FROM Submission_Dates
 OUTPUT (SELECT group_number FROM Submission_Dates WHERE submission_date_id = @ID)
 WHERE submission_date_id = @ID AND group_number != 0
-----Copied---
+---MarkCopied---
 UPDATE S SET S.has_copied = 1
 FROM Submission AS S INNER JOIN
 (SELECT DISTINCT S.submission_id AS id
@@ -251,9 +253,7 @@ FROM Submission AS S INNER JOIN
         INNER JOIN Submitters AS SS
         ON S.submission_id = SS.submission_id 
         AND S.exercise_id = @EID
-        AND SS.user_id IN (@ID1, @ID2)
-        GROUP BY S.submission_id
-        HAVING COUNT(*) = 2)
+        AND SS.user_id IN (@ID1, @ID2))
  AS Subs ON Subs.id = S.submission_id;
 ---HasMessage---
 SELECT 1 FROM Message AS M

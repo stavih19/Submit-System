@@ -223,33 +223,22 @@ namespace Submit_System
             E.style_test_grade_value, E.style_test_grade_value, E.late_submission_settings,
             S.auto_grade, S.style_grade, S.time_submitted 
         */
-        public static (List<ExerciseGradeDisplay>, int, string) GetExerciseGrades(string userid) {
+        public static (List<ExerciseGradeDisplay>, DBCode) GetExerciseGrades(string userid) {
             var lst = new List<ExerciseGradeDisplay>();
-            var dict = new Dictionary<string, (ExerciseGradeDisplay, GradeCalculator)>();
-            SqlConnection cnn  = new SqlConnection(connetionString);
-            try{cnn.Open();} catch {return (null,3,"Connection failed");}
+            var dict = new Dictionary<string, (ExerciseGradeDisplay, GradeCalculator, List<SubmitDate>)>();
             String sql = LongQueries["StudentGrades"];
-            SqlCommand command = new SqlCommand(sql,cnn);
-            command.Parameters.Add("@ID",SqlDbType.VarChar);
-            command.Parameters["@ID"].Value = userid;
-            try{
-                SqlDataReader dataReader = command.ExecuteReader();
-                while(dataReader.Read()){
-                    /*
-                        0 C.course_id,  1 C.course_name, 2 C.course_number, 3 E.exercise_id, 4 E.exercise_name,
-                        5 E.auto_test_grade_value, 6 E.style_test_grade_value, 7 Date 8 TimeSubmitted 9 settings
-                        10 S.auto_grade, 11 S.style_grade 12 manual_final_grade
-                    */
-                    string settings = dataReader.GetValue(9).ToString();
+            SqlParameter[] parameters = { CreateParameter("@ID", SqlDbType.VarChar, userid) };
+            Action<SqlDataReader> readDispaly = (SqlDataReader dataReader) =>
+            {
+                string settings = dataReader.GetValue(8).ToString();
                     var calc = new GradeCalculator {
                         AutoWeight = (int) dataReader.GetValue(5),
                         StyleWeight = (int) dataReader.GetValue(6),
-                        Date = (DateTime) dataReader.GetValue(7),
-                        TimeSubmitted = (DateTime) dataReader.GetValue(8),
+                        TimeSubmitted = (DateTime) dataReader.GetValue(7),
                         Reductions = Exercise.ParseLateSettings(settings),
-                        AutoGrade = (int) dataReader.GetValue(10),
-                        StyleGrade = (int) dataReader.GetValue(11),
-                        ManualGrade = (int) dataReader.GetValue(12)
+                        AutoGrade = (int) dataReader.GetValue(9),
+                        StyleGrade = (int) dataReader.GetValue(10),
+                        ManualGrade = (int) dataReader.GetValue(11)
                     };
                     ExerciseGradeDisplay display = new ExerciseGradeDisplay {
                         CourseID = dataReader.GetValue(0).ToString(),
@@ -258,15 +247,34 @@ namespace Submit_System
                         ExID = dataReader.GetValue(3).ToString(),
                         ExName = dataReader.GetValue(4).ToString()
                     };
-                    dict[display.ExID] = (display, calc);
+                    dict[display.ExID] = (display, calc, new List<SubmitDate>());
                     lst.Add(display);
-                }
-            } catch {
-                try{cnn.Close();}catch{}
-                return (null,3,"Connection failed");
+            };
+            Action<SqlDataReader> readDates = (SqlDataReader dataReader) =>
+            {
+                string id = dataReader.GetValue(0).ToString();
+                var sub = new SubmitDate {
+                    Date = (DateTime) dataReader.GetValue(1),
+                    Reduction = (int) dataReader.GetValue(2),
+                };
+                dict[id].Item3.Add(sub);
+            };
+            try 
+            {
+                Query(LongQueries["StudentGrades"], parameters, readDispaly);
+                parameters[0] = CreateParameter("@ID", SqlDbType.VarChar, userid);
+                Query(LongQueries["StudentGrades2"], parameters, readDates);
             }
-            try{cnn.Close();} catch{return (lst,4,"Connection close failed");}
-            return (lst,0,"OK");   
+            catch
+            {
+                return (null, DBCode.Error);
+            }
+            foreach (var item in dict.Values)
+            {
+                item.Item2.SetDate(item.Item3);
+                item.Item1.Grade = item.Item2.CalculateGrade();
+            }
+            return (lst, DBCode.OK);
         }
         private class Desc : Comparer<string> {
             public override int Compare(string a , string b) {
@@ -948,8 +956,8 @@ namespace Submit_System
         public static DBCode SetCopied(CopyForm copy) {
             string query = $"Update Submission SET has_copied=1 WHERE submission_id IN ANY (@ID1, @ID2)";
             SqlParameter[] parameters = {
-                CreateParameter("@ID1", SqlDbType.VarChar, copy.user1),
-                CreateParameter("@ID2", SqlDbType.VarChar, copy.user2),
+                CreateParameter("@ID1", SqlDbType.VarChar, copy.User1),
+                CreateParameter("@ID2", SqlDbType.VarChar, copy.User2),
                 CreateParameter("@EID", SqlDbType.VarChar, copy.ExerciseID)
             };
             return HandleNonQuery(LongQueries["MarkCopied"], parameters);

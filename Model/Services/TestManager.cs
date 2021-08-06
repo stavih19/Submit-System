@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Text;
+using System;
 namespace Submit_System {
 
     public class TestManager {
@@ -18,7 +20,7 @@ namespace Submit_System {
                 facts.Add("name of language",new TesterFactoryOfTheLanguge());
         */
         static TestManager(){
-            facts.Add("python3",new Python3TesterFactory());
+            facts.Add("python",new Python3TesterFactory());
         }
 
         public static List<string> GetLanguages(){
@@ -82,9 +84,24 @@ namespace Submit_System {
             CheckStyleResult result =checker.GetCheckResult();
             return (result,0,"Ok");
         }
-
-        
-
+        public static Result getTestResults(string submissin_id, int type)
+        {
+            (var tests, int code, string err) = Test(submissin_id, type);
+            switch(code)
+            {
+                case 0: break;
+                case 4: throw new NotImplementedException();
+                default: return null;
+            }
+            CheckStyleResult result;
+            (result, code, err) = Check(submissin_id);
+            switch(code)
+            {
+                case 0: break;
+                default: return null;
+            }
+            return new Result(tests, result);
+        }
     }
 }
 

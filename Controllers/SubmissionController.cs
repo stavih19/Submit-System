@@ -80,19 +80,58 @@ namespace Submit_System.Controllers
         }
         [Route("Student/RunResult")]
         [HttpGet]
-        public ActionResult<string> RunExercise(string submitId)
+        public ActionResult<SubmitOutput> RunExerciseS(string submitId)
         {
             DBCode res = _access.CheckSubmissionPerm(submitId, Role.Student);
             if(res != DBCode.OK)
             {
                 return HandleDatabaseOutput(res);
             }
-            return "Exercise Submitted successfully.";
+            return AutoTest(submitId, 0);
+        }
+        [Route("Checker/RunResult")]
+        [HttpGet]
+        public ActionResult<SubmitOutput> RunExerciseC(string submitId)
+        {
+            DBCode res = _access.CheckSubmissionPerm(submitId, Role.Checker);
+            if(res != DBCode.OK)
+            {
+                return HandleDatabaseOutput(res);
+            }
+            _access.BeginChecking(submitId);
+            return AutoTest(submitId, 1);
+        }
+        [Route("Teacher/RunResult")]
+        [HttpGet]
+        public ActionResult<SubmitOutput> RunExerciseT(string submitId)
+        {
+            DBCode res = _access.CheckSubmissionPerm(submitId, Role.Teacher);
+            if(res != DBCode.OK)
+            {
+                return HandleDatabaseOutput(res);
+            }
+            _access.BeginChecking(submitId);
+            return AutoTest(submitId, 1);
         }
         [Route("Student/NewMessage")]
         [HttpPost]        
-        public ActionResult<int> PostStudentMessage(string chatId, [FromBody] MessageInput msg)
+        public ActionResult<int> PostStudentMessage(string chatId, [FromBody] MessageInput msg, [FromBody] string text)
         { 
+            if(chatId == null)
+            {
+                return BadRequest();
+            }
+            if(msg?.Text == null & msg?.AttachedFile == null)
+            {
+                if(text == null)
+                {
+                    return BadRequest();
+                }
+                msg = new MessageInput {
+                    Text = text,
+                    ChatID = chatId
+                };
+            }
             msg.ChatID = chatId;
             DBCode res = _access.CheckChatPerm(msg.ChatID, Role.Student);
             if(res != DBCode.OK)
@@ -123,8 +162,23 @@ namespace Submit_System.Controllers
         }
         [Route("Teacher/NewMessage")]
         [HttpPost]  
-        public ActionResult<int> PostTeacherMessage(string chatId, [FromBody] MessageInput msg)
+        public ActionResult<int> PostTeacherMessage(string chatId, [FromBody] MessageInput msg, [FromBody] string text)
         {
+            if(chatId == null)
+            {
+                return BadRequest();
+            }
+            if(msg?.Text == null & msg?.AttachedFile == null)
+            {
+                if(text == null)
+                {
+                    return BadRequest();
+                }
+                msg = new MessageInput {
+                    Text = text,
+                    ChatID = chatId
+                };
+            }
             msg.ChatID = chatId;
             DBCode res = _access.CheckSubmissionPerm(msg.ChatID, Role.Teacher);
             if(res != DBCode.OK)
@@ -183,38 +237,7 @@ namespace Submit_System.Controllers
         public ActionResult<SubmitResult> Detach(string submissionId)
         {
             return HandleDatabaseOutput(_access.DetachStudent(submissionId));
-        }
-        private SubmitOutput GetTestResults(SubmitInfo info)
-        {
-            string date = DateTime.Now.ToString("m/dd/yyyy");
-            (List<CheckResult> checks, int c, string msg) = TestManager.Test(info.SubmissionID, 0);
-            StringBuilder builder = new StringBuilder($"Exercise Submitted successfully. Date Submitted: {date}");
-            if(c == 4)
-            {
-                builder.AppendLine("This submission will be checked later.");
-                builder.Replace("\n", "<br>");
-                return new SubmitOutput {
-                    Text = builder.ToString(),
-                    AutoGrade = -1,
-                    StyleGrade = -1
-                };
-            }
-            else if(c != 0)
-            {
-                throw new Exception();
-            }
-            else
-            {
-                Result result = new Result(checks);
-                builder.Append(HttpUtility.HtmlEncode(result.ToString()));
-                builder.Replace("\n", "<br>");
-                return new SubmitOutput {
-                    Text = builder.ToString(),
-                    AutoGrade = (int)Math.Round(result.GetTestsGrade()),
-                    StyleGrade = 0
-                };
-            }
-        } 
+        }      
         [Route("Student/SubmitExercise")]
         [HttpPost]        
         public ActionResult<SubmitResult> Submit(string exerciseId, [FromBody] List<SubmitFile> files, bool final)
@@ -251,14 +274,31 @@ namespace Submit_System.Controllers
                 Debug.WriteLine(e.ToString());
                 return ServerError("There was an issue with uploading the files");
             }
-            SubmitOutput output = GetTestResults(info);
+            Result result;
+            try
+            {   
+                 result = TestManager.getTestResults(info.SubmissionID, 0);
+            }
+            catch
+            {
+                return new SubmitResult {
+                    Message = "Programming langauge not supported by automatic tester",
+                    Files = submittedFiles,
+                    AutoGrade = -1,
+                    StyleGrade = -1
+                };
+            }
+            int styleGrade = result.Check_Style_Result.IsOk ? 100 : 0;
             if(final)
             {
-                _access.MarkSubmitted(info.SubmissionID, info.Path, output.StyleGrade);
+                _access.MarkSubmitted(info.SubmissionID, info.Path, styleGrade);
             }
             return new SubmitResult {
-                Message = output.Text,
-                Files = submittedFiles
+                Message = result.ToString(),
+                Files = submittedFiles,
+                AutoGrade = (int) Math.Round(result.GetTestsGrade()),
+                StyleGrade = styleGrade
+
             };
         }
         [HttpGet]
@@ -471,7 +511,7 @@ namespace Submit_System.Controllers
             {
                 return HandleDatabaseOutput(res);
             }
-            if(IsAnyNull(copy?.user1, copy?.user2, copy?.ExerciseID))
+            if(IsAnyNull(copy?.User1, copy?.User2, copy?.ExerciseID))
             {
                 return BadRequest("fields are null");
             }
@@ -510,6 +550,28 @@ namespace Submit_System.Controllers
         public ActionResult<List<RequestLabelMainPage>> Extensions()
         {
             return HandleDatabaseOutput(_access.GetRequests(ChatType.Extension));
+        }
+        [NonAction]
+        private ActionResult<SubmitOutput> AutoTest(string submissionId, int type)
+        {
+            Result result;
+            try
+            {
+                result = TestManager.getTestResults(submissionId, type);
+            }
+            catch(NotImplementedException)
+            {
+                return new StatusCodeResult(501);
+            }
+            if(result == null)
+            {
+                return ServerError();
+            }
+            return new SubmitOutput {
+                Text = result.ToString(),
+                StyleGrade = result.Check_Style_Result.IsOk ? 100 : 0,
+                AutoGrade = (int) Math.Round(result.GetTestsGrade())
+            };
         }
     }
 }
