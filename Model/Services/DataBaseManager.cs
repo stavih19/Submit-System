@@ -5,10 +5,27 @@ using System.IO;
 
 namespace Submit_System
 {
+    /*
+    * This class is a set of functions that reads or writes to the DB.
+    * Every read function return 3 values: (the value,error number,error messege).
+    * Every write function returns 2 values: (error number,error messege).
+    *
+    * There are several types of errors:
+    * 0. OK , everything is ok , no errors.
+    * 1. The value is already in the DB, trying to add somthing that exists.
+    * 2. Invalid value , the parameter is invalid.
+    * 3. Connection failed, error with the connection to the DB.
+    * 4. Connection close failed, everything was ok, excepts the closing of the connection.
+    *
+    *
+    * Some of this functions are not used or maybe has other functions that replacing them. see also DataBaseManager2.
+     */
     public partial class DataBaseManager{
         private static string connetionString = MyConfig.Configuration.GetSection("ConnectionString").Value;
 
-        private static int WAITING_TO_METARGEL = 0;
+        /*
+        * Reads user fron the DB by it's id.
+        */
         public static (User,int,string) ReadUser(string id) {
             if(!User.IsValidID(id)){
                 return (null,2,"Invalid id");
@@ -39,6 +56,9 @@ namespace Submit_System
             return (u,0,"OK");   
         }
 
+        /*
+        * Adds new user to the DB.
+        */
         public static (int,string) AddUser(User user){
             (User u,int err,String s) = DataBaseManager.ReadUser(user.ID);
             if(u != null){
@@ -66,6 +86,9 @@ namespace Submit_System
             return (0,"OK");
         }
 
+        /*
+        * Reads course fron the DB by it's id.
+        */
         public static (Course,int,string) ReadCourse(string id) {
             SqlConnection cnn  = new SqlConnection(connetionString);
             try{cnn.Open();} catch {return (null,3,"Connection failed");}
@@ -95,6 +118,9 @@ namespace Submit_System
             return (c,0,"OK");   
         }
 
+        /*
+        * Adds new course to the DB.
+        */
         public static (int,string) AddCourse(Course course){
             (Course c,int err,String s) = DataBaseManager.ReadCourse(course.ID);
             if(c != null){
@@ -124,6 +150,9 @@ namespace Submit_System
             return (0,"OK");
         }
 
+        /*
+        * Checks wether a students is in a specific course.
+        */
         public static (bool,int,string) IsStudentInCourse(string course_id,string student_id){
             SqlConnection cnn  = new SqlConnection(connetionString);
             try{cnn.Open();} catch {return (false,3,"Connection failed");}
@@ -147,6 +176,9 @@ namespace Submit_System
             return (true,0,"OK"); 
         }
 
+        /*
+        * Adds student to course.
+        */
         public static (int,string) AddStudentToCourse(string course_id,string student_id){
             (bool exist,int err,String s) = DataBaseManager.IsStudentInCourse(course_id,student_id);
             if(exist){
@@ -173,6 +205,9 @@ namespace Submit_System
             return (0,"OK");
         }
 
+        /*
+        * Reads list of courses of specific student by the student's id.
+        */
         public static (List<string>,int,string) ReadCoursesIdOfStudent(string student_id){
             List<string> lst = new List<string>();
             SqlConnection cnn  = new SqlConnection(connetionString);
@@ -194,6 +229,9 @@ namespace Submit_System
             return (lst,0,"OK");   
         }
 
+        /*
+        * Reads list of students of specific course by the course id.
+        */
         public static (List<string>,int,string) ReadStudentsIdOfCourse(string course_id){
             List<string> lst = new List<string>();
             SqlConnection cnn  = new SqlConnection(connetionString);
@@ -215,6 +253,9 @@ namespace Submit_System
             return (lst,0,"OK");   
         }
 
+        /*
+        * Reads exercise fron the DB by it's id.
+        */
         public static (Exercise,int,string) ReadExercise(string id) {
             SqlConnection cnn  = new SqlConnection(connetionString);
             try{cnn.Open();} catch {return (null,3,"Connection failed");}
@@ -255,6 +296,9 @@ namespace Submit_System
             return (ex,0,"OK");   
         }
 
+        /*
+        * Adds exercise to the DB.
+        */
         public static (int,string) AddExercise(Exercise exercise){
             (Exercise e,int err,String s) = DataBaseManager.ReadExercise(exercise.ID);
             if(e != null){
@@ -303,6 +347,9 @@ namespace Submit_System
             return (0,"OK");
         }
 
+        /*
+        * Reads list of exercises of specific course by the course id.
+        */
         public static (List<string>,int,string) ReadExercisesIdOfCourse(string course_id){
             List<string> lst = new List<string>();
             SqlConnection cnn  = new SqlConnection(connetionString);
@@ -324,6 +371,9 @@ namespace Submit_System
             return (lst,0,"OK");   
         }
 
+        /*
+        * Reads map of time-ids and their time of specific exercise by the exercise.
+        */
         public static (Dictionary<int,DateTime>,int,string) ReadDatseOfExercise(string exercise_id){
             Dictionary<int,DateTime> dict = new Dictionary<int, DateTime>();
             SqlConnection cnn  = new SqlConnection(connetionString);
@@ -349,6 +399,9 @@ namespace Submit_System
             return (dict,0,"OK");   
         }
 
+        /*
+        * Adds new submission date to excercise.
+        */
         public static (int,string) AddDateToExercise(string exercise_id,int date_id,DateTime date){
             (Dictionary<int,DateTime> d,int err,String s) = DataBaseManager.ReadDatseOfExercise(exercise_id);
             if(d != null){
@@ -376,6 +429,9 @@ namespace Submit_System
             return (0,"OK");
         }
 
+        /*
+        * Reads submission fron the DB by it's id.
+        */
         public static (Submission,int,string) ReadSubmission(string id) {
             SqlConnection cnn  = new SqlConnection(connetionString);
             try{cnn.Open();} catch {return (null,3,"Connection failed");}
@@ -410,10 +466,18 @@ namespace Submit_System
             try{cnn.Close();} catch{return (sub,4,"Connection close failed");}
             return (sub,0,"OK");   
         }
+        
+        /*
+        * function that used to deal with Nulls in the DB.
+        */
         public static Object OrNull(Object obj)
         {
             return obj ?? DBNull.Value;
         }
+
+        /*
+        * Adds submission to the DB.
+        */
         public static (int,string) AddSubmission(Submission submission){
             (Submission sub,int err,String s) = DataBaseManager.ReadSubmission(submission.ID);
             if(sub != null){
@@ -453,6 +517,9 @@ namespace Submit_System
             return (0,"OK");
         }
 
+        /*
+        * Reads type of submitter in submission.
+        */
         public static (int,int,string) ReadTypeOfStudentInSubmission(string submission_id,string student_id){
             int type;
             SqlConnection cnn  = new SqlConnection(connetionString);
@@ -478,6 +545,10 @@ namespace Submit_System
             return (type,0,"OK"); 
         }
 
+        /*
+        * Adds student to submission
+        * There are several types of submitters.
+        */
         public static (int,string) AddStudentToSubmission(string submission_id,string student_id,int type,string exercise_id){
             (int t,int err,String s) = DataBaseManager.ReadTypeOfStudentInSubmission(submission_id,student_id);
             if(t>0){
@@ -508,6 +579,9 @@ namespace Submit_System
             return (0,"OK");
         }
 
+        /*
+        * Reads submission and type of submitter of student in exercise.
+        */
         public static ((string,int),int,string) ReadSubmissionIdAndTypeOfStudentInExercise(string student_id,string exercise_id){
             string submission_id;
             int type;
@@ -535,6 +609,9 @@ namespace Submit_System
             return ((submission_id,type),0,"OK");   
         }
 
+        /*
+        * Reads all the students and their type of submitter of submission.
+        */
         public static (List<(string,int)>,int,string) ReadStudentsIdAndTypeOfSubmission(string submission_id){
             List<(string,int)> lst = new List<(string,int)>();
             SqlConnection cnn  = new SqlConnection(connetionString);
@@ -556,6 +633,9 @@ namespace Submit_System
             return (lst,0,"OK");   
         }
 
+        /*
+        * Updates the data of an excercise.
+        */
         public static (int,string) UpdateExercise(Exercise exercise){
             (Exercise e,int err,String s) = DataBaseManager.ReadExercise(exercise.ID);
             if(err == 3){
@@ -605,27 +685,9 @@ namespace Submit_System
             return (0,"OK");
         }
         
-        public static (List<string>,int,string) ReadJoinRequestsOfStudent(string student_id){
-            List<string> lst = new List<string>();
-            SqlConnection cnn  = new SqlConnection(connetionString);
-            try{cnn.Open();} catch {return (null,3,"Connection failed");}
-            String sql = "SELECT submission_id FROM Submitters WHERE user_id = @ID AND submitter_type=3;";
-            SqlCommand command = new SqlCommand(sql,cnn);
-            command.Parameters.Add("@ID",System.Data.SqlDbType.NVarChar);
-            command.Parameters["@ID"].Value = student_id;
-            try{
-                SqlDataReader dataReader = command.ExecuteReader();
-                while(dataReader.Read()){
-                    lst.Add(dataReader.GetValue(0).ToString());
-                }
-            } catch {
-                try{cnn.Close();}catch{}
-                return (null,3,"Connection failed");
-            }
-            try{cnn.Close();} catch{return (lst,4,"Connection close failed");}
-            return (lst,0,"OK");   
-        }
-    
+        /*
+        * Deletes student from submission.
+        */
         public static (int,string) DeleteStudentFromSubmission(string student_id,string submission_id){
             SqlConnection cnn  = new SqlConnection(connetionString);
             try{cnn.Open();} catch {return (3,"Connection failed");}
@@ -644,6 +706,10 @@ namespace Submit_System
             try{cnn.Close();} catch{return (4,"Connection close failed");}
             return (0,"OK");
         }
+        
+        /*
+        * Updates the data of a submission.
+        */
         public static (int,string) UpdateSubmission(Submission submission){
             (Submission sb,int err,String s) = DataBaseManager.ReadSubmission(submission.ID);
             if(err == 3){
@@ -692,6 +758,9 @@ namespace Submit_System
             return (0,"OK");
         }
 
+        /*
+        * Reads chat from the DB by it's id.
+        */
         public static (Chat,int,string) ReadChat(string id) {
             SqlConnection cnn  = new SqlConnection(connetionString);
             try{cnn.Open();} catch {return (null,3,"Connection failed");}
@@ -720,13 +789,16 @@ namespace Submit_System
             return (ch,0,"OK");   
         }
 
+        /*
+        * Adds chat to the DB.
+        */
         public static (int,string) AddChat(Chat chat){
             (Chat c,int err,String s) = DataBaseManager.ReadChat(chat.ID);
             if(err == 3){
                 return (err,s);
             }
             if(c != null){
-                return (5,"Chat is already exists");
+                return (1,"Chat is already exists");
             }
             SqlConnection cnn  = new SqlConnection(connetionString);
             try{cnn.Open();} catch {return (3,"Connection failed");}
@@ -750,6 +822,9 @@ namespace Submit_System
             return (0,"OK");
         }
 
+        /*
+        * Reads message from the DB by it's id.
+        */
         public static (MessageData,int,string) ReadMessage(int id) {
             SqlConnection cnn  = new SqlConnection(connetionString);
             try{cnn.Open();} catch {return (null,3,"Connection failed");}
@@ -779,6 +854,9 @@ namespace Submit_System
             return (msg,0,"OK");   
         }
 
+        /*
+        * Adds message to the DB.
+        */
         public static (int, int,string) AddMessage(Message msg){
             SqlConnection cnn  = new SqlConnection(connetionString);
             int id = -1;
@@ -812,6 +890,9 @@ namespace Submit_System
             return (id, 0,"OK");
         }
 
+        /*
+        * Updates the data of a chat.
+        */
         public static (int,string) UpdateChat(Chat chat){
             (Chat cd,int err,String s) = DataBaseManager.ReadChat(chat.ID);
             if(err == 3){
@@ -842,6 +923,9 @@ namespace Submit_System
             return (0,"OK");
         }
 
+        /*
+        * Updates the data of a message.
+        */
         public static (int,string) UpdateMessage(MessageData msg,int id){
             (MessageData m,int err,String s) = DataBaseManager.ReadMessage(id);
             if(err == 3){
@@ -881,6 +965,9 @@ namespace Submit_System
             return (0,"OK");
         }
 
+        /*
+        * Reads list of message ids from the DB by their chat id.
+        */
         public static (List<int>,int,string) ReadMessagesIdOfChat(string chat_id){
             List<int> lst = new List<int>();
             SqlConnection cnn  = new SqlConnection(connetionString);
@@ -902,6 +989,9 @@ namespace Submit_System
             return (lst,0,"OK");   
         }
 
+        /*
+        * Reads list of ecercise ids and their names from the DB by their course id.
+        */
         public static (List<(string,string)>,int,string) ReadExercisesIdAndNamesOfCourse(string course_id){
             List<(string,string)> lst = new List<(string,string)>();
             SqlConnection cnn  = new SqlConnection(connetionString);
@@ -923,6 +1013,9 @@ namespace Submit_System
             return (lst,0,"OK");   
         }
 
+        /*
+        * Reads list of messages from the DB by their chat id.
+        */
         public static (List<Message>,int,string) ReadMessagesOfChat(string chat_id){
             List<Message> lst = new List<Message>();
             SqlConnection cnn  = new SqlConnection(connetionString);
@@ -933,16 +1026,6 @@ namespace Submit_System
             command.Parameters["@ID"].Value = chat_id;
             try{
                 SqlDataReader dataReader = command.ExecuteReader();
-                // message_id int IDENTITY(1,1) ,
-                // chat_id nvarchar(60),
-                // message_time DATETIME DEFAULT GETDATE(),
-                // attached_file varchar(128),
-                // message_text ntext,
-                // sender_user_id nvarchar(10),
-                // message_status int,
-                // course_id nvarchar(16),
-                // from_teacher int,
-                // sender_name nvarchar(64),
                 while(dataReader.Read()) {
                     var data = new Message {
                         ID = (int) dataReader.GetValue(0),
@@ -965,6 +1048,9 @@ namespace Submit_System
             return (lst,0,"OK");   
         }
 
+        /*
+        * Checks wether a user is a teacher in spesific course.
+        */
         public static (bool,int,string) IsMetargelInCourse(string course_id,string metargel_id){
             SqlConnection cnn  = new SqlConnection(connetionString);
             try{cnn.Open();} catch {return (false,3,"Connection failed");}
@@ -988,6 +1074,9 @@ namespace Submit_System
             return (true,0,"OK"); 
         }
 
+        /*
+        * Adds teacher to course.
+        */
         public static (int,string) AddMetargelToCourse(string course_id,string metargel_id){
             (bool exist,int err,String s) = DataBaseManager.IsMetargelInCourse(course_id,metargel_id);
             if(exist){
@@ -1014,6 +1103,9 @@ namespace Submit_System
             return (0,"OK");
         }
 
+        /*
+        * Reads list of courses of specific teacher by the teacher's id.
+        */
         public static (List<string>,int,string) ReadCoursesIdOfMetargel(string metargel_id){
             List<string> lst = new List<string>();
             SqlConnection cnn  = new SqlConnection(connetionString);
@@ -1035,6 +1127,10 @@ namespace Submit_System
             return (lst,0,"OK");   
         }
 
+
+        /*
+        * Reads list of teachers of specific course by the course id.
+        */
         public static (List<string>,int,string) ReadMetargelsIdOfCourse(string course_id){
             List<string> lst = new List<string>();
             SqlConnection cnn  = new SqlConnection(connetionString);
@@ -1056,6 +1152,9 @@ namespace Submit_System
             return (lst,0,"OK");   
         }
 
+        /*
+        * Reading for each student in excercise his submission and submitter type.
+        */
         public static (Dictionary<string,(string,int)>,int,string) ReadStudentsSubmissionsIdOfExercise(string exercise_id){
             Dictionary<string,(string,int)> dct = new Dictionary<string,(string,int)>();
             SqlConnection cnn  = new SqlConnection(connetionString);
@@ -1077,34 +1176,9 @@ namespace Submit_System
             return (dct,0,"OK");   
         }
 
-        public static (List<MessageData>,int,string) ReadNewMessagesOfCourse(string course_id){
-            List<MessageData> lst = new List<MessageData>();
-            SqlConnection cnn  = new SqlConnection(connetionString);
-            try{cnn.Open();} catch {return (null,3,"Connection failed");}
-            String sql = "SELECT * FROM Message WHERE course_id = @ID AND message_status = "+WAITING_TO_METARGEL+" ORDER BY message_time;";
-            SqlCommand command = new SqlCommand(sql,cnn);
-            command.Parameters.Add("@ID",System.Data.SqlDbType.NVarChar);
-            command.Parameters["@ID"].Value = course_id;
-            try{
-                SqlDataReader dataReader = command.ExecuteReader();
-                while(dataReader.Read()){
-                    lst.Add(new MessageData(dataReader.GetValue(1).ToString(),
-                        (DateTime)dataReader.GetValue(2),
-                        (int)dataReader.GetValue(3),
-                        dataReader.GetValue(4).ToString(),
-                        dataReader.GetValue(5).ToString(),
-                        (int)dataReader.GetValue(6),
-                        dataReader.GetValue(7).ToString())
-                        );
-                }
-            } catch {
-                try{cnn.Close();}catch{}
-                return (null,3,"Connection failed");
-            }
-            try{cnn.Close();} catch{return (lst,4,"Connection close failed");}
-            return (lst,0,"OK");   
-        }
-
+        /*
+        * Reads list of tests of specific exercise by the exercise id.
+        */
         public static (List<Test>,int,string) ReadTestsOfExercise(string exercise_id){
             List<Test> lst = new List<Test>();
             SqlConnection cnn  = new SqlConnection(connetionString);
@@ -1138,6 +1212,9 @@ namespace Submit_System
             return (lst,0,"OK");
         }
 
+        /*
+        * Deletes the tests of an excercise from the DB.
+        */
         public static (int,string) DeleteTestsOfExercise(string exercise_id){
             SqlConnection cnn  = new SqlConnection(connetionString);
             try{cnn.Open();} catch {return (3,"Connection failed");}
@@ -1154,6 +1231,10 @@ namespace Submit_System
             try{cnn.Close();} catch{return (4,"Connection close failed");}
             return (0,"OK");
         }
+
+        /*
+        * Adds test to the DB.
+        */
         public static (int, int,string) AddTest(Test test){
             SqlConnection cnn  = new SqlConnection(connetionString);
             int id = -1;
