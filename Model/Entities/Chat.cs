@@ -6,7 +6,7 @@ namespace Submit_System {
     public class Chat {
         public string ID {get; set; }
         public ChatType Type { get; set; }
-        public bool IsClosed { get; set; } = false;
+        public bool IsClosed { get => State != ChatState.Open; }
         public ChatState State { get; set; } = ChatState.Open;
         [JsonIgnore]
         public string SubmissionID { get; set; }

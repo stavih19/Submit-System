@@ -12,7 +12,7 @@ namespace Submit_System
 {
     public class UserController : AbstractController 
     {  
-        public const string PASSWORD_LINK = "https://localhost:5000/SetPassword?token={0}";
+        public const string PASSWORD_LINK = "http://localhost:5000?token={0}";
         private readonly TokenStorage _storage;
         public UserController(TokenStorage storage, DatabaseAccess access) : base(access)
         {
@@ -26,11 +26,12 @@ namespace Submit_System
             {  
                 return BadRequest();
             }
-            var result = _access.AuthenticateUser(login.Username, login.Password);
+            bool isAdmin;
+            var result = _access.AuthenticateUser(login.Username, login.Password, out isAdmin);
             if(result.Item1 == null) {
                 return NotFound();
             }
-            string id = _storage.CreateToken(login.Username, false);
+            string id = _storage.CreateToken(login.Username, isAdmin);
             var options = new CookieOptions {
                 HttpOnly = true,
                 SameSite = SameSiteMode.None, // Only to make testing easier
@@ -115,6 +116,13 @@ namespace Submit_System
             }
             return PasswordRequest(id, user.Email) ? Ok() : ServerError();
         }
+        [HttpPost]
+        [Route("User/CheckPasswordToken")]
+        public ActionResult CheckPasswordToken(string token)
+        {
+            DBCode code = _access.CheckPasswordToken(token).Item2;
+            return HandleDatabaseOutput(code);
+        }
         [NonAction]
         private bool PasswordRequest(string userID, string email)
         {
@@ -132,8 +140,10 @@ namespace Submit_System
         }
         [HttpPost]
         [Route("Admin/AddUser")]
+        [ServiceFilter(typeof(AuthFilter))]
         public IActionResult AddUser([FromBody] User user)
         {
+            if(!_access.IsAdmin) { return Forbid(); }
             user.PasswordHash = null;
             DBCode code = _access.AddUser(user);
             if(code != DBCode.OK)
@@ -142,6 +152,18 @@ namespace Submit_System
             }
             bool success = PasswordRequest(user.ID, user.Email);
             return success ? Ok() : ServerError();
+        }
+        [HttpPost]
+        [Route("Admin/AddUsers")]
+        [ServiceFilter(typeof(AuthFilter))]
+        public IActionResult AddUsers([FromBody] string content)
+        {
+            string path = FileUtils.GetTempFileName(".csv");
+            System.IO.File.WriteAllText(path, content);
+            content = null;
+            var a = ExcelLoader.ReadUsersFromFile(path, _access);
+            System.IO.File.Delete(path);
+            return Ok();
         }
     }  
 }

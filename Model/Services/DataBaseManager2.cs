@@ -523,8 +523,7 @@ namespace Submit_System
                    Chat chat = new Chat {
                         ID = dataReader.GetValue(0).ToString(),
                         Type = (ChatType) dataReader.GetValue(1),
-                        State = (ChatState) dataReader.GetValue(2),
-                        IsClosed = (int) dataReader.GetValue(2) == 1,
+                        State = (ChatState) dataReader.GetValue(2)
                     };
                     chats[chat.Type] = chat;
                 }
@@ -815,6 +814,7 @@ namespace Submit_System
                     StudentID = dataReader.GetValue(1).ToString(),
                     StudentName = dataReader.GetValue(2).ToString(),
                     Message = dataReader.GetValue(3).ToString(),
+                    State = (ChatState) dataReader.GetValue(4),
                     Type = type
                 }
             );
@@ -848,16 +848,8 @@ namespace Submit_System
             SqlParameter[] parameters =  { 
                 CreateParameter("@ID",System.Data.SqlDbType.Int, dateId)
             };
-            (int group, DBCode code) = SingleRecordQuery(sql, parameters, (SqlDataReader reader) => reader.GetInt32(0));
-            if(code != DBCode.OK)
-            {
-                return code;
-            }
-            if(group == 0)
-            {
-                return DBCode.NotAllowed;
-            }
-            return DBCode.OK;
+            return HandleNonQuery(sql, parameters);
+
         }
        public static (int, DBCode) AddDate(SubmitDate date)
         {
@@ -880,23 +872,14 @@ namespace Submit_System
             return (id, DBCode.OK);
         }
         public static DBCode UpDate(SubmitDate date){
-            string sql = LongQueries["UpDate"];
+            string sql = LongQueries["UpdateDate"];
             SqlParameter[] parameters =  { 
                 CreateParameter("@ID",System.Data.SqlDbType.Int, date.ID),
                 CreateParameter("@GR",System.Data.SqlDbType.Int, date.Group),
                 CreateParameter("@DATE",System.Data.SqlDbType.Date, date.Date),
                 CreateParameter("@RE",System.Data.SqlDbType.Int, date.Reduction)
             };
-            (int group, DBCode code) = SingleRecordQuery(sql, parameters, (SqlDataReader reader) => reader.GetInt32(0));
-            if(code != DBCode.OK)
-            {
-                return code;
-            }
-            if(group == 0)
-            {
-                return DBCode.NotAllowed;
-            }
-            return DBCode.OK;
+            return HandleNonQuery(sql, parameters);
         }
         public static (List<TeacherDateDisplay>,DBCode) GetDatseOfExercise(string exercise_id){
             List<TeacherDateDisplay> lst;
@@ -1032,8 +1015,8 @@ namespace Submit_System
          public static (int,string) UpdateTest(Test test){
             SqlConnection cnn  = new SqlConnection(connetionString);
             try{cnn.Open();} catch {return (3,"Connection failed");}
-            String sql = @"UPDATE Test SET [weight]=@WEIGHT, input=@INPUT, expected_output=@EXPUT, output_file_name=@E,
-                            arguments_string=@ARGS, timeout_in_seconds=@TIME, main_source_file=@MAIN, [type]=@TYPE) WHERE test_id=@TID";
+            String sql = @"UPDATE Test SET [weight]=@WEIGHT, input=@INPUT, expected_output=@EOUTPUT, output_file_name=@OFNAME,
+                            arguments_string=@ARGS, timeout_in_seconds=@TIMEOUT, main_source_file=@MAIN, [type]=@TYPE WHERE test_id=@TID";
             SqlCommand command = new SqlCommand(sql,cnn);
             command.Parameters.Add("@TID",System.Data.SqlDbType.Int);
             command.Parameters["@TID"].Value = test.ID;
@@ -1046,7 +1029,7 @@ namespace Submit_System
             command.Parameters.Add("@TIMEOUT",System.Data.SqlDbType.Int);
             command.Parameters.Add("@MAIN",System.Data.SqlDbType.NVarChar);
             command.Parameters["@TYPE"].Value = test.Type;
-            command.Parameters["@WEIGHT"].Value = test.Value;
+            command.Parameters["@WEIGHT"].Value = test.Weight;
             command.Parameters["@INPUT"].Value = test.Input;
             command.Parameters["@EOUTPUT"].Value = test.ExpectedOutput;
             command.Parameters["@OFNAME"].Value = test.OutputFileName;
@@ -1113,6 +1096,13 @@ namespace Submit_System
             calc.SetDate(dates);
             return(calc.CalculateGrade(), DBCode.OK);
 
-        }                
+        }   
+        public static (bool, DBCode) IsAdmin(string userId)
+        {
+            string sql = "SELECT 1 FROM Managers WHERE user_id = @ID";
+            SqlParameter[] parameters = { CreateParameter("@ID", SqlDbType.VarChar, userId) };
+            return SingleRecordQuery(sql, parameters, (SqlDataReader reader) => reader.HasRows);
+        }
+        
     }
 }

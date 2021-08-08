@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Configuration;
 namespace Submit_System
 {
-    class MyConfig
+    public class MyConfig
     {
         public static IConfigurationRoot Configuration { get; }
         static MyConfig()

@@ -7,6 +7,8 @@ namespace Submit_System {
         public string StudentName {get; set; }
         public string Message {get; set;}
         public ChatType Type { get; set; }
+        public ChatState State { get; set; }
+        public bool IsClosed { get => State != ChatState.Open; }
     }
     public class RequestLabelMainPage {
         public string CourseID { get; set; }

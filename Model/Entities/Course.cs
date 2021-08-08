@@ -2,7 +2,7 @@ namespace Submit_System {
     public class Course {
 
         public static  string GenerateID(int number,int year){
-            return number + "_" + year + "_";
+            return number + "_" + year;
         }
         public void GenerateID()
         {

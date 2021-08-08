@@ -4,7 +4,6 @@ using System.Collections.Generic;
 namespace Submit_System {
     public class SubmitDate {
         public DateTime Date { get; set;}
-        [JsonIgnore]
         public int ID { get; set; }
         public string ExerciseID { get; set; }
         public int Group {get; set; }

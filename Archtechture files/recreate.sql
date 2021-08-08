@@ -103,8 +103,7 @@ CREATE TABLE Message(
     sender_name nvarchar(64),
 );
 CREATE TABLE Managers(
-    id nvarchar(32),
-    password_hash nvarchar(64)
+    id nvarchar(32)
 );
 
 CREATE TABLE Test(
@@ -115,7 +114,7 @@ CREATE TABLE Test(
     output_file_name nvarchar(32),
     arguments_string ntext,
     timeout_in_seconds int,
-    main_sourse_file nvarchar(32),
+    main_source_file nvarchar(32),
     additional_files_location nvarchar(64),
     exercise_id nvarchar(48),
     [type] int

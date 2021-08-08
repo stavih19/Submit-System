@@ -133,9 +133,9 @@ namespace Submit_System {
                     }
                 }
                 if(errors.Length > 0){
-                    this.results.Add(new CheckResult(test.Input,output,test.ExpectedOutput,test.Value,time,errors));
+                    this.results.Add(new CheckResult(test.Input,output,test.ExpectedOutput,test.Weight,time,errors));
                 }else{
-                    this.results.Add(new CheckResult(test.Input,output,test.ExpectedOutput,test.Value,time));
+                    this.results.Add(new CheckResult(test.Input,output,test.ExpectedOutput,test.Weight,time));
                 }
 
                 Directory.Delete(directory_path,true);

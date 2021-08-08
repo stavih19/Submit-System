@@ -452,12 +452,42 @@ namespace Submit_System.Controllers
             {
                 return BadRequest();
             }
-            DBCode res = _access.CheckChatPerm(chatid, Role.Student);
+            DBCode res = _access.CheckChatPerm(chatid, Role.Teacher);
             if(res != DBCode.OK)
             {
                 return HandleDatabaseOutput(res);
             }
             return HandleDatabaseOutput(_access.CloseChat(chatid));
+        }
+        [HttpPost]
+        [Route("Teacher/AcceptAppeal")]
+        public ActionResult<SubmitFile> AcceptAppeal(string chatid)
+        {
+            if(chatid == null)
+            {
+                return BadRequest();
+            }
+            DBCode res = _access.CheckChatPerm(chatid, Role.Teacher);
+            if(res != DBCode.OK)
+            {
+                return HandleDatabaseOutput(res);
+            }
+            return HandleDatabaseOutput(_access.AcceptAppeal(chatid));
+        }
+        [HttpPost]
+        [Route("Teacher/AcceptExtension")]
+        public ActionResult<SubmitFile> Extend(string chatid, [FromBody] SubmitDate date)
+        {
+            if(chatid == null)
+            {
+                return BadRequest();
+            }
+            DBCode res = _access.CheckChatPerm(chatid, Role.Teacher);
+            if(res != DBCode.OK)
+            {
+                return HandleDatabaseOutput(res);
+            }
+            return HandleDatabaseOutput(_access.AcceptExtension(chatid, date));
         }
         [HttpPost]
         [Route("Teacher/CopyCheck")]

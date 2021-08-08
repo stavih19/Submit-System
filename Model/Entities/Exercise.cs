@@ -19,7 +19,7 @@ namespace Submit_System {
         public int MaxSubmitters { get; set; }
         [JsonIgnore]
         public string FilesLocation { get; set; }
-        public int[] Reductions { get; set; }
+        public int[] Reductions { get; set; } = new int[0];
         [JsonIgnore]
          public string LateSubmissionSettings {
             set => Reductions = ParseLateSettings(value);
@@ -47,5 +47,15 @@ namespace Submit_System {
         public int MossMaxTimesMatch { get; set; } = MossClient.DEF_MAX_FOUND;
         public string MossLink { get; set; }
         public List<string> Filenames { get; set; }
+
+        public bool CheckInsertValidity()
+        {
+            return !(ProgrammingLanguage == null || AutoTestGradeWeight + StyleTestGradeWeight > 100
+                || Name == null || MaxSubmitters < 1);
+        }
+        public bool CheckUpdateValidity()
+        {
+            return !(ID == null || !CheckInsertValidity());
+        }
     }
 }

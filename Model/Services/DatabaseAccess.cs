@@ -211,8 +211,9 @@ namespace Submit_System {
         {
             return code != 0 && code != 4;
         }
-        public (string, DBCode) AuthenticateUser(string id, string password)
+        public (string, DBCode) AuthenticateUser(string id, string password, out bool isAdmin)
         {
+            isAdmin = false;
             (User user, DBCode code) = Convert(DataBaseManager.ReadUser(id));
             if(CheckError(code))
             {
@@ -222,6 +223,7 @@ namespace Submit_System {
             {
                 return (user.Name, code);
             }
+            (isAdmin, code) = DataBaseManager.IsAdmin(id);
             return (null, DBCode.NotFound);
         }
         public (string, DBCode) GetSubmissionDirectory(string submisisonId)
@@ -260,7 +262,15 @@ namespace Submit_System {
            }
            if(submission.SubmissionStatus != (int) SubmissionState.Unsubmitted && !exer.MultipleSubmission)
            {
-               return Error<SubmitInfo>("Resubmission is not allowed for this assignment", DBCode.NotAllowed);
+               ErrorString = "Resubmission is not allowed for this assignment";
+               return (null, DBCode.NotAllowed);
+           }
+           (var dates, DBCode code3) = DataBaseManager.GetStudentExerciseDates(submission.SubmissionDateId, exerciseId);
+           bool canSubmit = dates.Select((date) => date.Date.Date > DateTime.Now.Date).Any();
+           if(!canSubmit)
+           {
+                ErrorString = "It's too late for you to submit this";
+                return (null, DBCode.NotAllowed);
            }
            string path = Path.Combine("Courses", exer.CourseID, "Exercises", exer.Name, "Submissions", UserID);
            CacheSubmissionDirectory(submissionId, path);
@@ -501,7 +511,7 @@ namespace Submit_System {
         }
         private (string, DBCode) AddRequestChat(string submissionId, ChatType type)
         {
-            var chat = new Chat(submissionId, ChatType.Appeal);
+            var chat = new Chat(submissionId, type);
             DBCode code = Convert(DataBaseManager.AddChat(chat));
             bool isExt = (chat.Type == (int) ChatType.Extension);
             if(!CheckError(code))
@@ -612,16 +622,19 @@ namespace Submit_System {
             {
                 return code;
             }
-            (int dateid, DBCode code2) = DataBaseManager.AddDate(date);
+            (Submission submission, DBCode code2) = Convert(DataBaseManager.ReadSubmission(chat.SubmissionID));
             if(CheckError(code2))
             {
                 return code2;
             }
-            (Submission submission, DBCode code3) = Convert(DataBaseManager.ReadSubmission(chat.SubmissionID));
+            date.Group = -1;
+            date.ExerciseID = submission.ExerciseID;
+            (int dateid, DBCode code3) = DataBaseManager.AddDate(date);
             if(CheckError(code3))
             {
                 return code3;
             }
+            submission.SubmissionDateId = dateid;
             DBCode code4 = Convert(DataBaseManager.UpdateSubmission(submission));
             if(CheckError(code4))
             {
@@ -675,7 +688,7 @@ namespace Submit_System {
         }
         public DBCode UpdateDate(SubmitDate date)
         {
-            return DataBaseManager.AddDate(date).Item2;
+            return DataBaseManager.UpDate(date);
         }
         public DBCode DeleteDate(int dateId)
         {
@@ -696,10 +709,12 @@ namespace Submit_System {
             var appealChecked = dict[appealCheckedStr];
             dict.Remove(appealCheckedStr);
             dict[SubmissionState.Checked.ToString()].AddRange(appealChecked);
-            dict.Values.ToList().ForEach(list =>
-                list.ForEach(label =>
-                    label.CheckState = GetCheckState(label.CurrentChecker)
-                )
+            dict.Values.ToList().ForEach(list => {
+                    list.ForEach(label =>
+                        label.CheckState = GetCheckState(label.CurrentChecker)
+                    );
+                    list.OrderBy(label => (int) label.CheckState);
+            }
             );
             
             return (dict, code);
@@ -727,7 +742,7 @@ namespace Submit_System {
         }
         private CheckState GetCheckState(string checkerId)
         {
-            if(checkerId == null)
+            if(String.IsNullOrEmpty(checkerId))
             {
                 return CheckState.NotBeingChecked;
             }

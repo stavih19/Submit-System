@@ -35,8 +35,7 @@ namespace Submit_System
                 ["python"] = new string[] { "*.py" },
                 ["javascript"] = new string[] { "*.js" },
                 ["perl"] = new string[] { "*.pl" },
-            };
-            
+            }; 
         }
         public static string[] GetExts(string language)
         {
@@ -296,25 +295,29 @@ namespace Submit_System
             }
             return path;
         }
-       public static void CopyDirectory(string src, string dist)
-    {
-        DirectoryInfo dir = new DirectoryInfo(src);
-
-        DirectoryInfo[] dirs = dir.GetDirectories();
-        
-        Directory.CreateDirectory(dist);        
-
-        FileInfo[] files = dir.GetFiles();
-        foreach (FileInfo file in files)
+        public static void CopyDirectory(string src, string dist)
         {
-            string tempPath = Path.Combine(dist, file.Name);
-            file.CopyTo(tempPath, true);
+            DirectoryInfo dir = new DirectoryInfo(src);
+
+            DirectoryInfo[] dirs = dir.GetDirectories();
+            
+            Directory.CreateDirectory(dist);        
+
+            FileInfo[] files = dir.GetFiles();
+            foreach (FileInfo file in files)
+            {
+                string tempPath = Path.Combine(dist, file.Name);
+                file.CopyTo(tempPath, true);
+            }
+            foreach (DirectoryInfo subdir in dirs)
+            {
+                string tempPath = Path.Combine(dist, subdir.Name);
+                CopyDirectory(subdir.FullName, tempPath);
+            }
         }
-        foreach (DirectoryInfo subdir in dirs)
+        public static string GetTempFileName(string ext)
         {
-            string tempPath = Path.Combine(dist, subdir.Name);
-            CopyDirectory(subdir.FullName, tempPath);
+            return Path.GetTempPath() + Guid.NewGuid().ToString() + ext;
         }
-    }
     }
 }

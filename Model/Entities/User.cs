@@ -13,7 +13,6 @@ namespace Submit_System {
         public string PasswordHash{get;set;} = null;
         public string Name{get;set;}
         public string Email{get;set;}
-
         public static bool IsValidID(string id){
             return (id.Length <= 10);
         }

@@ -457,7 +457,7 @@ namespace Submit_System
                 sub.SubmissionDateId = (int)dataReader.GetValue(8);
                 sub.TimeSubmitted = (DateTime)dataReader.GetValue(9);
                 sub.HasCopied = (int)dataReader.GetValue(10) == 1;
-                sub.CurrentCheckerId = dataReader.GetValue(11).ToString();
+                sub.CurrentCheckerId = dataReader.GetValue(11)?.ToString();
                 sub.Filenames = FileUtils.GetRelativePaths(sub.FilesLocation);
             } catch {
                 try{cnn.Close();}catch{}
@@ -646,17 +646,14 @@ namespace Submit_System
             }
             SqlConnection cnn  = new SqlConnection(connetionString);
             try{cnn.Open();} catch {return (3,"Connection failed");}
-            String sql = @"UPDATE Exercise SET course_id=@CID,original_exercise_id=@OEID,
-                        max_submitters=@MAX,test_files_location=@FILES,late_submission_settings=@LATEST,programming_language=@LANG,
+            String sql = @"UPDATE Exercise SET
+                        max_submitters=@MAX,late_submission_settings=@LATEST,programming_language=@LANG,
                         auto_test_grade_value=@AUTO,style_test_grade_value=@STYLE,is_active=@ACTIVE,multiple_submissions=@MULT
                         WHERE exercise_id = @ID;";
             SqlCommand command = new SqlCommand(sql,cnn);
             command.Parameters.Add("@ID",System.Data.SqlDbType.NVarChar);
             command.Parameters.Add("@NAME",System.Data.SqlDbType.NVarChar);
-            command.Parameters.Add("@CID",System.Data.SqlDbType.NVarChar);
-            command.Parameters.Add("@OEID",System.Data.SqlDbType.NVarChar);
             command.Parameters.Add("@MAX",System.Data.SqlDbType.Int);
-            command.Parameters.Add("@FILES",System.Data.SqlDbType.NVarChar);
             command.Parameters.Add("@LATEST",System.Data.SqlDbType.NVarChar);
             command.Parameters.Add("@LANG",System.Data.SqlDbType.NVarChar);
             command.Parameters.Add("@AUTO",System.Data.SqlDbType.Int);
@@ -665,10 +662,7 @@ namespace Submit_System
             command.Parameters.Add("@MULT",System.Data.SqlDbType.Int);
             command.Parameters["@ID"].Value = exercise.ID;
             command.Parameters["@NAME"].Value = exercise.Name;
-            command.Parameters["@CID"].Value = exercise.CourseID;
-            command.Parameters["@OEID"].Value = exercise.OriginalExerciseID;
             command.Parameters["@MAX"].Value = exercise.MaxSubmitters;
-            command.Parameters["@FILES"].Value = exercise.FilesLocation;
             command.Parameters["@LATEST"].Value = exercise.LateSubmissionSettings;
             command.Parameters["@LANG"].Value = exercise.ProgrammingLanguage;
             command.Parameters["@AUTO"].Value = exercise.AutoTestGradeWeight;
@@ -1256,7 +1250,7 @@ namespace Submit_System
             command.Parameters.Add("@ADD",System.Data.SqlDbType.NVarChar);
             command.Parameters["@TYPE"].Value = test.Type;
             command.Parameters["@EID"].Value = test.ExerciseID;
-            command.Parameters["@VALUE"].Value = test.Value;
+            command.Parameters["@VALUE"].Value = test.Weight;
             command.Parameters["@INPUT"].Value = test.Input;
             command.Parameters["@EOUTPUT"].Value = test.ExpectedOutput;
             command.Parameters["@OFNAME"].Value = test.OutputFileName;

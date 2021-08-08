@@ -73,7 +73,7 @@ FROM Courses AS C
         ON C.course_id = E.course_id
 WHERE C.course_number =
     (SELECT course_number from Courses WHERE course_id = @CID)
-ORDER BY E.exercise_id DESC
+ORDER BY E.creation DESC
 ---Courses---
 SELECT
     C.course_id,
@@ -186,7 +186,8 @@ SELECT
     C.chat_id,
     M.sender_user_id,
     M.sender_name,
-    M.message_text
+    M.message_text,
+    C.chat_status
 FROM Chat AS C
     INNER JOIN Submission AS S
         ON C.submission_id = S.submission_id
@@ -196,6 +197,7 @@ FROM Chat AS C
         ON C.chat_id = M.chat_id
     INNER JOIN [FM]
         ON FM.id = M.message_id
+ORDER BY C.chat_status
 ---TeacherExercises---
 SELECT
     C.course_name,
@@ -234,16 +236,14 @@ FROM Submission_Dates AS D
         INSERT INTO Submission_Dates(exercise_id, submission_date, reduction, group_number)
         OUTPUT Inserted.submission_date_id
         VALUES (@EID, @DATE, @RE, @GR);
----UpDate---
+---UpdateDate---
 UPDATE  Submission_Dates
 SET 
     submission_date = @DATE,
     reduction = (CASE WHEN group_number = 0 THEN 0 ELSE @RE END)
-OUTPUT group_number
 WHERE submission_date_id = @ID
 ---DeleteDate---
 DELETE FROM Submission_Dates
-OUTPUT (SELECT group_number FROM Submission_Dates WHERE submission_date_id = @ID)
 WHERE submission_date_id = @ID AND group_number != 0
 ---MarkCopied---
 UPDATE S SET S.has_copied = 1
@@ -329,6 +329,7 @@ SELECT
     INNER JOIN Chat AS C
         ON C.submission_id = S.submission_id
         AND C.chat_type=@TYPE
+        AND C.chat_status = 0
     INNER JOIN [Message] AS M
         ON C.chat_id = M.chat_id
     INNER JOIN [FM]

@@ -86,8 +86,7 @@ namespace Submit_System.Controllers
             }
             int month = DateTime.Now.Month;
             int year = DateTime.Now.Year;
-            course.Year =  (month >= 9) ? year : year - 1;
-            course.Semester = (month <= 2 || month >= 10) ? 1 : 2;
+            course.Year =  (month >= 8) ? year + 1 : year;
             course.GenerateID();
             DBCode code = _access.AddCourse(course);
             if(code != DBCode.OK)
@@ -107,6 +106,34 @@ namespace Submit_System.Controllers
                 return HandleDatabaseOutput(code);
             }
             return HandleDatabaseOutput(_access.AddCheckerToCourse(courseId, studentId));
+        }
+        [HttpPost]
+        [Route("Teacher/AddStudents")]
+        public ActionResult AddStudents(string courseId, [FromBody] string content)
+        {
+            DBCode code = _access.CheckCoursePermission(courseId, Role.Teacher);
+            if(code != DBCode.OK)
+            {
+                return HandleDatabaseOutput(code);
+            }
+            string path = FileUtils.GetTempFileName(".csv");
+            System.IO.File.WriteAllText(path, content);
+            content = null;
+            ExcelLoader.AddStudentsToCourse(path, courseId);
+            System.IO.File.Delete(path);
+            return Ok();
+        }
+        [HttpPost]
+        [Route("Admin/AddCourses")]
+        public ActionResult AddCourses([FromBody] string content)
+        {
+            if(!_access.IsAdmin) { return Forbid(); }
+            string path = FileUtils.GetTempFileName(".csv");
+            System.IO.File.WriteAllText(path, content);
+            content = null;
+            ExcelLoader.ReadCoursesFromFile(path);
+            System.IO.File.Delete(path);
+            return Ok();
         }
     }
 }

@@ -23,6 +23,17 @@ namespace Submit_System.Controllers
         [Route("Student/ExerciseLabels")]
         public ActionResult<List<ExerciseLabel>> ExerciseList(string courseId)
         {
+            DBCode code = _access.CheckCoursePermission(courseId, Role.Student);
+            if(code != DBCode.OK)
+            {
+                return HandleDatabaseOutput(code);
+            }
+            return HandleDatabaseOutput(_access.GetCourseExercises(courseId));
+        }
+        [HttpGet]
+        [Route("Teacher/ExerciseLabels")]
+        public ActionResult<List<ExerciseLabel>> ExerciseListT(string courseId)
+        {
             DBCode code = _access.CheckCoursePermission(courseId, Role.Teacher);
             if(code != DBCode.OK)
             {
@@ -58,7 +69,7 @@ namespace Submit_System.Controllers
         public ActionResult<ExOutput> CreateExercise(string courseid, [FromBody] ExerciseInput input)
         {
             var exercise = input.Exercise;
-            if(IsAnyNull(exercise?.Name))
+            if(!exercise.CheckInsertValidity())
             {
                 return BadRequest();
             }
@@ -97,6 +108,10 @@ namespace Submit_System.Controllers
         [Route("Teacher/UpdateExercise")]
         public ActionResult UpdateExercise([FromBody] Exercise exercise)
         {
+            if(exercise == null || !exercise.CheckUpdateValidity())
+            {
+                return BadRequest();
+            }
             DBCode code = _access.CheckExercisePermission(exercise.ID, Role.Teacher);
             if(code != DBCode.OK)
             {
@@ -210,7 +225,7 @@ namespace Submit_System.Controllers
             }
             return HandleDatabaseOutput(_access.UpdateTest(test));
         }
-        [HttpPost]
+        [HttpDelete]
         [Route("Teacher/DeleteTest")]
         public ActionResult<TestOutput> DeleteTest(int testId)
         {
@@ -225,6 +240,7 @@ namespace Submit_System.Controllers
         [Route("Teacher/AddTest")]
         public ActionResult<TestOutput> AddTest([FromBody] TestInput input)
         {
+            if(input == null) { return BadRequest(); }
             Test test = input.Test;
             DBCode code = _access.CheckExercisePermission(test.ExerciseID, Role.Teacher);
             if(code != DBCode.OK)
@@ -254,6 +270,10 @@ namespace Submit_System.Controllers
                 {
                     output.Files = FileUtils.StoreFiles(input.AdditionalFiles, testDir, false, true);
                 }
+                else
+                {
+                    output.Files = new List<string>();
+                }
             }
             catch
             {
@@ -267,7 +287,7 @@ namespace Submit_System.Controllers
         {
             return HandleDatabaseOutput(_access.GetTeacherExercises());
         }    
-        [HttpGet]
+        [HttpPost]
         [Route("Teacher/AddDate")]
         public ActionResult<int> AddDate(string exerciseId, [FromBody] SubmitDate date)
         {
@@ -279,7 +299,7 @@ namespace Submit_System.Controllers
             date.ExerciseID = exerciseId;
             return HandleDatabaseOutput(_access.AddDate(date));
         }     
-        [HttpGet]
+        [HttpDelete]
         [Route("Teacher/DeleteDate")]
         public ActionResult DeleteDate(int dateId)
         {
@@ -294,6 +314,7 @@ namespace Submit_System.Controllers
         [Route("Teacher/GetDates")]
         public ActionResult<List<TeacherDateDisplay>> GetDates(string exerciseId)
         {
+            if(exerciseId == null) return BadRequest();
             DBCode code = _access.CheckExercisePermission(exerciseId, Role.Teacher);
             if(code != DBCode.OK)
             {
