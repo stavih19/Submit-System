@@ -1,32 +1,35 @@
 -- Uses 3 consecutive hyphens to separate the page into keys and queries
 ---StudentDates---
-WITH DS AS
-(SELECT S.submission_id, MAX(D.submission_date) AS submission_date
+WITH D2 as
+(SELECT 
+    S.exercise_id AS exercise_id,
+    D.submission_date AS submission_date,
+    S.submission_status AS submission_status
 FROM Submitters AS SS
-INNER JOIN 
-Submission AS S
-ON SS.user_id = @ID
-AND SS.submission_id = S.submission_id
-INNER JOIN Submission_Dates AS D
-ON ((D.submission_date_id = S.submission_date_id OR group_number = 0) AND reduction = 0)
-GROUP BY S.submission_id)
+INNER JOIN Submission AS S
+ON SS.submission_id = S.submission_id
+AND SS.user_id = @ID
+LEFT JOIN Submission_Dates as D
+ON S.submission_date_id = D.submission_date_id)
 SELECT C.course_id,
     C.course_name, 
     C.course_number,
     E.exercise_id,
     E.exercise_name,
-    DS.submission_date,
-    S.submission_date_id
-FROM Submitters as SS
-    INNER JOIN Submission as S 
-        ON S.submission_id = SS.submission_id AND S.submission_status = 0 AND SS.user_id = @ID
-    INNER JOIN Exercise as E
-        ON S.exercise_id = E.exercise_id
-    INNER JOIN Courses as C
-        ON C.course_id = E.course_id
-    INNER JOIN DS
-        ON DS.submission_id = S.submission_id
-ORDER BY DS.submission_date
+    ISNULL(D2.submission_date, D.submission_date) AS ddd,
+    D2.submission_status
+FROM Student_Course AS SC
+INNER JOIN Courses AS C
+ON C.course_id = SC.course_id
+AND SC.user_id = @ID
+INNER JOIN Exercise AS E
+ON E.course_id = C.course_id
+INNER JOIN Submission_Dates AS D
+ON D.exercise_id = E.exercise_id
+AND D.group_number = 0
+LEFT JOIN D2
+ON D2.exercise_id = D.exercise_id
+WHERE (D2.submission_status IS null OR D2.submission_status = 0)
 ---StudentGrades---
 --Selects everything needed to calcualte the student's grades
 SELECT

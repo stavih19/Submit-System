@@ -248,17 +248,11 @@ namespace Submit_System {
            {
                return (null, (DBCode) exCode);
            }
-           ((string submissionId, int submitterType), DBCode code) =
-                Convert(DataBaseManager.ReadSubmissionIdAndTypeOfStudentInExercise(UserID, exerciseId));
-           if(submitterType != 1)
+           ((var submission, int type), DBCode code) = GetStudentSubmission(UserID, exerciseId);
+           if(type != 1)
            {
                ErrorString = "You are not the main submitter";
                return (null, DBCode.NotAllowed);
-           }
-           (Submission submission, DBCode code2) = Convert(DataBaseManager.ReadSubmission(submissionId));
-           if(CheckError(code2))
-           {
-               return (null, code);
            }
            if(submission.SubmissionStatus != (int) SubmissionState.Unsubmitted && !exer.MultipleSubmission)
            {
@@ -266,18 +260,17 @@ namespace Submit_System {
                return (null, DBCode.NotAllowed);
            }
            (var dates, DBCode code3) = DataBaseManager.GetStudentExerciseDates(submission.SubmissionDateId, exerciseId);
-           bool canSubmit = dates.Select((date) => date.Date.Date > DateTime.Now.Date).Any();
+           bool canSubmit = dates.Select((date) => date.Date.AddDays(exer.Reductions.Length) > DateTime.Now.Date).Any();
            if(!canSubmit)
            {
                 ErrorString = "It's too late for you to submit this";
                 return (null, DBCode.NotAllowed);
            }
-           string path = Path.Combine("Courses", exer.CourseID, "Exercises", exer.Name, "Submissions", UserID);
-           CacheSubmissionDirectory(submissionId, path);
+           CacheSubmissionDirectory(submission.ID, submission.FilesLocation);
             SubmitInfo info = new SubmitInfo {
                 CourseID = exer.CourseID,
                 ExerciseName = exer.ID,
-                SubmissionID = submissionId,
+                SubmissionID = submission.ID,
                 Path = submission.FilesLocation,
                 ExerciseID = exerciseId
             };
@@ -323,16 +316,22 @@ namespace Submit_System {
         }
         public (Submission, DBCode) CreateSubmission(string exId)
         {
+            (string path, DBCode code) = DataBaseManager.GetExDir(exId);
+            if(path == null)
+            {
+                return (null, code);
+            }
             var s = new Submission {
                 ID = Submission.GenerateID(UserID, exId),
                 ExerciseID = exId,
-                SubmissionStatus = (int) SubmissionState.Unchecked,
+                SubmissionStatus = (int) SubmissionState.Unsubmitted,
                 AutoGrade = -1,
                 StyleGrade = -1,
                 ManualFinalGrade = -1,
                 ManualCheckData = null,
                 TimeSubmitted = DateTime.Now,
-                SubmissionDateId = -1
+                SubmissionDateId = -1,
+                FilesLocation = Path.Combine(path, UserID)
             };
             DataBaseManager.AddStudentToSubmission(s.ID, UserID, 1, exId);
             DataBaseManager.AddSubmission(s);
@@ -540,7 +539,7 @@ namespace Submit_System {
             }
             return Convert(DataBaseManager.AddMessage(msg));
         }
-        public DBCode MarkSubmitted(string submissionid, string path, int styleGrade)
+        public DBCode MarkSubmitted(string submissionid, int styleGrade)
         {
             var res = Convert(DataBaseManager.ReadSubmission(submissionid));
             if(CheckError(res.Item2))
@@ -549,7 +548,6 @@ namespace Submit_System {
             }
             var sub = res.Item1;
             sub.SubmissionStatus = 1;
-            sub.FilesLocation = path;
             sub.TimeSubmitted = DateTime.Now;
             sub.StyleGrade = styleGrade;
             return Convert(DataBaseManager.UpdateSubmission(sub));
@@ -709,13 +707,12 @@ namespace Submit_System {
             var appealChecked = dict[appealCheckedStr];
             dict.Remove(appealCheckedStr);
             dict[SubmissionState.Checked.ToString()].AddRange(appealChecked);
-            dict.Values.ToList().ForEach(list => {
-                    list.ForEach(label =>
-                        label.CheckState = GetCheckState(label.CurrentChecker)
-                    );
+            dict.Remove(SubmissionState.Unsubmitted.ToString());
+            foreach(var list in dict.Values)
+            {
+                    list.ForEach(label => label.CheckState = GetCheckState(label.CurrentChecker));
                     list.OrderBy(label => (int) label.CheckState);
             }
-            );
             
             return (dict, code);
         }
@@ -861,6 +858,30 @@ namespace Submit_System {
         public DBCode AddUser(User user)
         {
             return Convert(DataBaseManager.AddUser(user));
+        }
+        public DBCode CancelSubmission(string submissionId)
+        {
+            (var submission, DBCode code) = Convert(DataBaseManager.ReadSubmission(submissionId));
+            (int type, DBCode code2) = Convert(DataBaseManager.ReadTypeOfStudentInSubmission(submissionId, UserID));
+            if(code != DBCode.OK || code != DBCode.OK)
+            {
+                return code2;
+            }
+            else if(type == 0)
+            {
+                return DBCode.NotAllowed;
+            }
+            (Exercise exercise, DBCode code3) = Convert(DataBaseManager.ReadExercise(submission.ExerciseID));
+            if(code3 != DBCode.OK)
+            {
+                return code3;
+            }
+            if(!exercise.MultipleSubmission)
+            {
+                return DBCode.NotAllowed;
+            }
+            submission.SubmissionStatus = (int) SubmissionState.Unsubmitted;
+            return Convert(DataBaseManager.UpdateSubmission(submission));
         }
     }
 }

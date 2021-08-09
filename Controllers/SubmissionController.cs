@@ -103,15 +103,15 @@ namespace Submit_System.Controllers
         }
         [Route("Teacher/RunResult")]
         [HttpGet]
-        public ActionResult<SubmitOutput> RunExerciseT(string submitId)
+        public ActionResult<SubmitOutput> RunExerciseT(string submissionId)
         {
-            DBCode res = _access.CheckSubmissionPerm(submitId, Role.Teacher);
+            DBCode res = _access.CheckSubmissionPerm(submissionId, Role.Teacher);
             if(res != DBCode.OK)
             {
                 return HandleDatabaseOutput(res);
             }
-            _access.BeginChecking(submitId);
-            return AutoTest(submitId, 1);
+            _access.BeginChecking(submissionId);
+            return AutoTest(submissionId, 1);
         }
         [Route("Student/NewMessage")]
         [HttpPost]        
@@ -259,7 +259,7 @@ namespace Submit_System.Controllers
                 return HandleDatabaseOutput(res);
             }
             (SubmitInfo info, DBCode code) =  _access.GetSubmitInfo(exerciseId);
-            if(info.Path == null) { return NotFound("Exercise not found"); }
+            if(info?.Path == null) { return NotFound("Exercise not found"); }
             List<string> submittedFiles;
             try
             {
@@ -275,9 +275,11 @@ namespace Submit_System.Controllers
                 return ServerError("There was an issue with uploading the files");
             }
             Result result;
+            int styleGrade;
             try
             {   
-                 result = TestManager.getTestResults(info.SubmissionID, 0);
+                result = TestManager.getTestResults(info.SubmissionID, 0);
+                styleGrade = result.Check_Style_Result.IsOk ? 100 : 0;
             }
             catch
             {
@@ -288,13 +290,12 @@ namespace Submit_System.Controllers
                     StyleGrade = -1
                 };
             }
-            int styleGrade = result.Check_Style_Result.IsOk ? 100 : 0;
             if(final)
             {
-                _access.MarkSubmitted(info.SubmissionID, info.Path, styleGrade);
+                _access.MarkSubmitted(info.SubmissionID, styleGrade);
             }
             return new SubmitResult {
-                Message = result.ToString(),
+                Message = result.ToHTML(),
                 Files = submittedFiles,
                 AutoGrade = (int) Math.Round(result.GetTestsGrade()),
                 StyleGrade = styleGrade
@@ -508,6 +509,10 @@ namespace Submit_System.Controllers
             {
                 return HandleDatabaseOutput(code);
             }
+            if(data.Language.StartsWith("python"))
+            {
+                data.Language = "python";
+            }
             if(!MossClient.IsSupported(data.Language))
             {
                 var result = new ObjectResult($"The language {data.Language} is not supported.");
@@ -591,14 +596,14 @@ namespace Submit_System.Controllers
             }
             catch(NotImplementedException)
             {
-                return new StatusCodeResult(501);
+                return null;
             }
             if(result == null)
             {
                 return ServerError();
             }
             return new SubmitOutput {
-                Text = result.ToString(),
+                Text = result.ToHTML(),
                 StyleGrade = result.Check_Style_Result.IsOk ? 100 : 0,
                 AutoGrade = (int) Math.Round(result.GetTestsGrade())
             };

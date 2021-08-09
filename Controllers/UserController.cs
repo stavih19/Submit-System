@@ -65,8 +65,8 @@ namespace Submit_System
         }
         [HttpDelete]
         [Route("User/Logout")]
-        public IActionResult Logout(string token) {
-            token = token ?? Request.Cookies["token"];
+        public IActionResult Logout() {
+            string token = Request.Cookies["token"];
             _storage.RemoveToken(token);
             return Ok();
         }
@@ -106,8 +106,8 @@ namespace Submit_System
             return success ? Ok() : ServerError();
         }
         [HttpPost]
-        [Route("User/ResetPassword")]
-        public ActionResult ResetPassword(string id)
+        [Route("User/SetPasswordRequest")]
+        public ActionResult ResetPassword([FromBody] string id)
         {
             (User user, DBCode code) = _access.GetUser(id);
             if(code != DBCode.OK)

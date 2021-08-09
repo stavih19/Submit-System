@@ -951,22 +951,23 @@ namespace Submit_System
                 CreateParameter("@UID",System.Data.SqlDbType.VarChar, userid)
             };
             DBCode code = HandleNonQuery(sql, parameters);
-            if(code != DBCode.OK)
+            if(code == DBCode.Error)
             {
                 return code;
             }
             sql = "UPDATE Submission SET current_checker_id = @UID WHERE submission_id = @SID;";
-            parameters = new SqlParameter[] { parameters[0], CreateParameter("@SID",System.Data.SqlDbType.VarChar, submissionId) };
+            parameters = new SqlParameter[] {
+                CreateParameter("@UID",System.Data.SqlDbType.VarChar, userid), 
+                CreateParameter("@SID",System.Data.SqlDbType.VarChar, submissionId) };
             return HandleNonQuery(sql, parameters);
         }
          public static DBCode EndChecking(Submission submission) {
             String sql = @"UPDATE Submission SET manual_check_data = @MCD, submission_status = (CASE WHEN submission_status = 3 THEN 4 ELSE 2 END),
-                            auto_grade = @AUTO, style_grade = @STYLE, manual_final_grade = @MANUAL, current_checker_id = null WHERE submission_id = @SID";
+                            auto_grade = @AUTO, manual_final_grade = @MANUAL, current_checker_id = null WHERE submission_id = @SID";
             SqlParameter[] parameters = {
                 CreateParameter("@SID",System.Data.SqlDbType.VarChar, submission.ID),
                 CreateParameter("@MCD",System.Data.SqlDbType.VarChar, submission.ManualCheckData),
                 CreateParameter("@AUTO",System.Data.SqlDbType.Int, submission.AutoGrade),
-                CreateParameter("@STYLE",System.Data.SqlDbType.Int, submission.StyleGrade),
                 CreateParameter("@MANUAL",System.Data.SqlDbType.Int, submission.ManualFinalGrade)
             };
             return HandleNonQuery(sql, parameters);

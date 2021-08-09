@@ -8,6 +8,8 @@ namespace Submit_System
         public string ExerciseID { get; set; }
         public string ExerciseName { get; set; }
         public string CourseID { get; set; }
+        public string ProgrammingLanguage { get; set; }
+        public List<Test> Tests { get; set; }
         public string Text { get; set; }
     }
 }

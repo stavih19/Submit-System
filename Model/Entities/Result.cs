@@ -35,10 +35,10 @@ namespace Submit_System {
             }
             return sum;
         }
-        public override string ToString()
+        public string ToHTML()
         {
             StringBuilder builder = new StringBuilder();
-            if(Test_Results != null)
+            if(Test_Results?.Any() ?? false)
             {
                 double totalTime = Test_Results.Select(result => result.TimeInMs).Sum();
                 builder.AppendLine("<u><h3>Automatic Test:</h3></u>");
@@ -68,10 +68,13 @@ namespace Submit_System {
                 builder.AppendLine("<u><h3>Coding Style Test:</h3></u>");
                 int styleGrade = Check_Style_Result.IsOk ? 100 : 0;
                 builder.AppendLine($"Grade: {styleGrade}");
-                builder.AppendLine("<u><h3>Results:</h3></u>");
-                builder.Append(Check_Style_Result.Output);
-                builder = builder.Replace("\r\n", "<br>").Replace("\n", "<br>");
+                if(!Check_Style_Result.IsOk)
+                {
+                    builder.AppendLine("<u><h3>Comments:</h3></u>");
+                    builder.Append(Check_Style_Result.Output);
+                }
             }
+            builder = builder.Replace("\r\n", "<br>").Replace("\n", "<br>");
             return builder.ToString();
         }   
     }

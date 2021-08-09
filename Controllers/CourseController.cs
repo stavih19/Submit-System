@@ -97,13 +97,12 @@ namespace Submit_System.Controllers
 
         }
         [HttpPost]
-        [Route("Teacher/AddStudent")]
+        [Route("Admin/AddStudent")]
         public ActionResult<string> AddStudent(string courseId, string studentId)
         {
-            DBCode code = _access.CheckCoursePermission(courseId, Role.Teacher);
-            if(code != DBCode.OK)
+            if(!_access.IsAdmin)
             {
-                return HandleDatabaseOutput(code);
+                return Forbid();
             }
             return HandleDatabaseOutput(_access.AddCheckerToCourse(courseId, studentId));
         }
