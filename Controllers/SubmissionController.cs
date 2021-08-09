@@ -237,7 +237,13 @@ namespace Submit_System.Controllers
         public ActionResult<SubmitResult> Detach(string submissionId)
         {
             return HandleDatabaseOutput(_access.DetachStudent(submissionId));
-        }      
+        }   
+        [Route("Student/CancelSubmission")]
+        [HttpPost]        
+        public ActionResult<SubmitResult> CancelSubmission(string submissionId)
+        {
+            return HandleDatabaseOutput(_access.CancelSubmission(submissionId));
+        }       
         [Route("Student/SubmitExercise")]
         [HttpPost]        
         public ActionResult<SubmitResult> Submit(string exerciseId, [FromBody] List<SubmitFile> files, bool final)

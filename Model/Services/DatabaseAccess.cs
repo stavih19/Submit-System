@@ -331,7 +331,7 @@ namespace Submit_System {
                 ManualCheckData = null,
                 TimeSubmitted = DateTime.Now,
                 SubmissionDateId = -1,
-                FilesLocation = Path.Combine(path, UserID)
+                FilesLocation = Path.Combine(path, "Submissions", UserID)
             };
             DataBaseManager.AddStudentToSubmission(s.ID, UserID, 1, exId);
             DataBaseManager.AddSubmission(s);
