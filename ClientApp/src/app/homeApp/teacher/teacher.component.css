@@ -1,4 +1,4 @@
-.studentGeneral {
+/*.studentGeneral {
     background: none;
     height: 500px;
     width: 100%;
@@ -34,7 +34,7 @@
     color: black;
 }
 
-/* HeroesComponent's private CSS styles */
+/* HeroesComponent's private CSS styles
 .coursesEelemnts {
     margin: 0 0 2em 0;
     list-style-type: none;
@@ -111,5 +111,153 @@ table {
 }
 
 .headerLabel {
+    text-align: right;
+}*/
+.studentGeneral {
+    background-color: #eee;
+    height: 800px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    border-radius: 10px;
+
+    display: grid;
+    grid-template-areas:
+    'courseHeader exeHeader'
+    'courseTable exeTable'
+    'extenstionHeader rateHeader'
+    'extenstionTable rateTable';
+
+    padding: 50px;
+    grid-gap: 40px;
+    padding-top: 8px;
+    grid-template-rows: 3% 30% 3% 30%;
+    grid-template-columns: 47% 49%;
+}
+.courseHeaderLine, .lastExeHeaderLine, .appealHeaderLine, .extenstionHeaderLine {
+    padding-top: 20px;
+}
+.courseHeaderLine {
+    padding-left: 44%;
+    grid-area: courseHeader;
+}
+.lastExeHeaderLine {
+    padding-left: 38%;
+    grid-area: exeHeader;
+}
+.appealHeaderLine {
+    padding-left: 45%;
+    grid-area: rateHeader;
+}
+.extenstionHeaderLine {
+    padding-left: 37%;
+    grid-area: extenstionHeader;
+}
+.coursesList {
+    direction: rtl;
+    grid-area: courseTable;
+}
+.coursesList, .exeToSubmitContent, .gradeContent, .extenstionContent {
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    border-radius: 10px;
+    background-color: White;
+}
+.exeToSubmitContent {
+    overflow: scroll;
+    grid-area: exeTable;
+}
+.gradeContent {
+    overflow: scroll;
+    grid-area: rateTable;
+}
+.extenstionContent {
+    overflow: scroll;
+    grid-area: extenstionTable;
+}
+.courseDetails {
+    color: black;
+}
+/* HeroesComponent's private CSS styles */
+.coursesEelemnts {
+    margin: 0 0 2em 0;
+    list-style-type: none;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    direction: rtl;
+    overflow-y: scroll;
+  }
+.coursesEelemnts li {
+    cursor: pointer;
+    position: relative;
+    left: 0;
+    background-color: #eee;
+    margin: .5em;
+    padding: .3em 0;
+    height: 3.2em;
+    border-radius: 4px;
+}
+.coursesEelemnts li:hover {
+    color: #2c3a41;
+    background-color: #e6e6e6;
+    left: .1em;
+}
+.coursesEelemnts li.selected {
+    background-color: #405061;
+    color: white;
+}
+.coursesEelemnts li.selected:hover {
+    background-color: #505050;
+    color: white;
+}
+.coursesEelemnts li.selected:active {
+    background-color: #405061;
+    color: white;
+}
+.coursesEelemnts .badge {
+    display: inline-block;
+    font-size: small;
+    color: white;
+    padding: 0.8em 0.7em 0 0.7em;
+    background-color:#405061;
+    line-height: 1em;
+    position: absolute;
+    top: 0px;
+    right: -9px;
+    height: 100%;
+    margin-right: .8em;
+    border-radius: 4px 4px 4px 4px;
+}
+input {
+    padding: .5rem;
+}
+.gap {
+    height: 10px;
+}
+table {
+    width: 100%;
+}
+.rowTable {
+    cursor: pointer;
+}
+.rowTable:hover {
+    background-color: #eee;
+}
+table {
+    text-align: right;
+}
+.headerLabel {
+    text-align: right;
+}
+.headerLabel {
+    padding-right: 25px;
+}
+.courseTD {
+    padding-right: 10px;
+}
+.textContent {
+    padding-right: 10px;
     text-align: right;
 }

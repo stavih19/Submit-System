@@ -3,6 +3,6 @@ export interface GradeTableChecker {
     courseName: string;
     courseNumber: string;
     exID: string;
-    exName: string;
+    name: string;
     exeAmount: number;
 }

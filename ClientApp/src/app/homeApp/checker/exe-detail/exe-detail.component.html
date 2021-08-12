@@ -1,7 +1,7 @@
 <div class="frame">
     <div class="genrealDetails">
         <div class="generalHeader">
-            <table mat-table [dataSource]="genrealDetailsTable" class="mat-elevation-z8">
+            <table mat-table [dataSource]="genrealDetailsTable" class="mat-elevation-z8 angle-corner">
                 <ng-container matColumnDef="name">
                     <th mat-header-cell *matHeaderCellDef class="dateHeader">
                         שם המגיש
@@ -18,10 +18,25 @@
                         {{ detail.id }}
                     </td>
                 </ng-container>
+                <ng-container matColumnDef="rate">
+                    <th mat-header-cell *matHeaderCellDef class="teamHeader">
+                        ת.ז המגיש
+                    </th>
+                    <td mat-cell *matCellDef="let detail" style="text-align: right;">
+                        {{ detail.rate }}
+                    </td>
+                </ng-container>
                 <tr mat-header-row *matHeaderRowDef="detailColumns"></tr>
                 <tr mat-row *matRowDef="let row; columns: detailColumns;">
                 </tr>
-            </table>    
+            </table>
+            <div class="autoCheckResult">
+                <button mat-raised-button color="primary">תוצאות בדיקה אוטו'</button>
+            </div>
+            <br>
+            <div class="checkButton">
+                <button mat-raised-button color="warn">סמן כבדוק</button>
+            </div>
         </div>
     </div>
     <div class="gradesGrid">
@@ -54,55 +69,60 @@
                 <tr mat-header-row *matHeaderRowDef="submitionColumns"></tr>
                 <tr mat-row *matRowDef="let row; columns: submitionColumns;">
                 </tr>
-            </table>    
+            </table>
         </div>
     </div>
-    <div class="genralGrade">
-        <div class="row">
-            <div class="col-1">
-                ציון:
-                <span>98</span>
-            </div>
-            <div class="col-1">
-                ציון אוטומטי
-            </div>
-            <div class="col-10">
-
-            </div>
-        </div>
+    <div class="noteList">
+        <table mat-table [dataSource]="mistakeCategorizeTable" class="mat-elevation-z8">
+            <ng-container matColumnDef="mistakeType">
+                <th mat-header-cell *matHeaderCellDef class="dateHeader">
+                    שגיאות
+                </th>
+                <td mat-cell *matCellDef="let check" class="teamDateText">
+                    {{ check.name }}
+                </td>
+            </ng-container>
+            <ng-container matColumnDef="points">
+                <th mat-header-cell *matHeaderCellDef class="teamHeader">
+                    הזן ניקוד להורדה
+                </th>
+                <td mat-cell *matCellDef="let check" style="text-align: right;">
+                    <input matInput placeholder="0" [value]="check.points" class="inputRate angle-corner"><!--formControlName="unnecessaryPrints"-->
+                </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="mistakeColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: mistakeColumns;">
+            </tr>
+        </table>
     </div>
     <div class="files">
         קבצים שהוגשו
         <br>
-        <div class="filesBox">
-            
+        <div class="filesBox" #fileUploadBox
+            (dragover)="onDragOver($event)"
+            (dragleave)="onDragLeave($event)"
+            (drop)="onDrop($event)">
+            <div class="row fileUploadText">
+                <div *ngFor="let file of uploadFileList">
+                    <div>
+                        <span class="close times"
+                        (click)="eraseUploadFile(file)" style="cursor: pointer;">x&nbsp;&nbsp;</span>
+                        <span class="fileName" (click)="downloadFile(file.name)">{{ file }}</span>
+                        <br>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="fileUploadButton">
+                    <input type="file" name="file-1[]" (change)="onFileChoose($event)"
+                    id="file-1" class="inputfile inputfile-1" style="visibility: hidden;"
+                    #file1>
+                    <label for="file-1" class="btn btn-primary" type="button" color="primary"
+                    #file1label>
+                        הורד הכל
+                    </label>
+                </div>
+            </div>
         </div>
-        <!--<button mat-raised-button color="primary">הורד הכל</button>-->
-    </div>
-    <div class="noteList">
-        הודעות מיותרות:
-        <!--<mat-form-field class="example-full-width">
-            <mat-label></mat-label>
-            <input matInput placeholder="0" formControlName="unnecessaryPrints">
-        </mat-form-field>
-        <br>
-        חלוקה ב0:
-        <mat-form-field class="example-full-width">
-            <mat-label></mat-label>
-            <input matInput placeholder="0" formControlName="devideByZero">
-        </mat-form-field>
-        <br>
-        בונוס:
-        <mat-form-field class="example-full-width">
-            <mat-label></mat-label>
-            <input matInput placeholder="0" formControlName="bonus">
-        </mat-form-field>-->
-        <br>
-        <button mat-raised-button color="primary">סמן כבדוק</button>
-    </div>
-    <div class="autoCheckResult">
-        <span class="autoResultHeader">תוצאות בדיקה אוטמטית</span>
-        <br>
-        <button mat-raised-button color="primary">צפה בתוצאות</button>
     </div>
 </div>

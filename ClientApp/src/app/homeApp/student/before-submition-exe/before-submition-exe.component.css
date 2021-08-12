@@ -1,118 +1,119 @@
+.example-form {
+    text-align: right;
+    display: grid;
+    row-gap: 0px;
+    grid-template-areas: 
+    'details details details details details'
+    'extenstion results download run submit'
+    'uploadFiles uploadFiles uploadFiles uploadFiles uploadFiles';
+    
+    padding: 30px;
+    grid-gap: 34px;
+    grid-template-rows: 30% 10% 50%;
+    grid-template-columns: 16% 16% 16% 16% 16%;
+}
+.detailsTable {
+    grid-area: details;
+    border-radius: 10px;
+}
+.mat-elevation-z8 {
+    width: 100%;
+}
+.extenstionButton {
+    grid-area: extenstion;
+}
+.resultsButton {
+    grid-area: results;
+}
+.downloadButton {
+    grid-area: download;
+}
+.runButton {
+    grid-area: run;
+}
+.submitButton {
+    grid-area: submit;
+}
+.uploadFilesLabel {
+    grid-area: uploadFiles;
+    text-align: center;
+}
+.statusHeader, .dateHeader, .idsHeader {
+    padding-right: 10px;
+    text-align: right;
+}
+.statusText, .dateText {
+    padding-right: 10px;
+    text-align: right;
+}
 .exeSettings {
     margin-right: .8em;
 }
-
 .firstRow, .secondRow, .forthRow {
-    /*border-style: ridge;*/
     height: 15%;
 }
-
 .thirdRow {
-    /*border-style: ridge;*/
     height: 55%;
 }
-
 .exeNameLabel {
     position: relative;
     left: 30%;
     top: 7%;
 }
-
 .submitStatusLabel {
     position: relative;
     left: 35%;
     top: 5%;
 }
-
 .moreSubmitersLabel {
     position: relative;
     left: 40%;
     top: 5%;
 }
-
-.uploadFilesLabel {
-    position: relative;
-    left: 40%;
-    top: 5%;
-}
-
 .submitDateLabel ,.submitDateText {
     display: inline-block;
 }
-
 .submitDateText {
     font-weight: 900;
 }
-
 .submitDate {
     position: relative;
     left: 30%;
     top: 30%;
 }
-
 .example-full-width {
     text-align: right;
     width: 100%;
 }
-
-.statusLabel, .statusText {
-    display: inline-block;
+.idsText {
+    padding-top: 2%;
+    width: 95%;
 }
-
-.statusText {
-    font-weight: 900;
-}
-
 .fileUploadBox {
     border-style: dotted;
+    height: 100%;
 }
-
 .exNameHeader, .exeNameText {
     display: inline-block;
 }
-
 .exeNameText {
     font-weight: 900;
 }
-
 .fileUploadText {
     height: 70%;
     text-align: left;
 }
-
 .fileUploadButton {
-    position: relative;
-    left: 40%;
+    right: 50%;
 }
-
 .noMultipleSubmission {
     position: relative;
     left: 50%;
 }
-
-.extenstionButton {
-    position: relative;
-    left: 20%;
-    top: 20%;
-}
-
-.submitButton {
-    position: relative;
-    left: 20%;
-    top: 20%;
-}
-
-.resultsButton {
-    position: relative;
-    left: 20%;
-    top: 20%;
-    height: 33%;
-}
-
-.example-form {
-    height: 100%;
-}
 .fileName {
     color: black;
     cursor: pointer;
+}
+.fileSpan {
+    padding-right: 20px;
 }

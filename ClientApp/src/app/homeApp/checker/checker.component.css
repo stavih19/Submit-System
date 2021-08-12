@@ -1,29 +1,63 @@
 .studentGeneral {
-    background: none;
-    height: 500px;
-    width: 100%;
+    background-color: #eee;
+    height: 800px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    border-radius: 10px;
+
+    display: grid;
+    grid-template-areas:
+    'courseHeader exeHeader'
+    'courseTable exeTable'
+    'courseTable rateHeader'
+    'courseTable rateTable';
+
+    padding: 50px;
+    grid-gap: 40px;
+    padding-top: 8px;
+    grid-template-rows: 3% 30% 3% 30%;
+    grid-template-columns: 22% 73%;
 }
-.headersLine {
-    height: 35px;
-    text-align: right;
+.courseHeaderLine, .exeHeaderLine, .rateHeaderLine {
+    padding-top: 20px;
+}
+.courseHeaderLine {
+    padding-left: 30%;
+}
+.exeHeaderLine {
+    padding-left: 41%;
+}
+.rateHeaderLine {
+    padding-left: 38%;
+}
+.courseHeaderLine {
+    grid-area: courseHeader;
+}
+.exeHeaderLine {
+    grid-area: exeHeader;
+}
+.rateHeaderLine {
+    grid-area: rateHeader;
 }
 .coursesList {
-    height: 465px;
-    width: 100%;
-    border-style: ridge;
     direction: rtl;
+    grid-area: courseTable;
+}
+.coursesList, .exeToSubmitContent, .gradeContent {
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    border-radius: 10px;
+    background-color: White;
 }
 .exeToSubmitContent {
-    height: 215px;
-    width: 100%;
-    border-style: ridge;
     overflow: scroll;
+    grid-area: exeTable;
 }
 .gradeContent {
-    height: 215px;
-    width: 100%;
-    border-style: ridge;
     overflow: scroll;
+    grid-area: rateTable;
 }
 .courseDetails {
     color: black;
@@ -99,4 +133,18 @@ table {
 }
 .headerLabel {
     text-align: right;
+    padding-right: 25px;
+}
+.textContent {
+    padding-right: 10px;
+    text-align: right;
+}
+.contentText {
+    padding-right: 10px;
+}
+.amountHeader {
+    text-align: right;
+}
+.AmountText {
+    padding-right: 25px;
 }

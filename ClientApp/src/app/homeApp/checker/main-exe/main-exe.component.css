@@ -1,16 +1,14 @@
 .box {
-    padding: 0px 10px 0px 10px;
-    border-style: ridge;
+    padding: 10px 10px 0px 10px;
     height: 465px;
     overflow-y: scroll;
+    background-color: white;
+    border-radius: 10px;
 }
 .buttonBox {
     padding: 10px 10px 10px 10px;
     height: 50px;
     cursor: pointer;
-}
-.addButton {
-    width: 100%;
 }
 .shrotBox {
     padding: 0px 10px 0px 10px;
@@ -66,4 +64,51 @@
 }
 .editExe {
     cursor: pointer;   
+}
+.frame {
+    background-color: #eee;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    border-radius: 10px;
+    height: 750px;
+    text-align: right;
+    padding: 50px;
+    grid-gap: 50px;
+    padding-top: 10px;
+
+    display: grid;
+    row-gap: 0px;
+    grid-template-areas: 
+    'buttons buttons buttons'
+    'col1 col2 col3';
+}
+.gap {
+    grid-area: gap0;
+    width: 10%;
+}
+.checkExeTabel {
+    grid-area: col1;
+}
+.checkedExeTabel {
+    grid-area: col2;
+}
+.reCheckExeTabel {
+    grid-area: col3;
+}
+.buttonBox {
+    grid-area: buttons;
+    display: grid;
+    grid-template-areas: 
+    'auto style';
+}
+.checkButton, .styleButton {
+    display: inline-block;
+    margin: auto;
+}
+.checkButton {
+    grid-area: auto;
+}
+.styleButton {
+    grid-area: style;
 }

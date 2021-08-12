@@ -36,6 +36,12 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
   });
 
   token: string;
+  detailColummsHeader = ["status", "date", "ids"];
+  detailColumns: any[] = [{
+    status: "",
+    ids: "",
+    date: ""
+  }];
 
   @Input() selectExe: any;
   @Input() teacherName: string;
@@ -209,6 +215,11 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
           
         }
         this.fileSubmittersValue();
+
+        this.detailColumns[0].status = this.exeStatus;
+        console.log(this.additionalSubmitors.nativeElement.value);
+        this.detailColumns[0].ids = this.additionalSubmitors.nativeElement.value;
+        this.detailColumns[0].date = this.selectedExeInfo.dates[0].date.toString().substring(0, 10);
       }, error => {
         this.errorMessage(error.status + "   try again", "alert-danger");
       }

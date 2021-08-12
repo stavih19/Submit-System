@@ -11,7 +11,7 @@ export class MainExeComponent implements OnInit {
   exeNameList: string[] = ["חגי", "נדב", "דוד"];
   alreadyChecked: string[] = ["שמחה", "יוסי"];
   reChecks: string[] = [];
-  selectExe: any;
+  //selectExe: any;
   exeStatus: string;
   token: string;
 
@@ -21,6 +21,7 @@ export class MainExeComponent implements OnInit {
   @Output() isToShowAlert = new EventEmitter<boolean>();
   @Output() color = new EventEmitter<string>();
   @Output() errorMessageText = new EventEmitter<string>();
+  @Output() selectExe = new EventEmitter<any>();
 
   constructor(
     private appService: ApprovalService,
@@ -35,7 +36,15 @@ export class MainExeComponent implements OnInit {
   }
 
   getExeDetails(exe: any) {
-    this.selectExe = exe;
+    this.selectExe.emit(exe);
     this.appService.updateExeStatus("exeDetails");
   }  
+
+  autoCheck() {
+
+  }
+
+  styleCheck() {
+
+  }
 }

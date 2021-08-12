@@ -1,5 +1,13 @@
-<div class="row" *ngIf="exeStatus !=='exeDetails'; else exeDisplay">
-    <div class="col-3">
+<div class="row frame" *ngIf="exeStatus !=='exeDetails'; else exeDisplay">
+    <div class="buttonBox">
+        <div class="checkButton">
+            <button mat-raised-button color="primary" (click)="autoCheck()">בדוק אוטו'</button>
+        </div>
+        <div class="styleButton">
+            <button mat-raised-button color="primary" (click)="styleCheck()">בדוק סטייל</button>
+        </div>
+    </div>
+    <div class="checkExeTabel">
         תרגילים לבדיקה
         <div class="box">
             <div *ngFor="let exeName of exeNameList; let i = index" class="exeBox">
@@ -11,16 +19,13 @@
                 </span>
             </div>
         </div>
-        <!--<div class="buttonBox">
-            <button class="addButton" mat-raised-button color="primary" (click)="createExe()">הוסף תרגיל</button>
-        </div>-->
     </div>
-    <div class="col-3">
+    <div class="checkedExeTabel">
         תרגילים שנבדקו
         <div class="box">
             <div *ngFor="let exe of alreadyChecked" class="exeBox">
                 <span class="list-group-item list-group-item-action"
-                    (click)="getExeDetails(exeName)">
+                    (click)="getExeDetails(exe)">
                     {{ exe }}
                 </span>
             </div>
@@ -29,12 +34,12 @@
             <button class="addButton" mat-raised-button color="primary" (click)="reCreateExe()">שחזר תרגיל</button>
         </div>-->
     </div>
-    <div class="col-3">
+    <div class="reCheckExeTabel">
         תרגילים לבדיקה חוזרת
         <div class="box">
             <div *ngFor="let reCheck of reChecks; let i = index" class="nameBox">
                 <span class="list-group-item list-group-item-action"
-                    (click)="getExeDetails(exeName)">
+                    (click)="getExeDetails(reCheck)">
                     <!--<span class="close" (click)="deleteTeacher(i)">&times;</span>-->
                     {{ reCheck }}
                 </span>
@@ -49,8 +54,5 @@
         <div class="buttonBox">
             <button class="addButton" mat-raised-button color="primary" (click)="addTeacher()">הוסף מתרגל</button>
         </div>-->
-    </div>
-    <div class="col-3">
-        כפתורים
     </div>
 </div>

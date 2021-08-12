@@ -64,7 +64,7 @@ export class CheckerComponent implements OnInit {
       courseName: "תכנות מתקדם 1",
       courseNumber: "12354",
       exID: "1812",
-      exName: "exe 2",
+      name: "exe 2",
       exeAmount: 20
     },
     {
@@ -72,7 +72,7 @@ export class CheckerComponent implements OnInit {
       courseName: "תכנות מתקדם 1",
       courseNumber: "12354",
       exID: "1812",
-      exName: "exe 3",
+      name: "exe 3",
       exeAmount: 15
     }
   ];
@@ -163,6 +163,11 @@ export class CheckerComponent implements OnInit {
   getExeDetails(row: any) {
     this.selectedCourse.name = row.courseName;
     this.selectExe = row;
+    console.log(row);
     this.appService.updateExeStatus("exeDetails");
+  }
+
+  updateExe(exe: any) {
+    this.selectExe = exe;
   }
 }
