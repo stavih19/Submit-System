@@ -197,6 +197,7 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
         console.log(this.uploadFileList);
         
         const state = this.selectedExeInfo.state;
+        console.log(state);
         if(state === 0) {
           this.exeStatus = "טרם הוגש";
           this.converstionTarget = "בקש הארכה";
@@ -206,7 +207,7 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
           this.converstionTarget = "בקש הארכה";
           this.filesMessage = "בחר קבצים";
           this.isSubmitSuccess = true;
-        } else if(state === 2){
+        } else if(state === 2) {
           this.exeStatus = "נבדק";
           this.converstionTarget = "הגש ערעור";
           this.filesMessage = "הורד קבצים";

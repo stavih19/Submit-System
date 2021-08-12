@@ -3,8 +3,9 @@
         <h4>קורסים</h4>
     </div>
     <div class="coursesList">
-        <ul class="coursesEelemnts"><!--[class.selected]="course === selectedCourse"-->
+        <ul class="coursesEelemnts">
             <li *ngFor="let course of coursesList"
+                [class.selected]="course === selectedCourse"
                 class="course" (click)="onSelect(course)">
                 <div class="badge">
                     <div class="courseName">
@@ -113,5 +114,6 @@
 </div>
 <ng-template #exeDisplay>
     <app-home-submition-exe [selectExe]="selectExe" [teacherName]="teacherName">
+        
     </app-home-submition-exe>
 </ng-template>

@@ -78,7 +78,7 @@ export class HomeSubmitionExeComponent implements OnInit {
     )
   }
 
-  onSelect(exe) {
+  async onSelect(exe: any) {
     this.selectedExe = exe;
     this.child.onSelect(exe);
   }

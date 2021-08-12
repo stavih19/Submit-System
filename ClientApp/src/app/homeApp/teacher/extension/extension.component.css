@@ -1,32 +1,50 @@
 .content {
+    background-color: #eee;
+    height: 800px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    border-radius: 10px;
+
     display: grid;
     row-gap: 0px;
-    column-gap: 170px;
     grid-template-areas: 
     'tableRequest requestList';
+    padding: 50px;
+    grid-gap: 70px;
+    grid-template-columns: 70% 30%;
 }
 .requestFrame {
     grid-area: tableRequest;
 }
 .reducePoints {
     grid-area: requestList;
+    border-radius: 10px;
+}
+.mat-elevation-z8 {
+    border-radius: 10px;
 }
 .extenstionHeader {
     text-align: right;
 }
 .requestBox {
-    border-bottom: ridge;
-    border-top: ridge;
-    /*height: 465px;*/
+    border-radius: 10px;
+    background-color: white;
+    border-style: ridge;
+    /*border-bottom: ridge;
+    border-top: ridge;*/
     text-align: right;
     display: grid;
-    row-gap: 0px;
+    row-gap: 7px;
     grid-template-areas: 
     'name'
     'id'
     'textContent'
     'file'
     'menuRequest';
+}
+.name, .id, .textContent, .file {
+    padding-right: 5px;
 }
 .name { grid-area: name; }
 .id { grid-area: id; }

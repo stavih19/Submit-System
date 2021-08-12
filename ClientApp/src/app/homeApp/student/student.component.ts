@@ -51,7 +51,7 @@ export class StudentComponent implements OnInit {
     //this.getBeforeEXE(course)
   }
 
-  getBeforeEXE(row) {
+  getBeforeEXE(row: any) {
     this.selectExe = row;
     this.teacherName = row.teacherName;
     this.appService.updateExeStatus("before");
