@@ -107,7 +107,7 @@ namespace Submit_System.Controllers
             return HandleDatabaseOutput(_access.AddCheckerToCourse(courseId, studentId));
         }
         [HttpPost]
-        [Route("Teacher/AddStudents")]
+        [Route("Admin/AddStudents")]
         public ActionResult AddStudents(string courseId, [FromBody] string content)
         {
             DBCode code = _access.CheckCoursePermission(courseId, Role.Teacher);

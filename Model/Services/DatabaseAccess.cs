@@ -219,12 +219,12 @@ namespace Submit_System {
             {
                 return (null, code);
             }
-            if(CryptoUtils.Verify(password, user.PasswordHash))
+            if(!CryptoUtils.Verify(password, user.PasswordHash))
             {
-                return (user.Name, code);
+                return (null, DBCode.NotFound);
             }
             (isAdmin, code) = DataBaseManager.IsAdmin(id);
-            return (null, DBCode.NotFound);
+            return (user.Name, code);
         }
         public (string, DBCode) GetSubmissionDirectory(string submisisonId)
         {

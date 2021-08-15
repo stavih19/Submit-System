@@ -1100,7 +1100,7 @@ namespace Submit_System
         }   
         public static (bool, DBCode) IsAdmin(string userId)
         {
-            string sql = "SELECT 1 FROM Managers WHERE user_id = @ID";
+            string sql = "SELECT 1 FROM Managers WHERE id = @ID";
             SqlParameter[] parameters = { CreateParameter("@ID", SqlDbType.VarChar, userId) };
             return SingleRecordQuery(sql, parameters, (SqlDataReader reader) => reader.HasRows);
         }

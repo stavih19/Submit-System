@@ -534,7 +534,7 @@ namespace Submit_System.Controllers
         }
         [HttpPut]
         [Route("Teacher/PublishGrades")]
-        public ActionResult PublishGrades([FromBody] Dictionary<string, int> weight)
+        public ActionResult PublishGrades([FromBody] Dictionary<string, int> weights)
         {
             return Ok();
         }

@@ -20,25 +20,27 @@ namespace Submit_System
         }
         [HttpPost]  
         [Route("User/Login")]
-        public ActionResult<List<string>> Login([FromBody]LoginData login)  
+        public ActionResult<Object> Login([FromBody]LoginData login)  
         {  
             if (IsAnyNull(login?.Username, login?.Password))  
             {  
                 return BadRequest();
             }
             bool isAdmin;
-            var result = _access.AuthenticateUser(login.Username, login.Password, out isAdmin);
-            if(result.Item1 == null) {
-                return NotFound();
+            (string name, DBCode code) = _access.AuthenticateUser(login.Username, login.Password, out isAdmin);
+            if(name == null)
+            {
+                return HandleDatabaseOutput(code);
             }
             string id = _storage.CreateToken(login.Username, isAdmin);
             var options = new CookieOptions {
                 HttpOnly = true,
-                SameSite = SameSiteMode.None, // Only to make testing easier
+                // Only to make testing easier
+                SameSite = SameSiteMode.None, 
                 Secure = true
             };
             HttpContext.Response.Cookies.Append("token", id, options);
-            return new List<string> { "obsolete", result.Item1};
+            return new { Name = name, IsAdmin = isAdmin };
         }
         [Route("User/SetPassword")]
         [HttpPost]
@@ -112,7 +114,7 @@ namespace Submit_System
             (User user, DBCode code) = _access.GetUser(id);
             if(code != DBCode.OK)
             {
-                return(HandleDatabaseOutput(code));
+                return Ok();
             }
             return PasswordRequest(id, user.Email) ? Ok() : ServerError();
         }

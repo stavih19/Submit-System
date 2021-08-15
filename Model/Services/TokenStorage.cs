@@ -42,6 +42,10 @@ namespace Submit_System
                 Deserialize();
             }
         }
+        /// <summary>
+        /// Serializes the tokens in a txt file.
+        /// Only for testing. Not to be used in production. 
+        /// </summary>
         public void Deserialize()
         {
             if(!File.Exists(TokensFile))
@@ -77,7 +81,8 @@ namespace Submit_System
         }
         public string CreateToken(string userId, bool isAdmin)
         {
-            var token = new Token(userId, GenerateTokenID(), isAdmin || _isTestMode);
+            string id = GenerateTokenID();
+            var token = new Token(userId, id, isAdmin || _isTestMode);
             _tokens[token.tokenID] = token;
             if(_isTestMode)
             {
@@ -88,7 +93,8 @@ namespace Submit_System
         private string GenerateTokenID()
         {
             string result;
-            do {
+            do
+            {
                 result = CryptoUtils.GetRandomBase64String(TOKENLENGTH);
             } while(_tokens.ContainsKey(result));
             return result;
@@ -130,13 +136,13 @@ namespace Submit_System
         /// <returns>True if the token is expired, false otherwise</returns>
         private bool IsExpired(Token token)
         {
-             var diff = DateTime.Now.Subtract(token.LastEntry);
-             bool expired = diff > _expiration;
-             if(expired)
-             {
+            var diff = DateTime.Now.Subtract(token.LastEntry);
+            bool expired = diff > _expiration;
+            if(expired)
+            {
                 RemoveToken(token.tokenID);
-             }
-             return expired;
+            }
+            return expired;
         }
         public bool IsTokenExist(string tokenID)
         {
