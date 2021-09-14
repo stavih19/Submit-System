@@ -446,8 +446,8 @@ namespace Submit_System
             try{cnn.Open();} catch {return (null,3,"Connection failed");}
             string sql = LongQueries["ExerciseCheckers"];
             SqlCommand command = new SqlCommand(sql,cnn);
-            command.Parameters.Add("@ID",SqlDbType.VarChar);
-            command.Parameters["@ID"].Value = exercise_id;
+            command.Parameters.Add("@EID",SqlDbType.VarChar);
+            command.Parameters["@EID"].Value = exercise_id;
             try{
                 SqlDataReader dataReader = command.ExecuteReader();
                 while(dataReader.Read()){

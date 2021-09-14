@@ -247,12 +247,13 @@ namespace Submit_System.Controllers
             {
                 return HandleDatabaseOutput(code);
             }
-            (string path, _) = _access.GetExerciseDirectory(test.ExerciseID);
-            path = Path.Combine(path, "Runfiles");
-            if(path == null)
+            string path;
+            (path, code) = _access.GetExerciseDirectory(test.ExerciseID);
+            if(code != DBCode.OK)
             {
-                return ServerError();
+                return HandleDatabaseOutput(code);
             }
+            path = Path.Combine(path, "Runfiles");
             string testDir = FileUtils.CreateUniqueDirectory(path, "test");
             test.AdittionalFilesLocation = testDir;
             (int id, DBCode code2) = _access.AddTest(test);

@@ -72,6 +72,6 @@ INSERT INTO Message
             (@chat2,null,N'אני רוצה לערער',@Yosi,0,'?', 0, N'יוסי יוסי'),
             (@chat2,null,N'אוקי',@Danny,0,'?', 1, N'דני דני');
 INSERT INTO Test([weight], input, expected_output, output_file_name, arguments_string,
-        timeout_in_seconds, main_sourse_file, additional_files_location, exercise_id, type)
+        timeout_in_seconds, main_source_file, additional_files_location, exercise_id, type)
 VALUES (100, '', 'the number is 5*50=250', 'stdout', '50', 60, 'aaa.py', null, @exercise1, 0)
 GO
