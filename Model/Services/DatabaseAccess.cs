@@ -883,5 +883,16 @@ namespace Submit_System {
             submission.SubmissionStatus = (int) SubmissionState.Unsubmitted;
             return Convert(DataBaseManager.UpdateSubmission(submission));
         }
+        public DBCode DeleteExercise(string exerciseId)
+        {
+            (Dictionary<string, List<SubmissionLabel>> dict, DBCode code) = GetSubmissionLabels(exerciseId);
+            // cannot delete an exercise if student already submitted it
+            var lst = dict.Values.SelectMany(x => x).ToList();
+            if(lst.Any())
+            {
+                return DBCode.NotAllowed;
+            }
+            return DataBaseManager.DeleteExercise(exerciseId);
+        }
     }
 }

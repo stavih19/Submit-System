@@ -539,6 +539,18 @@ namespace Submit_System.Controllers
         {
             return Ok();
         }
+        [HttpDelete]
+        [Route("Teacher/DeleteExercise")]
+        public ActionResult DeleteExercise(string exerciseId)
+        {
+            DBCode code = _access.CheckExercisePermission(exerciseId, Role.Teacher);
+            if(code != DBCode.OK)
+            {
+                return HandleDatabaseOutput(code);
+            }
+            return HandleDatabaseOutput(_access.DeleteExercise(exerciseId));
+        }
+
     }
 }
 

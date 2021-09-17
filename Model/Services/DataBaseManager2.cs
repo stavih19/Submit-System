@@ -1104,6 +1104,13 @@ namespace Submit_System
             SqlParameter[] parameters = { CreateParameter("@ID", SqlDbType.VarChar, userId) };
             return SingleRecordQuery(sql, parameters, (SqlDataReader reader) => reader.HasRows);
         }
+
+        public static DBCode DeleteExercise(string exerciseId)
+        {
+            string sql = "DELETE FROM Exercise WHERE exercise_id=@ID";
+            SqlParameter[] parameters = { CreateParameter("@ID", SqlDbType.VarChar, exerciseId) };
+            return HandleNonQuery(sql, parameters);
+        }
         
     }
 }
