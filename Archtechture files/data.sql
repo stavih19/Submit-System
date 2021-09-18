@@ -29,9 +29,13 @@ DECLARE @date1time AS DATETIME = DATEADD(day,14, GETDATE());
 DECLARE @date2time AS DATETIME = DATEADD(day,28, GETDATE());
 DECLARE @chat1 AS VARCHAR(32) = N'fjqewfojewog';
 DECLARE @chat2 AS VARCHAR(32) = N'ewtfjqwpgfjq';
+DECLARE @Tal AS VARCHAR(10) = '184140232';
+DECLARE @Yaron AS VARCHAR(10) = '123555232';
+DECLARE @Amit AS VARCHAR(10) = '184777232';
 INSERT INTO Users VALUES (@Danny, 'IjHzX+F5umurQ2u7ADFzi6qYz4U=$Jwv9yeDBSZw=$1000', N'דני דני', 'dana@gmail.com'),
                         (@Yosi, 'IjHzX+F5umurQ2u7ADFzi6qYz4U=$Jwv9yeDBSZw=$1000', N'יוסי יוסי', 'yosi@gmail.com'),
-                        (@Dana, 'IjHzX+F5umurQ2u7ADFzi6qYz4U=$Jwv9yeDBSZw=$1000', N'דנה דני', 'yosi@gmail.com');
+                        (@Tal, 'IjHzX+F5umurQ2u7ADFzi6qYz4U=$Jwv9yeDBSZw=$1000', N'טל טל', 'Tal@gmail.com'),
+                        (@Amit, 'IjHzX+F5umurQ2u7ADFzi6qYz4U=$Jwv9yeDBSZw=$1000', N'עמית עמית', 'Amit@gmail.com'),
 
 INSERT INTO Courses VALUES (@course_id1, 89111, @course_name1, 2021, 0),
                             (@course_id2, 89112, @course_name2, 2021, 0),
