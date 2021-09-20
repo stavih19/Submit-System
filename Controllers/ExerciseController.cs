@@ -548,6 +548,27 @@ namespace Submit_System.Controllers
             {
                 return HandleDatabaseOutput(code);
             }
+            (Dictionary<string, List<SubmissionLabel>> dict, DBCode code2) = _access.GetSubmissionLabels(exerciseId);
+            if(code2 != DBCode.OK)
+            {
+                return HandleDatabaseOutput(code2);
+            }
+            // cannot delete an exercise if student already submitted it
+            var lst = dict.Values.SelectMany(x => x).ToList();
+            if(lst.Any())
+            {
+                return Forbid();
+            }
+            (string path, DBCode code3) = _access.GetExerciseDirectory(exerciseId);
+            if(code3 != DBCode.OK)
+            { 
+                return HandleDatabaseOutput(code3);
+            }
+            try
+            {
+                FileUtils.DeleteDirectory(path);
+            }
+            catch {}
             return HandleDatabaseOutput(_access.DeleteExercise(exerciseId));
         }
 

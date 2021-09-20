@@ -1107,8 +1107,22 @@ namespace Submit_System
 
         public static DBCode DeleteExercise(string exerciseId)
         {
-            string sql = "DELETE FROM Exercise WHERE exercise_id=@ID";
+            string sql = "DELETE FROM Submission_Dates WHERE exercise_id=@ID";
             SqlParameter[] parameters = { CreateParameter("@ID", SqlDbType.VarChar, exerciseId) };
+            DBCode code = HandleNonQuery(sql, parameters);
+            if(code == DBCode.Error)
+            {
+                return code;
+            }
+            sql = "DELETE FROM Test WHERE exercise_id=@ID";
+            parameters[0] = CreateParameter("@ID", SqlDbType.VarChar, exerciseId);
+            code = HandleNonQuery(sql, parameters);
+            if(code == DBCode.Error)
+            {
+                return code;
+            }
+            sql = "DELETE FROM Exercise WHERE exercise_id=@ID";
+            parameters[0] = CreateParameter("@ID", SqlDbType.VarChar, exerciseId);
             return HandleNonQuery(sql, parameters);
         }
         

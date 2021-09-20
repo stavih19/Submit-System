@@ -62,7 +62,7 @@ namespace Submit_System
         public static (int,string) AddUser(User user){
             (User u,int err,String s) = DataBaseManager.ReadUser(user.ID);
             if(u != null){
-                return (1,"User is already exists");
+                return (1,"User already exists");
             }
             SqlConnection cnn  = new SqlConnection(connetionString);
             try{cnn.Open();} catch {return (3,"Connection failed");}
@@ -124,7 +124,7 @@ namespace Submit_System
         public static (int,string) AddCourse(Course course){
             (Course c,int err,String s) = DataBaseManager.ReadCourse(course.ID);
             if(c != null){
-                return (1,"Course is already exists");
+                return (1,"Course already exists");
             }
             SqlConnection cnn  = new SqlConnection(connetionString);
             try{cnn.Open();} catch {return (3,"Connection failed");}
@@ -302,7 +302,7 @@ namespace Submit_System
         public static (int,string) AddExercise(Exercise exercise){
             (Exercise e,int err,String s) = DataBaseManager.ReadExercise(exercise.ID);
             if(e != null){
-                return (1,"Exercise is already exists");
+                return (1,"Exercise already exists");
             }
             SqlConnection cnn  = new SqlConnection(connetionString);
             try{cnn.Open();} catch {return (3,"Connection failed");}
@@ -406,7 +406,7 @@ namespace Submit_System
             (Dictionary<int,DateTime> d,int err,String s) = DataBaseManager.ReadDatseOfExercise(exercise_id);
             if(d != null){
                 if(d.ContainsKey(date_id)){
-                    return (1,"Date id is already exist");
+                    return (1,"Date id already exists");
                 }
             }
             SqlConnection cnn  = new SqlConnection(connetionString);
@@ -792,7 +792,7 @@ namespace Submit_System
                 return (err,s);
             }
             if(c != null){
-                return (1,"Chat is already exists");
+                return (1,"Chat already exists");
             }
             SqlConnection cnn  = new SqlConnection(connetionString);
             try{cnn.Open();} catch {return (3,"Connection failed");}

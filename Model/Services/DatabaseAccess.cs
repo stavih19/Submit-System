@@ -381,23 +381,30 @@ namespace Submit_System {
                 var a = CreateSubmission(exerciseId);
                 return ((a.Item1, 1), a.Item2);
             }
+            else if(code == DBCode.Error)
+            {
+                return ((null, -1), DBCode.Error);
+            }
             (Submission submission, DBCode code2) = Convert(DataBaseManager.ReadSubmission(id));
             if(code2 == DBCode.NotFound)
             {
                 DataBaseManager.DeleteStudentFromSubmission(userID, exerciseId);
-                var a = CreateSubmission(exerciseId);
-                return ((a.Item1, 1), a.Item2);
+                (submission, code2) = CreateSubmission(exerciseId);
+                return ((submission, 1), code2);
+            }
+            else if(code2 == DBCode.Error)
+            {
+                return ((null, -1), DBCode.Error);
             }
             return ((submission, type), code2);
         }
         public (StudentExInfo, DBCode) GetStudentExerciseInfo(string exId)
         {
-            var exResult = Convert(DataBaseManager.ReadExercise(exId));
-            if(CheckError(exResult.Item2))
+            (Exercise ex, DBCode code) = Convert(DataBaseManager.ReadExercise(exId));
+            if(code != DBCode.OK)
             {
-                return (null, exResult.Item2);
+                return (null, code);
             }
-            var ex = exResult.Item1;
             ((var submission, int type), DBCode code2) = GetStudentSubmission(UserID, exId);
             if(CheckError(code2))
             { 
@@ -885,13 +892,6 @@ namespace Submit_System {
         }
         public DBCode DeleteExercise(string exerciseId)
         {
-            (Dictionary<string, List<SubmissionLabel>> dict, DBCode code) = GetSubmissionLabels(exerciseId);
-            // cannot delete an exercise if student already submitted it
-            var lst = dict.Values.SelectMany(x => x).ToList();
-            if(lst.Any())
-            {
-                return DBCode.NotAllowed;
-            }
             return DataBaseManager.DeleteExercise(exerciseId);
         }
     }

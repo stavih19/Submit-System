@@ -134,6 +134,13 @@ namespace Submit_System.Controllers
             System.IO.File.Delete(path);
             return Ok();
         }
+        [HttpPost]
+        [Route("Teacher/RegisterTeacher")]
+        public ActionResult RegisterTeacher(string courseId, [FromBody] string email)
+        {
+            return ServerError();
+        }
+
     }
 }
 
