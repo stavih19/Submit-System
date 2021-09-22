@@ -46,9 +46,9 @@ INSERT INTO Student_Course VALUES (@Yosi,@course_id1), (@Yosi, @course_id2), (@D
 INSERT INTO Checker_Course VALUES (@Tal, @course_id1), (@Tal, @course_id2);
 
 INSERT INTO Metargel_Course VALUES (@Yosi,@course_id3), (@Danny,@course_id1);
-INSERT INTO Exercise VALUES (@exercise1, 'ex1', @course_id1, '?', 1, 'Courses\89111_2021\Exercises\ex1\', '10_20', 'python', 60, 20, 1, 1, 250, 10, null, GETDATE()),
-                            (@exercise2, 'ex2', @course_id1, '?', 1, 'Courses\89111_2021\Exercises\ex2\', '10_20', 'python', 60, 20, 1, 1, 250, 10, null, GETDATE()),
-                            (@exercise3, 'ex1', @course_id3, '?', 1, 'Courses\89115_2021\Exercises\ex1\', '10_20', 'python', 60, 20, 1, 1, 250, 10, null, GETDATE());
+INSERT INTO Exercise VALUES (@exercise1, 'ex1', @course_id1, '?', 1, 'Courses\89111_2021\Exercises\ex1\', '10_20', 'python3', 60, 20, 1, 1, 250, 10, null, GETDATE()),
+                            (@exercise2, 'ex2', @course_id1, '?', 1, 'Courses\89111_2021\Exercises\ex2\', '10_20', 'python3', 60, 20, 1, 1, 250, 10, null, GETDATE()),
+                            (@exercise3, 'ex1', @course_id3, '?', 1, 'Courses\89115_2021\Exercises\ex1\', '10_20', 'python3', 60, 20, 1, 1, 250, 10, null, GETDATE());
 
 
 INSERT INTO Submission_Dates(exercise_id, submission_date, reduction, group_number)
@@ -63,12 +63,16 @@ INSERT INTO Submission_Dates(exercise_id, submission_date, reduction, group_numb
 VALUES (@exercise3, @date1time, 0, 0);
 DECLARE @date3 as int = IDENT_CURRENT('Submission_Dates');
 
-INSERT INTO Submission Values (@sub1, @exercise1, 'Courses\89111_2021\Exercises\ex1\Submissions\576888433', 100, 100, 100, '?', 3, @date1, GETDATE(), 0, null),
-                                (@sub15, @exercise1, 'Courses\89111_2021\Exercises\ex1\Submissions\576888433', 100, 100, 100, '?', 3, @date1, GETDATE(), 0, null),
+INSERT INTO Submission Values (@sub1, @exercise1, 'Courses\89111_2021\Exercises\ex1\Submissions\576888433', 100, 100, 100, '?', 2, @date1, GETDATE(), 0, null),
+                                (@sub15, @exercise1, 'Courses\89111_2021\Exercises\ex1\Submissions\' + @Dana, -1, -1, -1, '?', 1, @date1, GETDATE(), 0, null),
+                                (@sub12, @exercise1, 'Courses\89111_2021\Exercises\ex1\Submissions\' + @Amit, -1, -1, -1, '?', 3, @date1, GETDATE(), 0, null),
                                 (@sub2, @exercise2, 'Courses\89111_2021\Exercises\ex2\Submissions\576888433', -1,-1, -1, '?', 0, @date2, null , 0, null),
                                 (@sub3, @exercise3, 'Courses\89115_2021\Exercises\ex1\Submissions\123767888', -1,-1, -1, '?', 0, @date3, null, 0, null);
 
-INSERT INTO Submitters VALUES (@Yosi, @sub1, 1, @exercise1), (@Yosi, @sub2, 1, @exercise2), (@Danny, @sub3, 1, @exercise3),  (@Dana, @sub15, 1, @exercise1);
+INSERT INTO Submitters VALUES (@Yosi, @sub1, 1, @exercise1),
+                                (@Dana, @sub15, 1, @exercise1),
+                                (@Yosi, @sub2, 1, @exercise2),
+                                (@Danny, @sub3, 1, @exercise3);
 INSERT INTO Chat VALUES (@chat1, @sub1, 1, 1), (@chat2, @sub2, 0, 0);
 INSERT INTO Message
     (chat_id,attached_file,message_text,sender_user_id,message_status,course_id,

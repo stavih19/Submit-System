@@ -209,6 +209,7 @@ namespace Submit_System
                         Name = dataReader.GetValue(4).ToString(),
                         Date = (DateTime) dataReader.GetValue(5)
                     };
+                    display.TeacherName = GetRandomTeacher(display.CourseID).Item1;
                     lst.Add(display);
                 }
             } catch {
@@ -1125,6 +1126,11 @@ namespace Submit_System
             parameters[0] = CreateParameter("@ID", SqlDbType.VarChar, exerciseId);
             return HandleNonQuery(sql, parameters);
         }
-        
+        public static (string, DBCode) GetRandomTeacher(string courseId)
+        {
+            string sql = "SELECT TOP 1 name FROM Metargel_Course AS MC INNER JOIN Users AS U ON U.user_id = MC.user_id AND MC.course_id=@ID";
+            SqlParameter[] parameters = { CreateParameter("@ID", SqlDbType.VarChar, courseId) };
+            return SingleRecordQuery(sql, parameters, (SqlDataReader dataReader) => dataReader.GetValue(0)?.ToString());
+        }
     }
 }

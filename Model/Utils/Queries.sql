@@ -276,8 +276,8 @@ SELECT
     C.course_number,
     S.exercise_id,
     E.exercise_name,
-    SUM(case when submission_status = 1 then 1 else 0 end) AS to_check, 
-    SUM(case when submission_status = 3 then 1 else 0 end) AS appeals 
+    SUM(CASE WHEN submission_status = 1 THEN 1 ELSE 0 END) AS to_check, 
+    SUM(CASE WHEN submission_status = 3 THEN 1 ELSE 0 END) AS appeals 
 FROM Submission AS S
     INNER JOIN Checker_Exercise AS CE
         ON CE.exercise_id = S.exercise_id AND CE.user_id = @ID
@@ -286,6 +286,7 @@ FROM Submission AS S
     INNER JOIN Courses AS C
         ON C.course_id = E.course_id
 GROUP BY S.exercise_id, E.exercise_name, C.course_name,  C.course_number
+ORDER BY (CASE WHEN to_check > 0 OR appeals > 0 THEN 0 ELSE 1 END), E.creation
 ---HasOldExercise---
 SELECT 1 FROM Exercise AS E
 INNER JOIN Courses AS C
