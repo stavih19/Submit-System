@@ -6,7 +6,8 @@ import { ApprovalService } from 'src/app/approval.service';
 import { Chat } from 'src/Modules/chat';
 import { ExtenstionRequest } from 'src/Modules/Extenstion/extenstion-request';
 import { Message } from 'src/Modules/message';
-import { TeamLabel } from 'src/Modules/Reduce/team-label';
+import { TeacherDateDisplay } from 'src/Modules/Reduce/teacher-date-display';
+
 import { ChatDialogComponent } from '../../student/before-submition-exe/chat-dialog/chat-dialog.component';
 
 @Component({
@@ -31,38 +32,9 @@ export class ExtensionComponent implements OnInit {
   @ViewChild("alert", {static: false}) alert: ElementRef;
   @ViewChild("approveButton", {static: false}) approveButton: ElementRef;
 
-  requests: ExtenstionRequest[] = [
-    {
-      name: "יוסי",
-      id: 123456789,
-      text: "שלום מתרגל",
-      file: "file.pdf",
-      team: "01"
-    },
-    {
-      name: "רמי",
-      id: 123456789,
-      text: "שלום מתרגל יקר",
-      file: "file.pdf",
-      team: "03"
-    }
-  ];
-
-  teams: string[] = ["01", "02", "03"];
   selectedOption: string = "01";
 
-  reduceTable: TeamLabel[] = [
-    {
-      name: "01",
-      date: new Date()
-    }, {
-      name: "02",
-      date: new Date()
-    }, {
-      name: "03",
-      date: new Date()
-    }
-  ];
+  reduceTable: TeacherDateDisplay[] = [];
   submitionColumns: string[] = ["teamDate", "teamName"];
   preTeamSelect: string = this.selectedOption;
 

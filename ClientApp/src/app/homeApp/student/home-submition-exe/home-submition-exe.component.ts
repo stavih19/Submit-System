@@ -34,7 +34,8 @@ export class HomeSubmitionExeComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.getExeLists(this.selectExe.courseID);
+    console.log(this.selectExe);
+    this.getExeLists();
   }
 
   changeIsToShowAlert(isToShowAlert: boolean) {
@@ -55,8 +56,8 @@ export class HomeSubmitionExeComponent implements OnInit {
     this.errorMessage = errorMessage;
   }
 
-  getExeLists(courseID) {
-    let url = 'https://localhost:5001/Student/ExerciseList?userid=' + this.token + '&coursed=' + courseID;
+  getExeLists() {
+    let url = 'https://localhost:5001/Student/ExerciseList';
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {
@@ -78,7 +79,7 @@ export class HomeSubmitionExeComponent implements OnInit {
     )
   }
 
-  onSelect(exe) {
+  async onSelect(exe: any) {
     this.selectedExe = exe;
     this.child.onSelect(exe);
   }

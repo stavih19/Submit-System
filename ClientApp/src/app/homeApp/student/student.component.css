@@ -1,39 +1,67 @@
 .studentGeneral {
-    background: none;
-    height: 500px;
-    width: 100%;
-}
+    background-color: #eee;
+    height: 800px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    border-radius: 10px;
 
-.headersLine {
-    height: 35px;
-    text-align: right;
-}
+    display: grid;
+    grid-template-areas:
+    'courseHeader exeHeader'
+    'courseTable exeTable'
+    'courseTable rateHeader'
+    'courseTable rateTable';
 
+    padding: 50px;
+    grid-gap: 40px;
+    padding-top: 8px;
+    grid-template-rows: 3% 30% 3% 30%;
+    grid-template-columns: 22% 73%;
+}
+.courseHeaderLine, .exeHeaderLine, .rateHeaderLine {
+    padding-top: 20px;
+}
+.courseHeaderLine {
+    padding-left: 40%;
+}
+.exeHeaderLine {
+    padding-left: 43%;
+}
+.rateHeaderLine {
+    padding-left: 45%;
+}
+.courseHeaderLine {
+    grid-area: courseHeader;
+}
+.exeHeaderLine {
+    grid-area: exeHeader;
+}
+.rateHeaderLine {
+    grid-area: rateHeader;
+}
 .coursesList {
-    height: 465px;
-    width: 100%;
-    border-style: ridge;
     direction: rtl;
+    grid-area: courseTable;
 }
-
+.coursesList, .exeToSubmitContent, .gradeContent {
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    border-radius: 10px;
+    background-color: White;
+}
 .exeToSubmitContent {
-    height: 215px;
-    width: 100%;
-    border-style: ridge;
     overflow: scroll;
+    grid-area: exeTable;
 }
-
 .gradeContent {
-    height: 215px;
-    width: 100%;
-    border-style: ridge;
     overflow: scroll;
+    grid-area: rateTable;
 }
-
 .courseDetails {
     color: black;
 }
-
 /* HeroesComponent's private CSS styles */
 .coursesEelemnts {
     margin: 0 0 2em 0;
@@ -85,31 +113,34 @@
     margin-right: .8em;
     border-radius: 4px 4px 4px 4px;
 }
-
 input {
     padding: .5rem;
 }
-
 .gap {
     height: 10px;
 }
-
 table {
     width: 100%;
 }
-
 .rowTable {
     cursor: pointer;
 }
-
 .rowTable:hover {
     background-color: #eee;
 }
-
 table {
     text-align: right;
 }
-
 .headerLabel {
+    text-align: right;
+}
+.headerLabel {
+    padding-right: 25px;
+}
+.courseTD {
+    padding-right: 10px;
+}
+.textContent {
+    padding-right: 10px;
     text-align: right;
 }

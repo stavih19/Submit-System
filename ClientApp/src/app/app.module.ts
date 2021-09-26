@@ -42,6 +42,9 @@ import { ChatAdvancedChecksComponent } from './homeApp/teacher/exe/chat-auto-che
 import { ExtensionComponent } from './homeApp/teacher/extension/extension.component';
 import { AppealComponent } from './homeApp/teacher/appeal/appeal.component';
 import { AutoCheckComponent } from './homeApp/teacher/auto-check/auto-check.component';
+import { ChatDeclarationComponent } from './homeApp/student/before-submition-exe/chat-declaration/chat-declaration.component';
+import { MainExeComponent } from './homeApp/checker/main-exe/main-exe.component';
+import { ExeDetailComponent } from './homeApp/checker/exe-detail/exe-detail.component';
 
 @NgModule({
   declarations: [
@@ -69,7 +72,10 @@ import { AutoCheckComponent } from './homeApp/teacher/auto-check/auto-check.comp
     ChatAdvancedChecksComponent,
     ExtensionComponent,
     AppealComponent,
-    AutoCheckComponent
+    AutoCheckComponent,
+    ChatDeclarationComponent,
+    MainExeComponent,
+    ExeDetailComponent
   ],
   entryComponents: [
     ChatDialogComponent,
@@ -78,7 +84,8 @@ import { AutoCheckComponent } from './homeApp/teacher/auto-check/auto-check.comp
     ChatEditCheckerComponent,
     ChatEditTeacherComponent,
     ChatAutoChecksComponent,
-    ChatAdvancedChecksComponent
+    ChatAdvancedChecksComponent,
+    ChatDeclarationComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

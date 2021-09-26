@@ -14,8 +14,8 @@ import { error } from 'selenium-webdriver';
 })
 export class LoginComponent implements OnInit {
   checkoutForm = this.formBuilder.group({
-    userName: [''],
-    password: ['']
+    userName: ['576888433'],
+    password: ['password']
   });
   static logedIn: any;
   
@@ -48,6 +48,6 @@ export class LoginComponent implements OnInit {
       }, error => {
         console.log(error);
       }
-    )
+    );
   }
 }

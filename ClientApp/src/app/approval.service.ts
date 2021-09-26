@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { Test } from 'src/Modules/Teacher/test';
+import { TestInput } from 'src/Modules/Teacher/test-input';
 
 @Injectable({
   providedIn: 'root'
@@ -11,12 +13,14 @@ export class ApprovalService {
   private token = new BehaviorSubject("");
   private exeStatus = new BehaviorSubject("");
   private theacherStatus = new BehaviorSubject("");
+  private newAutoTest = new BehaviorSubject({ } as TestInput);
 
   logedInStorage = this.logedIn.asObservable();
   userNameStorage = this.userName.asObservable();
   tokenStorage = this.token.asObservable();
   exeStatusStorage = this.exeStatus.asObservable();
   theacherStatusStorage = this.theacherStatus.asObservable();
+  newAutoTestStorage = this.newAutoTest.asObservable();
 
   constructor() { }
 
@@ -38,5 +42,9 @@ export class ApprovalService {
 
   updateTheacherStatus(status: string): void {
     this.theacherStatus.next(status);
+  }
+
+  updateNewAutoStatus(test: TestInput): void {
+    this.newAutoTest.next(test);
   }
 }

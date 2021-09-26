@@ -2,9 +2,9 @@
     <div class="col-3">
         תרגילים
         <div class="box">
-            <div *ngFor="let exeName of exeNameList; let i = index" class="exeBox">
+            <div *ngFor="let exe of exeNameList; let i = index" class="exeBox">
                 <span class="exeLabel list-group-item list-group-item-action">
-                    {{ exeName }}
+                    {{ exe.name }}
                     <span class="editExe" (click)="editExe(i)">...</span>
                     <span class="close" (click)="deleteExe(i)">&times;</span>
                 </span>
@@ -17,11 +17,11 @@
     <div class="col-3">
         תרגילים לשעבר
         <div class="box">
-            <div *ngFor="let exe of oldExeList">
-                שנה: <span class="year">{{ exe.year }}</span>
-                <div *ngFor="let exeName of exe.exeNameList" class="exeBox">
+            <div *ngFor="let pair of allExeList | keyvalue">
+                שנה: <span class="year">{{ pair.key }}</span>
+                <div *ngFor="let exe of pair.value" class="exeBox">
                     <span class="list-group-item list-group-item-action">
-                        {{ exeName }}
+                        {{ exe.name }}
                     </span>
                 </div>
             </div>
@@ -33,10 +33,10 @@
     <div class="col-3">
         מתרגלים
         <div class="shrotBox">
-            <div *ngFor="let teacherName of teacherNamesList; let i = index" class="nameBox">
+            <div *ngFor="let teacher of teacherNamesList; let i = index" class="nameBox">
                 <span class="list-group-item list-group-item-action">
-                    <span class="close" (click)="deleteTeacher(i)">&times;</span>
-                    {{ teacherName }}
+                    <span class="close" (click)="deleteTeacher(teacher.id)">&times;</span>
+                    {{ teacher.name }}
                 </span>
             </div>
         </div>
@@ -53,10 +53,10 @@
     <div class="col-3">
         בודקים
         <div class="shrotBox">
-            <div *ngFor="let checkerName of checkersNamesList; let i = index" class="nameBox">
+            <div *ngFor="let checker of checkersNamesList; let i = index" class="nameBox">
                 <span class="list-group-item list-group-item-action">
-                    <span class="close" (click)="deleteChecker(i)">&times;</span>
-                    {{ checkerName }}
+                    <span class="close" (click)="deleteChecker(checker.id)">&times;</span>
+                    {{ checker.name }}
                 </span>
             </div>
         </div>

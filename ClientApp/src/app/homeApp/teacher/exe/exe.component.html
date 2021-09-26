@@ -3,50 +3,80 @@
         1.
         <mat-form-field class="example-full-width">
             <mat-label>שם התרגיל</mat-label>
-            <input matInput placeholder="exe 1" value="">
+            <input matInput placeholder="exe 1" [value]="exeName"
+            [(ngModel)]="exeObject.Exercise.name" [disabled]="teacherStatus === 'edit'">
         </mat-form-field>
     </div>
     <div class="submitDate">
         2.
         <mat-form-field appearance="fill">
             <mat-label>תאריך הגשה</mat-label>
-            <input matInput [matDatepicker]="picker">
+            <input matInput [matDatepicker]="picker" [(ngModel)]="exeObject.MainDate">
             <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
             <mat-datepicker #picker></mat-datepicker>
         </mat-form-field>
     </div>
     <div class="multiplePartners">
         3.
-        <mat-checkbox class="example-margin">&nbsp;&nbsp;הגשה מרובת משתתפים</mat-checkbox>
+        <mat-checkbox class="example-margin"
+        [(ngModel)]="exeObject.Exercise.multipleSubmission">&nbsp;&nbsp;הגשה מרובת משתתפים</mat-checkbox>
+    </div>
+    <div class="codeLanguage">
+        4.
+        <mat-form-field class="example-full-width">
+            <mat-label>שפת תכנות</mat-label>
+            <input matInput placeholder="" value="" [(ngModel)]="exeObject.Exercise.programmingLanguage">
+        </mat-form-field>
+    </div>
+    <div class="autoTestGradeWeight">
+        5.
+        <mat-form-field class="example-full-width">
+            <mat-label>משקל עבור בדיקה אוטומטית</mat-label>
+            <input matInput placeholder="" type="number" value="" [(ngModel)]="exeObject.Exercise.autoTestGradeWeight">
+        </mat-form-field>
+    </div>
+    <div class="styleTestGradeWeight">
+        6.
+        <mat-form-field class="example-full-width">
+            <mat-label>משקל עבור בדיקת סטייל</mat-label>
+            <input matInput placeholder="" value="" [(ngModel)]="exeObject.Exercise.styleTestGradeWeight">
+        </mat-form-field>
     </div>
     <div class="automaticChecks">
-        4.
+        7.
         בדיקות אוטומטיות
         <button mat-raised-button color="primary" (click)="openAutoChecks()">ערוך רשימה</button>
     </div>
-    <div class="belongCheckers">
-        5.
-        שייך מתרגלים
-        <button mat-raised-button color="primary" (click)="openEditTeacher()">שייך</button>
-    </div>
     <div class="belongTeacher">
-        6.
+        9.
         שייך בודקים
         <button mat-raised-button color="primary" (click)="openEditChekers()">שייך</button>
     </div>
     <div class="reducePoints">
-        7.
+        10.
         הפחתות ניקוד
         <button mat-raised-button color="primary" (click)="openReduceModal()">קבע הפחתות</button>
     </div>
     <div class="reduceTeams">
-        8.ערוך קבוצות איחור
+        11.ערוך קבוצות איחור
         <button mat-raised-button color="primary" (click)="reduceTeams()">קבוצות איחור</button>
     </div>
-    <div class="createButton">
-        <button mat-raised-button color="primary">צור</button>
+    <div class="exefiles">
+        <input type="file" name="file-1[]" (change)="onFileChoose($event)"
+        id="file-1" class="inputfile inputfile-1" style="visibility: hidden;"
+        #file1>
+        <label for="file-1" class="btn btn-primary" type="button" color="primary">
+            בחר קבצים
+        </label>
+        <div>
+            {{ uploadFileName }}
+        </div>
     </div>
     <br>
+    <div class="createButton">
+        <button *ngIf="teacherStatus !== 'edit'" mat-raised-button color="primary" (click)="creat()">צור</button>
+        <button *ngIf="teacherStatus === 'edit'" mat-raised-button color="primary" (click)="edit()">עדכן</button>
+    </div>
 </div>
 <br>
 <div class="row" *ngIf="theacherStatus === ''">
