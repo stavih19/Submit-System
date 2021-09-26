@@ -4,6 +4,9 @@ import { ApprovalService } from 'src/app/approval.service';
 import { Course } from 'src/Modules/course';
 import { ReduceLine } from 'src/Modules/Reduce/reduce-line';
 import { FormBuilder } from '@angular/forms';
+import { TeacherDateDisplay } from 'src/Modules/Reduce/teacher-date-display';
+import { SubmitDate } from 'src/Modules/Reduce/submit-date';
+import { MatDatepickerInputEvent } from '@angular/material';
 
 @Component({
   selector: 'app-chat-reduce',
@@ -12,6 +15,8 @@ import { FormBuilder } from '@angular/forms';
 })
 export class ChatReduceComponent implements OnInit {
   selectedCourse: Course;
+  selectExeId: string;
+  date: Date;
   checkoutForm = this.formBuilder.group({
     date: [''],
     reducePoints: ['']
@@ -23,34 +28,61 @@ export class ChatReduceComponent implements OnInit {
     private appService: ApprovalService
   ) { }
 
-  lines: ReduceLine[] = [
-    {
-      date: new Date,
-      reducePoints: 10
-    },{
-      date: new Date,
-      reducePoints: 10
-    },{
-      date: new Date,
-      reducePoints: 10
-    }
-  ];
+  lines: TeacherDateDisplay[];
 
-  displayedColumns: string[] = [ "weight", "symbol"];
+  displayedColumns: string[] = ["delete", "weight", "symbol"];
 
   ngOnInit() {
+    this.getReduceTeams();
+  }
 
+  getReduceTeams() {
+    let url = 'https://localhost:5001/Teacher/GetDates?exerciseId=' + this.selectExeId;
+    this.httpClient.get(url, 
+    {responseType: 'text'}).toPromise().then(
+      data => {
+        this.lines = JSON.parse(data);
+        console.log(this.lines);
+      }, error => {
+        console.log(error);
+      }
+    );
   }
 
   onSubmit() {
-    let params = { 
-      "date": this.checkoutForm.value.date,
-      "reducePoints": this.checkoutForm.value.reducePoints,
-    };
-    this.lines.push({
-      date: this.checkoutForm.value.date, 
-      reducePoints: parseInt(this.checkoutForm.value.reducePoints)
-    });
-    this.lines = [...this.lines];
+    let params: SubmitDate = { } as SubmitDate;
+    params.date = this.date;
+    params.id = 0;
+    params.exerciseID = this.selectExeId;
+    params.group = 5;
+    params.reduction = this.checkoutForm.value.reducePoints;
+    
+    let url = 'https://localhost:5001/Teacher/AddDate?exerciseId=' + this.selectExeId;
+    this.httpClient.post(url, params,
+    {responseType: 'text'}).toPromise().then(
+      data => {
+        console.log(data.toString());
+        this.getReduceTeams();
+      }, error => {
+        console.log(error);
+      }
+    );
+  }
+
+  dateChanged(event: { value: Date; }) {
+    this.date = event.value;
+  }
+
+  deleteReduction(id: number) {
+    let url = 'https://localhost:5001/Teacher/DeleteDate?dateId=' + id;
+    this.httpClient.delete(url,
+    {responseType: 'text'}).toPromise().then(
+      data => {
+        console.log(data.toString());
+        this.getReduceTeams();
+      }, error => {
+        console.log(error);
+      }
+    );
   }
 }

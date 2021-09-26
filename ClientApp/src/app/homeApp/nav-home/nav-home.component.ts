@@ -20,8 +20,7 @@ export class NavHomeComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    //this.tabs.nativeElement.firstChild.firstChild.click();
-    this.tabs.nativeElement.children[2].firstChild.click();
+    this.tabs.nativeElement.children[1].firstChild.click();
   }
   
   isExpanded = false;
@@ -34,7 +33,7 @@ export class NavHomeComponent implements OnInit, AfterViewInit {
     this.isExpanded = !this.isExpanded;
   }
 
-  onClick(id) {
+  onClick(id: any) {
     document.getElementById('student').style.backgroundColor = "";
     document.getElementById('checker').style.backgroundColor = "";
     document.getElementById('teacher').style.backgroundColor = "";

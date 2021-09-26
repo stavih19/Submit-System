@@ -3,31 +3,28 @@
     {{ errorMessage }}
 </div>
 <div class="row headersLine">{{ selectExe.courseName }}</div>
-<div class="row exeGeneral">
-    <div class="col-3">
-        <div class="row exeList">
-            <ul class="exeEelemnts">
-                <li *ngFor="let exe of exeList"
-                    [class.selected]="exe === selectedExe"
-                    class="exe" (click)="onSelect(exe)">
-                    <div class="badge">
-                        <div class="exeName">
-                            {{ exe.name }}
-                        </div>
+<div class="exeGeneral">
+    <div class="exeList">
+        <ul class="exeEelemnts">
+            <li *ngFor="let exe of exeList"
+                [class.selected]="exe === selectedExe"
+                class="exe" (click)="onSelect(exe)">
+                <div class="badge">
+                    <div class="exeName">
+                        {{ exe.name }}
                     </div>
-                </li>
-            </ul>
-        </div>
+                </div>
+            </li>
+        </ul>
     </div>
-    <div class="col-9">
-        <div *ngIf="exeStatus==='before'" class="exeContent">
-            <app-before-submition-exe
-                [selectExe]="selectExe"
-                [teacherName]="teacherName"
-                (isToShowAlert)="changeIsToShowAlert($event)"
-                (color)="changeColorAlert($event)"
-                (errorMessageText)="changeMessageAlert($event)">
-            </app-before-submition-exe>
-        </div>
+    <div *ngIf="exeStatus==='before'" class="exeContent">
+        <app-before-submition-exe
+            [selectExe]="selectExe"
+            [teacherName]="teacherName"
+            (isToShowAlert)="changeIsToShowAlert($event)"
+            (color)="changeColorAlert($event)"
+            (errorMessageText)="changeMessageAlert($event)">
+            
+        </app-before-submition-exe>
     </div>
 </div>

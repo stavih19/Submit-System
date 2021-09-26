@@ -3,7 +3,8 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ApprovalService } from 'src/app/approval.service';
 import { Course } from 'src/Modules/course';
 import { GradeTable } from 'src/Modules/grade-table';
-import { SubmitTable } from 'src/Modules/submit-table';
+import { RequestLabelTable } from 'src/Modules/Teacher/request-label-table';
+import { SubmitTable } from 'src/Modules/Teacher/submit-table';
 
 @Component({
   selector: 'app-teacher',
@@ -19,14 +20,19 @@ export class TeacherComponent implements OnInit {
   headerText: string;
   teacherName: string;
   coursesList: Course[];
-  submitionColumns: any;
-  submitionDataSource: SubmitTable[];
+  lastExeColumns: string[];
+  lastExeDataSource: SubmitTable[];
+  extenstionDataSource: RequestLabelTable[];
+  appealDataSource: RequestLabelTable[];
   gradeColumns: any;
+  requestColumns: string[];
   gradeDataSource: GradeTable[];
   token: string;
   isToShowAlert: boolean;
   color: string;
   errorMessage: string;
+  exeID: string;
+  exeName: string;
 
   @ViewChild("alert", {static: false}) alert: ElementRef;
 
@@ -45,7 +51,7 @@ export class TeacherComponent implements OnInit {
     this.getCourseList();
     this.getAppealsLoad();
     this.submitionLoad();
-    this.gradeLoad();
+    this.extenstionLoad();
   }
 
   onMark(course: Course): void {
@@ -100,12 +106,13 @@ export class TeacherComponent implements OnInit {
   }
 
   getAppealsLoad() {
-    let url = 'https://localhost:5001/Student/CourseList?token=' + this.token;
+    this.requestColumns = ["courseName", "courseNumber", "exeName", "studentName"];
+    let url = 'https://localhost:5001/Teacher/GetAppeals?token=' + this.token;
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {
-        this.coursesList = JSON.parse(data);
-        console.log(this.coursesList);
+        this.appealDataSource = JSON.parse(data);
+        console.log(this.appealDataSource);
       }, error => {
         console.log(error);
       }
@@ -113,30 +120,30 @@ export class TeacherComponent implements OnInit {
   }
 
   submitionLoad() {
-    this.submitionColumns = ['courseName', 'courseNumber', 'exeName', 'teacherName'];
-    let url = 'https://localhost:5001/Student/ExerciseList?token=' + this.token;
+    this.lastExeColumns = ['courseName', 'courseNumber', 'exeName'];//, 'teacherName'];
+    let url = 'https://localhost:5001/Teacher/ExerciseList?token=' + this.token;
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {
-        this.submitionDataSource = JSON.parse(data);
+        this.lastExeDataSource = JSON.parse(data);
+        console.log(this.lastExeDataSource);
       }, error => {
         console.log(error);
       }
     );
   }
 
-  gradeLoad() {
-    this.gradeColumns = ['courseName', 'courseNumber', 'exeName', 'gradeNumber'];
-    let url = 'https://localhost:5001/Student/GradesList?token=' + this.token;
+  extenstionLoad() {
+    let url = 'https://localhost:5001/Teacher/GetExtensions?token=' + this.token;
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {
-        this.gradeDataSource = JSON.parse(data);
-        console.log(data);
+        this.extenstionDataSource = JSON.parse(data);
+        console.log(this.extenstionDataSource);
       }, error => {
         console.log(error);
       }
-    )
+    );
   }
 
   changeIsToShowAlert(isToShowAlert: boolean) {
@@ -155,5 +162,13 @@ export class TeacherComponent implements OnInit {
   changeMessageAlert(errorMessage: string) {
     console.log(errorMessage);
     this.errorMessage = errorMessage;
+  }
+
+  changeExeID(newExeId: string) {
+    this.exeID = newExeId;
+  }
+
+  changeExeName(exeName: string) {
+    this.exeName = exeName;
   }
 }

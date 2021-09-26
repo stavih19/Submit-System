@@ -1,11 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Course } from 'src/Modules/course';
 import { Router } from '@angular/router';
 import { ApprovalService } from 'src/app/approval.service';
 import { ThrowStmt } from '@angular/compiler';
 import { HttpClient } from '@angular/common/http';
-import { SubmitTable } from 'src/Modules/submit-table';
+import { SubmitTable } from 'src/Modules/Teacher/submit-table';
 import { GradeTable } from 'src/Modules/grade-table';
+import { HomeSubmitionExeComponent } from './home-submition-exe/home-submition-exe.component';
+import { ExerciseDateDisplay } from 'src/Modules/Student/exercise-date-display';
+import { ExerciseGradeDisplay } from 'src/Modules/Student/exercise-grade-display';
 
 @Component({
   selector: 'app-student',
@@ -19,11 +22,12 @@ export class StudentComponent implements OnInit {
   teacherName: string;
   coursesList: Course[];
   submitionColumns: any;
-  submitionDataSource: SubmitTable[];
+  exeToDo: ExerciseDateDisplay[];
   gradeColumns: any;
-  gradeDataSource: GradeTable[];
+  gradeDataSource: ExerciseGradeDisplay[];
   token: string;
 
+  @ViewChild(HomeSubmitionExeComponent, {static: false}) child: HomeSubmitionExeComponent;
 
   constructor(
     private appService: ApprovalService,
@@ -42,24 +46,23 @@ export class StudentComponent implements OnInit {
   }
 
   onSelect(course: Course): void {
-    this.selectedCourse = course;
+    //this.selectedCourse = course;
   }
 
   SelectFirstExe(course: Course) {
     //this.getBeforeEXE(course)
   }
 
-  getBeforeEXE(row) {
+  getBeforeEXE(row: ExerciseDateDisplay) {
     this.selectExe = row;
     this.teacherName = row.teacherName;
-    this.appService.updateExeStatus("before");
+    this.appService.updateExeStatus("before")
   }
 
-  getAfterEXE(row) {
+  getAfterEXE(row: ExerciseGradeDisplay) {
     this.selectExe = row;
-    this.teacherName = row.teacherName;
+    this.teacherName = "";
     this.appService.updateExeStatus("before");
-    //this.appService.updateExeStatus("after");
   }
 
   getExeInfo() { }
@@ -78,11 +81,12 @@ export class StudentComponent implements OnInit {
 
   submitionLoad() {
     this.submitionColumns = ['courseName', 'courseNumber', 'exeName', 'teacherName'];
-    let url = 'https://localhost:5001/Student/ExerciseList?token=' + this.token;
+    let url = 'https://localhost:5001/Student/ExerciseList';
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {
-        this.submitionDataSource = JSON.parse(data);
+        this.exeToDo = JSON.parse(data);
+        console.log(this.exeToDo);
       }, error => {
         console.log(error);
       }
@@ -96,6 +100,7 @@ export class StudentComponent implements OnInit {
     {responseType: 'text'}).toPromise().then(
       data => {
         this.gradeDataSource = JSON.parse(data);
+        console.log(this.gradeDataSource);
       }, error => {
         console.log(error);
       }

@@ -1,20 +1,37 @@
 .headersLine {
     height: 35px;
 }
-
 .exeGeneral {
-    background: none;
-    height: 500px;
-    width: 100%;
-}
+    background-color: #eee;
+    height: 800px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    border-radius: 10px;
 
+    display: grid;
+    row-gap: 0px;
+    grid-template-areas: 
+    'exeList exeDetails';
+
+    padding: 50px;
+    grid-gap: 40px;
+    grid-template-rows: 70%;
+    grid-template-columns: 18% 77%;
+}
+.exeList, .exeContent {
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    border-radius: 10px;
+    background-color: white;
+}
 .exeList {
-    height: 465px;
-    width: 100%;
-    border-style: ridge;
-    direction: rtl;
+    grid-area: exeList;
 }
-
+.exeContent {
+    grid-area: exeDetails;
+}
 /* HeroesComponent's private CSS styles */
 .exeEelemnts {
     margin: 0 0 2em 0;
@@ -66,12 +83,6 @@
     margin-right: .8em;
     border-radius: 4px 4px 4px 4px;
 }
-
-.exeContent {
-    height: 93%;
-    border-style: ridge;
-}
-
 .alert {
     text-align: "left";
     direction: ltr;

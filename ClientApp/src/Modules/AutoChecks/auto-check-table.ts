@@ -3,7 +3,7 @@ export class AutoCheckTable {
     studentName: string;
     statusCheck: string;
     statusSubmission: string;
-    autoGrade: number;
-    manualGrade: number;
+    autoGrade: string;
+    manualGrade: string;
     checked: boolean;
 }

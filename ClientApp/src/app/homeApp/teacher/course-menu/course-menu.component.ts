@@ -1,6 +1,8 @@
+import { HttpClient } from '@angular/common/http';
 import { ElementRef, EventEmitter, Input, Output } from '@angular/core';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ApprovalService } from 'src/app/approval.service';
+import { Course } from 'src/Modules/course';
 
 @Component({
   selector: 'app-course-menu',
@@ -8,34 +10,73 @@ import { ApprovalService } from 'src/app/approval.service';
   styleUrls: ['./course-menu.component.css']
 })
 export class CourseMenuComponent implements OnInit {
-  exeNameList: string[] = ["exe 1", "exe 2", "exe 3", "exe 4"];
-  oldExeList: any[] = [
-    {
-      year: "2020",
-      exeNameList: ["exe 1", "exe 2"]
-    },
-    {
-      year: "2021",
-      exeNameList: ["exe 1", "exe 2", "exe 3"]
-    }
-  ];
-  teacherNamesList: string[] = ["חגי", "יובל", "שני"];
-  checkersNamesList: string[] = ["יוסי", "עדי", "אביעד"];
+  token: string;
+  allExeList: any;
+  exeNameList: any[];
+  teacherNamesList: string[];
+  checkersNamesList: string[];
 
   constructor(
     private appService: ApprovalService,
-  ) { }
-
-  ngOnInit() {
-    
+    private httpClient: HttpClient,
+  ) {
+    this.appService.tokenStorage.subscribe(token => this.token = token);
   }
 
-  @Input() selectedCourse: any;
+  ngOnInit() {
+    this.getExercises();
+    this.getTeachers();
+    this.getCheckers();
+  }
+
+  @Input() selectedCourse: Course;
   @ViewChild('teacherID', { static: false}) teacherID: ElementRef;
   @ViewChild('checkerID', { static: false}) checkerID: ElementRef;
+  @Output() exeID = new EventEmitter<string>();
+  @Output() exeName = new EventEmitter<string>();
   @Output() isToShowAlert = new EventEmitter<boolean>();
   @Output() color = new EventEmitter<string>();
   @Output() errorMessageText = new EventEmitter<string>();
+
+  getExercises() {
+    let url = 'https://localhost:5001/Teacher/AllExercises?token=' + this.token + '&courseid=' + this.selectedCourse.id;
+    this.httpClient.get(url, 
+    {responseType: 'text'}).toPromise().then(
+      data => {
+        this.allExeList = JSON.parse(data);
+        this.exeNameList = this.allExeList[(new Date()).getFullYear().toString()];
+        console.log(this.exeNameList);
+      }, error => {
+        console.log(error);
+      }
+    );
+  }
+
+  getTeachers() {
+    let url = 'https://localhost:5001/Teacher/GetTeachers?token=' + this.token + '&courseid=' + this.selectedCourse.id;
+    this.httpClient.get(url, 
+    {responseType: 'text'}).toPromise().then(
+      data => {
+        this.teacherNamesList = JSON.parse(data);
+        console.log(this.teacherNamesList);
+      }, error => {
+        console.log(error);
+      }
+    );
+  }
+
+  getCheckers() {
+    let url = 'https://localhost:5001/Teacher/GetTeachers?token=' + this.token + '&courseid=' + this.selectedCourse.id;
+    this.httpClient.get(url, 
+    {responseType: 'text'}).toPromise().then(
+      data => {
+        this.checkersNamesList = JSON.parse(data);
+        console.log(this.checkersNamesList);
+      }, error => {
+        console.log(error);
+      }
+    );
+  }
 
   createExe() {
     this.appService.updateTheacherStatus("create");
@@ -46,24 +87,51 @@ export class CourseMenuComponent implements OnInit {
     // same as cerate
   }
 
-  editExe(index) {
+  editExe(index: number) {
+    this.exeID.emit(this.exeNameList[index].id);
+    this.exeName.emit(this.exeNameList[index].name)
     this.appService.updateTheacherStatus("edit");
   }
 
   addTeacher() {
     const newID = this.teacherID.nativeElement.value;
     if(this.checkIDvalidation(newID)) { return; }
-    const teacherName = this.getTeacherName(newID);
-    this.teacherNamesList.push(teacherName);
-    this.teacherID.nativeElement.value = "";
+    
+    let params = {
+      "courseid": this.selectedCourse.id,
+      "teacherid": newID,
+    };
+    console.log(params);
+    let url = 'https://localhost:5001/Teacher/AddTeacher?courseid=' + this.selectedCourse.id + '&teacherid=' + newID;
+    console.log(this.selectedCourse);
+    this.httpClient.post(url, params, 
+    {responseType: 'text'}).toPromise().then(
+      data => {
+        data = JSON.parse(data.toString());
+        this.getTeachers();
+        console.log(data);
+      }, error => {
+        console.log(error);
+      }
+    );
   }
 
   addChecker() {
     const newID = this.checkerID.nativeElement.value;
+    console.log(newID);
     if(this.checkIDvalidation(newID)) { return; }
-    const teacherName = this.getCheckerName(newID);
-    this.checkersNamesList.push(teacherName);
-    this.checkerID.nativeElement.value = "";
+
+    let url = 'https://localhost:5001/Teacher/AddChecker?courseid=' + this.selectedCourse.id + '&checkerid=' + newID;
+    this.httpClient.post(url,
+    {responseType: 'text'}).toPromise().then(
+      data => {
+        data = JSON.parse(data.toString());
+        this.getCheckers();
+        console.log(data);
+      }, error => {
+        console.log(error);
+      }
+    );
   }
 
   checkIDvalidation(id: any): boolean {
@@ -91,16 +159,27 @@ export class CourseMenuComponent implements OnInit {
     return id;
   }
 
-  deleteExe(index) {
-    console.log(this.exeNameList.splice(index, 1));
+  deleteExe(index: number) {
+    let url = 'https://localhost:5001/Teacher/DeleteExercise?exerciseId=' + this.exeNameList[index].id;
+    this.httpClient.delete(url, 
+    {responseType: 'text'}).toPromise().then(
+      data => {
+        console.log(data.toString());
+        setTimeout(() => {
+          this.getCheckers();
+        }, 1000);
+      }, error => {
+        console.log(error);
+      }
+    );
   }
 
-  deleteTeacher(index) {
-    console.log(this.teacherNamesList.splice(index, 1));
+  deleteTeacher(index: number) {
+    //console.log(this.teacherNamesList.splice(index, 1));
   }
 
-  deleteChecker(index) {
-    console.log(this.checkersNamesList.splice(index, 1));
+  deleteChecker(index: number) {
+    //console.log(this.checkersNamesList.splice(index, 1));
   }
 
   errorMessage(color:string, message: string) {

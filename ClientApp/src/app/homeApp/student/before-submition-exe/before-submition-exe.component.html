@@ -1,75 +1,89 @@
 <form [formGroup]="checkoutForm" class="example-form" (ngSubmit)="onSubmit(true)">
-    <div class="row firstRow">
-        <div class="col-3">
-            <div class="exeNameLabel">
-                <div class="exNameHeader">
-                    שם התרגיל:
-                </div>
-                &nbsp;
-                <div class="exeNameText" *ngIf="selectedExeInfo">
-                    {{ selectedExeInfo.exName }}
-                </div>
-            </div>
-        </div>
-        <div class="col-6">
-            <div class="submitStatusLabel">
-                <div class="statusLabel">
-                    סטטוס הגשה:&nbsp;&nbsp;
-                </div>
-                <diV class="statusText">
-                    {{ exeStatus}}
-                </diV>
-            </div>
-        </div>
-        <div class="col-3">
-            <div class="extenstionButton">
-                <label class="btn btn-primary" color="primary" type="button"
-                    (click)="askForChat()">
-                    {{ converstionTarget }}
-                </label>
-            </div>
-        </div>
+    <div class="detailsTable">
+        <table mat-table [dataSource]="detailColumns" class="mat-elevation-z8">
+            <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef class="statusHeader">
+                    סטטוס הגשה
+                </th>
+                <td mat-cell *matCellDef="let detail" class="statusText">
+                    {{ detail.status }}
+                </td>
+            </ng-container>
+            <ng-container matColumnDef="date">
+                <th mat-header-cell *matHeaderCellDef class="dateHeader">
+                    תאריך הגשה
+                </th>
+                <td mat-cell *matCellDef="let detail" class="dateText">
+                    {{ detail.date }}
+                </td>
+            </ng-container>
+            <ng-container matColumnDef="ids">
+                <th mat-header-cell *matHeaderCellDef class="idsHeader">
+                    מגישים
+                </th>
+                <td mat-cell *matCellDef="let detail" style="text-align: right;">
+                    <div *ngIf="isMultipleSubmission; else multipleSubmission">
+                        הגשה ביחידים
+                    </div>
+                    <ng-template #multipleSubmission>
+                        <mat-form-field class="example-full-width idsText">
+                            <input matInput placeholder="example: id1, id2" value=""
+                            formControlName="additionalSubmitors" #additionalSubmitors
+                            [disabled]="exeStatus === 'ממתתין לבדיקה'">
+                        </mat-form-field>
+                    </ng-template>
+                </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="detailColummsHeader"></tr>
+            <tr mat-row *matRowDef="let row; columns: detailColummsHeader;">
+            </tr>
+        </table>
     </div>
-    <div class="row secondRow">
-        <div class="col-3">
-            <div class="moreSubmitersLabel">
-                    מגישים נוספים:
-            </div>
-        </div>
-        <div class="col-6">
-            <div *ngIf="isMultipleSubmission; else multipleSubmission">
-                <div class="noMultipleSubmission">
-                    הגשה ביחידים
-                </div>
-            </div>
-            <ng-template #multipleSubmission>
-                <mat-form-field class="example-full-width">
-                    <input matInput placeholder="example: id1, id2" value=""
-                    formControlName="additionalSubmitors" #additionalSubmitors
-                    [disabled]="exeStatus === 'ממתתין לבדיקה'">
-                </mat-form-field>
-            </ng-template>
-        </div>
-        <div class="col-3"></div>
+    <div class="extenstionButton">
+        <label class="btn btn-primary" color="primary" type="button"
+            (click)="askForChat()">
+            {{ converstionTarget }}
+        </label>
     </div>
-    <div class="row thirdRow">
-        <div class="col-3">
-            <div class="uploadFilesLabel">
-                קבצים שהועלו:
-            </div>
-        </div>
-        <div class="col-6 fileUploadBox" #fileUploadBox
+    <div class="resultsButton">
+        <button mat-raised-button class="btn btn-primary" style="width: 100px;"
+            color="primary" type="button" (click)="lastFileRun()"
+            [disabled]="!isSubmitSuccess">
+            תוצאות ריצה
+        </button>                          
+    </div>
+    <div class="downloadButton">
+        <button mat-raised-button class="btn btn-primary" style="width: 100px;"
+            color="primary" type="button" (click)="downloadFiles()"
+            [disabled]="!isSubmitSuccess">
+            הורד קבצים
+        </button>
+    </div>
+    <div class="runButton">
+        <button mat-raised-button class="btn btn-primary" style="width: 100px;"
+            color="primary" type="button" (click)="onSubmit(false)"
+            [disabled]="(isSubmitCheck || exeStatus === 'נבדק')">
+            ניסיון הרצה
+        </button>                                
+    </div>
+    <div class="submitButton">
+        <button mat-raised-button class="btn btn-primary" 
+        style="width: 100px;" color="primary" type="submit"
+        [disabled]="exeStatus === 'נבדק'">
+        הגש
+        </button>
+    </div>
+    <div class="uploadFilesLabel">
+        <h4>קבצים שהועלו:</h4>
+        <div class="fileUploadBox" #fileUploadBox
             (dragover)="onDragOver($event)"
             (dragleave)="onDragLeave($event)"
             (drop)="onDrop($event)">
             <div class="row fileUploadText">
                 <div *ngFor="let file of uploadFileList">
-                    <div>
-                        <span class="close times"
-                        (click)="eraseUploadFile(file)" style="cursor: pointer;">x&nbsp;&nbsp;</span>
-                        <span>{{ file.name }}</span>
-                        <br>
-                    </div>
+                    <span class="close times fileSpan"
+                    (click)="eraseUploadFile(file)" style="cursor: pointer;">x&nbsp;&nbsp;</span>
+                    <span class="fileName" (click)="downloadFile(file.name)">{{ file }}</span>
                 </div>
             </div>
             <div class="row">
@@ -77,57 +91,11 @@
                     <input type="file" name="file-1[]" (change)="onFileChoose($event)"
                     id="file-1" class="inputfile inputfile-1" style="visibility: hidden;"
                     #file1>
-                    <label for="file-1" class="btn btn-primary" type="button" color="primary"
+                    <label for="file-1" class="btn btn-primary selectFilesButton" type="button" color="primary"
                     #file1label>
                         בחר קבצים
                     </label>
                 </div>
-            </div>
-        </div>
-        <div class="col-3">
-            <div class="resultsButton">
-                <button mat-raised-button class="btn btn-primary" style="width: 100px;"
-                    color="primary" type="button" (click)="lastFileRun()"
-                    [disabled]="!isSubmitSuccess">
-                    תוצאות ריצה
-                </button>                          
-            </div>
-            <div class="row" class="resultsButton">
-                <button mat-raised-button class="btn btn-primary" style="width: 100px;"
-                    color="primary" type="button" (click)="downloadFiles()"
-                    [disabled]="!isSubmitSuccess">
-                    הורד קבצים
-                </button>
-            </div>
-            <div class="resultsButton">
-                <button mat-raised-button class="btn btn-primary" style="width: 100px;"
-                    color="primary" type="button" (click)="onSubmit(false)"
-                    [disabled]="(isSubmitCheck || exeStatus === 'נבדק')">
-                    ניסיון הרצה
-                </button>                                
-            </div>
-        </div>
-    </div>
-    <div class="row forthRow">
-        <div class="col-3"></div>
-        <div class="col-6">
-            <div class="submitDate">
-                <div class="submitDateLabel">
-                    תאריך הגשה:
-                </div>
-                &nbsp;&nbsp;
-                <div class="submitDateText" *ngIf="selectedExeInfo">
-                    {{ selectedExeInfo.dates[0].date.substring(0, 10) }}
-                </div>
-            </div>
-        </div>
-        <div class="col-3">
-            <div class="submitButton">
-                <button mat-raised-button class="btn btn-primary" 
-                style="width: 100px;" color="primary" type="submit"
-                [disabled]="exeStatus === 'נבדק'">
-                הגש
-                </button>
             </div>
         </div>
     </div>

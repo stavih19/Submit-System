@@ -61,3 +61,6 @@
 .example-viewport {
     height: 200px;
 }
+.close {
+    cursor: pointer;
+}
