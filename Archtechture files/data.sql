@@ -22,6 +22,7 @@ DECLARE @exercise2 AS VARCHAR(32) = N'89111_2021_ex2';
 DECLARE @exercise3 AS VARCHAR(32) = N'89115_2021_ex1';
 DECLARE @sub1 AS VARCHAR(32) = N'89111_2021_ex1_576888433';
 DECLARE @sub15 AS VARCHAR(32) = N'89111_2021_ex1_576888444';
+DECLARE @sub12 AS VARCHAR(32) = N'89111_2021_ex1_250283520';
 DECLARE @sub2 AS VARCHAR(32) = N'89111_2021_ex2_576888433';
 DECLARE @sub3 AS VARCHAR(32) = N'89115_2021_ex1_123767888';
 DECLARE @date1time AS DATETIME = DATEADD(day,14, GETDATE());
@@ -71,6 +72,7 @@ INSERT INTO Submission Values (@sub1, @exercise1, 'Courses\89111_2021\Exercises\
 
 INSERT INTO Submitters VALUES (@Yosi, @sub1, 1, @exercise1),
                                 (@Dana, @sub15, 1, @exercise1),
+                                (@Amit, @sub12, 1, @exercise1),
                                 (@Yosi, @sub2, 1, @exercise2),
                                 (@Danny, @sub3, 1, @exercise3);
 INSERT INTO Chat VALUES (@chat1, @sub1, 1, 1), (@chat2, @sub2, 0, 0);
