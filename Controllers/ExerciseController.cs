@@ -172,14 +172,14 @@ namespace Submit_System.Controllers
        
         [HttpPost]
         [Route("Teacher/AddExerciseChecker")]
-        public ActionResult AddChecker(string exerciseId, string checkerid)
+        public ActionResult AddChecker(string exerciseId, string checkerId)
         {
             DBCode code = _access.CheckExercisePermission(exerciseId, Role.Teacher);
             if(code != DBCode.OK)
             {
                 return HandleDatabaseOutput(code);
             }
-            return HandleDatabaseOutput(_access.AddCheckerToExercise(exerciseId, checkerid));
+            return HandleDatabaseOutput(_access.AddCheckerToExercise(exerciseId, checkerId));
         }
         [HttpDelete]
         [Route("Teacher/RemoveExerciseChecker")]

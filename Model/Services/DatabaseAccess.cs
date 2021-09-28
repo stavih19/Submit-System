@@ -377,7 +377,13 @@ namespace Submit_System {
         public ((Submission, int), DBCode) GetStudentSubmission(string userID, string exerciseId)
         {
             ((string id, int type), DBCode code) = Convert(DataBaseManager.ReadSubmissionIdAndTypeOfStudentInExercise(UserID, exerciseId));
-            if(code == DBCode.NotFound) {
+            if(code == DBCode.NotFound)
+            {
+                code = CheckExercisePermission(exerciseId, Role.Student);
+                if(code != DBCode.OK)
+                {
+                    return ((null, -1), code);
+                }
                 var a = CreateSubmission(exerciseId);
                 return ((a.Item1, 1), a.Item2);
             }

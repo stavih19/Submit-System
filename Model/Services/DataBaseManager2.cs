@@ -6,6 +6,7 @@ using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Text.Json;
 using System.Web;
+using System.Linq;
 using Microsoft.SqlServer.Server;
 using Microsoft.SqlServer;
 using System.Text.RegularExpressions;
@@ -26,6 +27,12 @@ namespace Submit_System
                 dict.Add(queries[i], queries[i+1]);
             }
             return dict;
+        }
+        private static SqlParameter[] copyParams(SqlParameter[] parameters)
+        {
+            var newParams = parameters.Select((SqlParameter parameter)
+                => CreateParameter(parameter.ParameterName, parameter.SqlDbType, parameter.Value));
+            return newParams.ToArray();
         }
         static DataBaseManager()
         {
@@ -624,7 +631,16 @@ namespace Submit_System
             }
         }
         public static DBCode AddCheckerToExercise(string exerciseId,string userId){
-            DBCode code = DataBaseManager.CheckResourcePerms(exerciseId,userId, Role.Checker, ResourceType.Course);
+            if(exerciseId == null || userId == null)
+            {
+                return DBCode.Invalid;
+            }
+            string id = ReadExercise(exerciseId).Item1.CourseID;
+            if(id == null)
+            {
+                return DBCode.NotFound;
+            }
+            DBCode code = DataBaseManager.CheckResourcePerms(id, userId, Role.Checker, ResourceType.Course);
             if(code != DBCode.OK){
                 return code;
             }
@@ -672,6 +688,7 @@ namespace Submit_System
                 {
                     return code;
                 }
+                parameters = copyParams(parameters);
             }
             String sql = "DELETE FROM @Table WHERE user_id = @UID AND course_id = @CID;";
             sql = sql.Replace("@Table", RoleToCourseTable[role]);
@@ -1003,7 +1020,7 @@ namespace Submit_System
         {
             string sql = LongQueries["CheckerExercises"];
             SqlParameter[] parameters = { CreateParameter("@ID", SqlDbType.VarChar, checkerId) };
-            return MultiRecordQuery(sql, parameters, (SqlDataReader dataReader) =>
+            (var lst, DBCode code) = MultiRecordQuery(sql, parameters, (SqlDataReader dataReader) =>
                 new CheckerExInfo {
                     CourseName = dataReader.GetValue(0).ToString(),
                     CourseNumber = dataReader.GetInt32(1),
@@ -1013,6 +1030,12 @@ namespace Submit_System
                     Appeals = dataReader.GetInt32(5)
                 }
             );
+            if(lst != null)
+            {
+                lst.OrderBy((CheckerExInfo element)
+                    => ((element.ToCheck > 0 || element.Appeals > 0) ? 0 : 1 ));
+            }
+            return (lst, code);
         }  
          public static (int,string) UpdateTest(Test test){
             SqlConnection cnn  = new SqlConnection(connetionString);

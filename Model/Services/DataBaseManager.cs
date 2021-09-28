@@ -455,7 +455,8 @@ namespace Submit_System
                 sub.ManualCheckData = dataReader.GetValue(6).ToString();
                 sub.SubmissionStatus = (int)dataReader.GetValue(7);
                 sub.SubmissionDateId = (int)dataReader.GetValue(8);
-                sub.TimeSubmitted = (DateTime)dataReader.GetValue(9);
+                Object time = dataReader.GetValue(9);
+                sub.TimeSubmitted = (time != DBNull.Value) ? (DateTime) time : DateTime.MinValue;
                 sub.HasCopied = (int)dataReader.GetValue(10) == 1;
                 sub.CurrentCheckerId = dataReader.GetValue(11)?.ToString();
                 sub.Filenames = FileUtils.GetRelativePaths(sub.FilesLocation);

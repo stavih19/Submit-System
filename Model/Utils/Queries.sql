@@ -286,7 +286,7 @@ FROM Submission AS S
     INNER JOIN Courses AS C
         ON C.course_id = E.course_id
 GROUP BY S.exercise_id, E.exercise_name, C.course_name,  C.course_number
-ORDER BY (CASE WHEN to_check > 0 OR appeals > 0 THEN 0 ELSE 1 END), E.creation
+ORDER BY S.exercise_id
 ---HasOldExercise---
 SELECT 1 FROM Exercise AS E
 INNER JOIN Courses AS C
