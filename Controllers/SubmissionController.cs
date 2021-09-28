@@ -151,13 +151,17 @@ namespace Submit_System.Controllers
             string path = Path.Combine("Requests", msg.ChatID);
             // Create a randomly generated directory name. This prevents collisions if attached files have the same name
             path = FileUtils.CreateUniqueDirectory(path, "Attachment_");
-            msg.FilePath = Path.Combine(path, msg.AttachedFile.Name);
+            if(msg?.AttachedFile != null)
+            {
+                msg.FilePath = Path.Combine(path, msg.AttachedFile.Name);
+                msg.AttachedFile.CreateFile(path);
+            }
             (int id, DBCode code) = _access.InsertMessage(msg, false);
             if(code != DBCode.OK)
             {
                 return HandleDatabaseOutput(code);
             }
-            msg.AttachedFile.CreateFile(path);
+            
             return id;
         }
         [Route("Teacher/NewMessage")]
