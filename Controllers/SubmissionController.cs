@@ -193,12 +193,16 @@ namespace Submit_System.Controllers
         }
         [Route("Student/Appeal")]
         [HttpPost]        
-        public ActionResult<string> Appeal(string submissionid, [FromBody] MessageInput msg)
+        public ActionResult<string> Appeal(string submissionid, [FromBody] MessageInput msg, [FromBody] string text)
         {
             DBCode res = _access.CheckSubmissionPerm(submissionid, Role.Student);
             if(res != DBCode.OK)
             {
                 return HandleDatabaseOutput(res);
+            }
+            if(msg == null)
+            {
+                msg = new MessageInput { Text = text };
             }
             (string id, DBCode code) = _access.Appeal(submissionid);
             if(code != DBCode.OK)
@@ -212,9 +216,13 @@ namespace Submit_System.Controllers
         }
         [Route("Student/ExtensionRequest")]
         [HttpPost]        
-        public ActionResult<string> Extension(string submissionid, [FromBody] MessageInput msg)
+        public ActionResult<string> Extension(string submissionid, [FromBody] MessageInput msg, [FromBody] string text)
         {
             DBCode res = _access.CheckSubmissionPerm(submissionid, Role.Student);
+            if(msg == null)
+            {
+                msg = new MessageInput { Text = text };
+            }
             if(res != DBCode.OK)
             {
                 return HandleDatabaseOutput(res);
