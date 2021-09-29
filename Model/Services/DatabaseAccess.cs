@@ -49,7 +49,6 @@ namespace Submit_System {
             if(CheckError(output.code))
             {
                 Log(output.msg);
-                ErrorString = output.msg;
             }
             DBCode newCode = (output.code == 4) ?  DBCode.OK : (DBCode) output.code;
             return (output.obj, newCode);
@@ -514,6 +513,10 @@ namespace Submit_System {
         public (string, DBCode) ExtensionRequest(string submissionId)
         {
             (var sub, DBCode code) = Convert(DataBaseManager.ReadSubmission(submissionId));
+            if(code != DBCode.OK)
+            {
+                return (null, code);
+            }
             var state = (SubmissionState) sub.SubmissionStatus;
             if(state != SubmissionState.Unchecked && state != SubmissionState.Unsubmitted)
             {
@@ -798,36 +801,78 @@ namespace Submit_System {
         {
             var subDict = new Dictionary<string, string>();
             var dict = new Dictionary<string ,bool>();
-            ((string submissionId, _), DBCode code) = Convert(DataBaseManager.ReadSubmissionIdAndTypeOfStudentInExercise(UserID, exerciseId));
+            ((string submissionId, int type), DBCode code) = Convert(DataBaseManager.ReadSubmissionIdAndTypeOfStudentInExercise(UserID, exerciseId));
             if(code != DBCode.OK)
             {
                 return (null, code);
             }
+            if(type != 1)
+            {
+                return (null, DBCode.NotAllowed);
+            }
+            (List<UserLabel> currentSubmitters, DBCode codeb) = DataBaseManager.GetSubmitters(submissionId);
+            if(code != DBCode.OK)
+            {
+                return (null, code);
+            }
+            (Exercise exercise, DBCode codea) = GetExercise(exerciseId);
+            if(codea != DBCode.OK)
+            {
+                return (null, codea);
+            }
+            if(exercise.MaxSubmitters < submitters.Count + currentSubmitters.Count)
+            {
+                return (null, DBCode.NotAllowed);
+            }
            foreach(string submitter in submitters)
            {
                 ((string subId, _), DBCode code2) = Convert(DataBaseManager.ReadSubmissionIdAndTypeOfStudentInExercise(submitter, exerciseId));
-                if(code2 == DBCode.Error)
+                if(code2 == DBCode.NotFound)
                 {
-                    return (null, DBCode.Error);
-                }
-                else if(code2 != DBCode.OK)
-                {
-                    dict[submitter] = true;
+                    var c = DataBaseManager.CheckResourcePerms(exerciseId, submitter, Role.Student, ResourceType.Exercise);
+                    if(c != DBCode.OK)
+                    {
+                        dict[submitter] = false;
+                    }
+                    else
+                    {   
+                        dict[submitter] = true;
+                    }
                     continue;
                 }
-                subDict[submitter]  = subId;
-                (Submission sub, DBCode code3) = Convert(DataBaseManager.ReadSubmission(subId));
-                if(code2 != DBCode.OK)
+                else if(code2 == DBCode.Error)
                 {
                     return (null, DBCode.Error);
                 }
-                dict[submitter] = ((SubmissionState) sub.SubmissionStatus == SubmissionState.Unsubmitted);
+                subDict[submitter]  = subId;
+                if(subId == submissionId)
+                {
+                    dict[submitter] = true;
+                }
+                (Submission sub, DBCode code3) = Convert(DataBaseManager.ReadSubmission(subId));
+                if(code3 == DBCode.Error)
+                {
+                    return (null, DBCode.Error);
+                }
+                else if(code3 == DBCode.NotFound)
+                {
+                    DataBaseManager.DeleteStudentFromSubmission(submitter, subId);
+                    dict[submitter] = true;
+                }
+                else
+                {
+                    dict[submitter] = ((SubmissionState) sub.SubmissionStatus == SubmissionState.Unsubmitted);
+                }
            }
            if(dict.Values.ToList().All((entry) => entry))
            {
                 foreach(var studentAndSubmission in subDict)
                 {
                     string subId = studentAndSubmission.Value;
+                    if(subId == submissionId)
+                    {
+                        continue;
+                    }
                     string student = studentAndSubmission.Key;
                     var a = DataBaseManager.DeleteSubmission(subId);
                     if(a != DBCode.OK)
@@ -842,6 +887,10 @@ namespace Submit_System {
                 }
                 foreach(string submitter in dict.Keys)
                 {
+                    if(subDict.ContainsKey(submitter) && subDict[submitter] == submissionId)
+                    {
+                        continue;
+                    }
                     code = Convert(DataBaseManager.AddStudentToSubmission(submissionId, submitter, 0, exerciseId));
                     if(code != DBCode.OK)
                     {
