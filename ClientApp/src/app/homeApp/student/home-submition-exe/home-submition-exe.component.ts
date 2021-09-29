@@ -52,7 +52,6 @@ export class HomeSubmitionExeComponent implements OnInit {
   }
 
   changeMessageAlert(errorMessage: string) {
-    console.log(errorMessage);
     this.errorMessage = errorMessage;
   }
 
@@ -64,7 +63,8 @@ export class HomeSubmitionExeComponent implements OnInit {
         this.exeList = JSON.parse(data);
         this.exeList.forEach(exe => {
           if(this.selectExe.id === exe.id) {
-            this.onSelect(exe);
+            this.selectedExe = exe;
+            //this.onSelect(exe);
           }
         });
       }, error => {
@@ -81,6 +81,7 @@ export class HomeSubmitionExeComponent implements OnInit {
 
   async onSelect(exe: any) {
     this.selectedExe = exe;
+    console.log(exe);
     this.child.onSelect(exe);
   }
 }

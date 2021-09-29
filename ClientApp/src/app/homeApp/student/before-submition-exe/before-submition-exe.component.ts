@@ -77,11 +77,13 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
   ngAfterContentInit(): void {
     setTimeout(() => {
       this.additionalSubmitors.nativeElement.addEventListener('input', this.isSubmitCheckFunc);
+      console.log(this.selectExe);
+      this.onSelect(this.selectExe);
     }, 0);
   }
 
   ngOnInit() {
-    console.log(this.selectExe);
+    
   }
 
   fileBefore: string;
@@ -102,6 +104,8 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
       };
       reader.readAsDataURL(file);
     });
+
+    console.log(this.selectedExe.id);
 
     setTimeout(() => {
       this.isSented = true;
@@ -149,9 +153,7 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
       return;
     }
 
-    console.log(files);
-
-    let url = 'https://localhost:5001/Student/SubmitExercise?userid=' + this.token + '&exerciseId=' + this.selectedExe.id;
+    let url = 'https://localhost:5001/Student/SubmitExercise?exerciseId=' + this.selectedExe.id + '&final=' + realSubmit;
     this.httpClient.post(url, files,
     {responseType: 'text'}).toPromise().then(
       data => {
@@ -183,6 +185,7 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
     await sleep(100);
     console.log("done");
     this.selectedExe = exe;
+    console.log(this.selectedExe);
     console.log(exe.id);
 
     let url = 'https://localhost:5001/Student/SubmissionDetails?exerciseId=' + exe.id;
@@ -314,12 +317,13 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
 
     const state = this.selectedExeInfo.state;
     if(state === 2) {
-      modalRef.componentInstance.chatID = this.selectedExeInfo.extensionChat;
       modalRef.componentInstance.headerMessage = "הגש ערעור";
     } else {
-      modalRef.componentInstance.chatID = this.selectedExeInfo.extensionChat;
       modalRef.componentInstance.headerMessage = "בקש הארכה";
     }
+    console.log(this.selectedExeInfo);
+    modalRef.componentInstance.selectedExeInfo = this.selectedExeInfo;
+    modalRef.componentInstance.chatID = this.selectedExeInfo.extensionChat;
     modalRef.componentInstance.teacherName = this.teacherName;
     modalRef.componentInstance.exeName = this.selectExe.name;
   }
@@ -361,7 +365,7 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
   }
 
   async checkSubmittersValidation(submitters: any) {
-    let url = 'https://localhost:5001/Student/ValidateSubmitters?userid=' + this.token + '&exerciseId=' + this.selectedExe.id;
+    let url = 'https://localhost:5001/Student/ValidateSubmitters?exerciseId=' + this.selectedExe.id;
     const idRespone = await this.httpClient.post(url, submitters, 
     {responseType: 'text'}).toPromise().then(
       data => {

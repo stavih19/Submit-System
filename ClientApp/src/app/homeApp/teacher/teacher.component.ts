@@ -3,7 +3,7 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ApprovalService } from 'src/app/approval.service';
 import { Course } from 'src/Modules/course';
 import { GradeTable } from 'src/Modules/grade-table';
-import { RequestLabelTable } from 'src/Modules/Teacher/request-label-table';
+import { RequestLabelMainPage } from 'src/Modules/Teacher/request-label-table';
 import { SubmitTable } from 'src/Modules/Teacher/submit-table';
 
 @Component({
@@ -22,8 +22,8 @@ export class TeacherComponent implements OnInit {
   coursesList: Course[];
   lastExeColumns: string[];
   lastExeDataSource: SubmitTable[];
-  extenstionDataSource: RequestLabelTable[];
-  appealDataSource: RequestLabelTable[];
+  extenstionDataSource: RequestLabelMainPage[];
+  appealDataSource: RequestLabelMainPage[];
   gradeColumns: any;
   requestColumns: string[];
   gradeDataSource: GradeTable[];
@@ -93,7 +93,7 @@ export class TeacherComponent implements OnInit {
   getExeInfo() { }
 
   getCourseList() {
-    let url = 'https://localhost:5001/Teacher/CourseList?token=' + this.token;
+    let url = 'https://localhost:5001/Teacher/CourseList';
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {
@@ -107,7 +107,7 @@ export class TeacherComponent implements OnInit {
 
   getAppealsLoad() {
     this.requestColumns = ["courseName", "courseNumber", "exeName", "studentName"];
-    let url = 'https://localhost:5001/Teacher/GetAppeals?token=' + this.token;
+    let url = 'https://localhost:5001/Teacher/GetTeacherExtensions';
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {
@@ -121,7 +121,7 @@ export class TeacherComponent implements OnInit {
 
   submitionLoad() {
     this.lastExeColumns = ['courseName', 'courseNumber', 'exeName'];//, 'teacherName'];
-    let url = 'https://localhost:5001/Teacher/ExerciseList?token=' + this.token;
+    let url = 'https://localhost:5001/Teacher/ExerciseList';
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {
@@ -134,7 +134,7 @@ export class TeacherComponent implements OnInit {
   }
 
   extenstionLoad() {
-    let url = 'https://localhost:5001/Teacher/GetExtensions?token=' + this.token;
+    let url = 'https://localhost:5001/Teacher/GetTeacherExtensions';
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {

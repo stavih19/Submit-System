@@ -20,6 +20,7 @@ import { CheckerExInfo } from 'src/Modules/Checker/checker-ex-info';
 export class CheckerComponent implements OnInit {
   exeStatus: string;
   exeToCheckList: CheckerExInfo[];
+  gradeDataSource: CheckerExInfo[];
   selectedCourse: Course = {
     id: "",
     name: "",
@@ -39,25 +40,6 @@ export class CheckerComponent implements OnInit {
   errorMessage: string;
 
   @ViewChild("alert", {static: false}) alert: ElementRef;
-
-  gradeDataSource: GradeTableChecker[] = [
-    {
-      courseID: "fdsf",
-      courseName: "תכנות מתקדם 1",
-      courseNumber: "12354",
-      exID: "1812",
-      name: "exe 2",
-      exeAmount: 20
-    },
-    {
-      courseID: "fdsf",
-      courseName: "תכנות מתקדם 1",
-      courseNumber: "12354",
-      exID: "1812",
-      name: "exe 3",
-      exeAmount: 15
-    }
-  ];
 
   constructor(
     private appService: ApprovalService,
@@ -91,10 +73,16 @@ export class CheckerComponent implements OnInit {
   exeToCheck() {
     this.submitionColumns = ['courseName', 'courseNumber', 'exeName', 'exeAmount'];
     let url = 'https://localhost:5001/Checker/ExerciseList';
-    this.httpClient.get(url, 
+    this.httpClient.get(url,
     {responseType: 'text'}).toPromise().then(
       data => {
-        this.exeToCheckList = JSON.parse(data);
+        let exeToCheckListTemp: CheckerExInfo[] = JSON.parse(data);
+        this.exeToCheckList = [];
+        exeToCheckListTemp.forEach(element => {
+          if(element.toCheck > 0) {
+            this.exeToCheckList.push(element);
+          }
+        });
         console.log(this.exeToCheckList);
       }, error => {
         console.log(error);
@@ -104,11 +92,17 @@ export class CheckerComponent implements OnInit {
 
   exeToReCheck() {
     this.gradeColumns = ['courseName', 'courseNumber', 'exeName', 'gradeAmount'];
-    let url = 'https://localhost:5001/Student/GradesList?token=' + this.token;
+    let url = 'https://localhost:5001/Checker/ExerciseList';
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {
-        this.gradeDataSource = JSON.parse(data);
+        let gradeDataSourceTemp: CheckerExInfo[] = JSON.parse(data);
+        this.gradeDataSource = [];
+        gradeDataSourceTemp.forEach(element => {
+          if(element.appeals > 0) {
+            this.gradeDataSource.push(element);
+          }
+        });
         console.log(this.gradeDataSource);
       }, error => {
         console.log(error);
