@@ -1,4 +1,4 @@
-export interface RequestLabelTable {
+export interface RequestLabelMainPage {
     courseID: string;
     courseName: string;
     courseNumber: number;

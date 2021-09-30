@@ -6,7 +6,9 @@ import { catchError, retry } from 'rxjs/operators';
 import { HomeComponentComponent } from 'src/app/homeApp/home-component/home-component.component';
 import { ApprovalService } from "src/app/approval.service";
 import { error } from 'selenium-webdriver';
+import { TestInput } from 'src/Modules/Teacher/test-input';
 
+const hour: number = 3600000;
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
@@ -45,9 +47,22 @@ export class LoginComponent implements OnInit {
         this.appService.updateToken(data[0]);
 
         this.checkoutForm.reset();
+        setTimeout(() => {
+          this.turnOff();
+        }, hour);
       }, error => {
         console.log(error);
       }
     );
+  }
+
+  turnOff() {
+    this.appService.updateLoginStatus(false);
+
+    this.appService.updateUserName(["", ""]);
+    this.appService.updateToken("");
+    this.appService.updateExeStatus("");
+    this.appService.updateTheacherStatus("");
+    this.appService.updateNewAutoStatus({ } as TestInput);
   }
 }

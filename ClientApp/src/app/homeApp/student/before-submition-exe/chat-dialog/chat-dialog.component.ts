@@ -4,6 +4,9 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { ApprovalService } from 'src/app/approval.service';
 import { Chat } from 'src/Modules/chat';
 import { Message } from 'src/Modules/message';
+import { MessageInput } from 'src/Modules/Student/message-input';
+import { StudentExInfo } from 'src/Modules/Student/student-exInfo';
+import { SubmitFile } from 'src/Modules/Teacher/submit-file';
 
 @Component({
   selector: 'app-chat-dialog',
@@ -12,6 +15,7 @@ import { Message } from 'src/Modules/message';
 })
 export class ChatDialogComponent implements OnInit, AfterContentInit {
   chatID: Chat;
+  selectedExeInfo: StudentExInfo;
   headerMessage: string;
   teacherName: string;
   exeName: string;
@@ -48,7 +52,9 @@ export class ChatDialogComponent implements OnInit, AfterContentInit {
   }
 
   ngAfterContentInit(): void {
-    this.fillConverstionMessages();
+    setTimeout(() => {
+      this.fillConverstionMessages();
+    }, 0);
   }
 
   enableButton() {
@@ -61,7 +67,12 @@ export class ChatDialogComponent implements OnInit, AfterContentInit {
   }
 
   fillConverstionMessages() {
-    let url = 'https://localhost:5001/Student/MessageList?token=' + this.token + '&chatId=' + this.chatID.id
+    if(this.chatID == null) {
+      this.messageList = [];
+      return;
+    }
+
+    let url = 'https://localhost:5001/Student/MessageList?chatId=' + this.chatID.id
     console.log(url);
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
@@ -78,28 +89,54 @@ export class ChatDialogComponent implements OnInit, AfterContentInit {
     if(confirm("Send this message?")) {
       this.updateCloseModal(true);
 
-      const params = {
-        msg: this.textMessage
+      const params: MessageInput = {
+        chatID: "",
+        text: this.textMessage,
+        attachedFile: { } as SubmitFile,
+        filePath: ""
       }
 
-      let url = 'https://localhost:5001/Student/NewMessage?userid=' + this.token + '&chatId=' + this.chatID.id;
-      this.httpClient.post(url, params,
-      {responseType: 'text'}).toPromise().then(
-        data => {
-          console.log(data);
-          const message: Message = {
-            id: "",
-            senderID: "",
-            date: "Just now",
-            body: this.textMessage,
-            isTeacher: false
+      if(this.chatID == null) {
+        let url = 'https://localhost:5001/Student/ExtensionRequest?submissionid=' + this.selectedExeInfo.submissionID;
+        this.httpClient.post(url, params,
+        {responseType: 'text'}).toPromise().then(
+          data => {
+            console.log(data);
+            const message: Message = {
+              id: "",
+              senderID: "",
+              date: "Just now",
+              body: this.textMessage,
+              isTeacher: false
+            }
+            this.messageList.push(message);
+            this.textMessageRef.nativeElement.value = "";
+
+            this.chatID = JSON.parse(data);
+          }, error => {
+            this.errorMessage(error.status);
           }
-          this.messageList.push(message);
-          this.textMessageRef.nativeElement.value = "";
-        }, error => {
-          this.errorMessage(error.status);
-        }
-      )
+        );
+      } else {
+        let url = 'https://localhost:5001/Student/NewMessage?chatId=' + this.chatID.id;
+        this.httpClient.post(url, params,
+        {responseType: 'text'}).toPromise().then(
+          data => {
+            console.log(data);
+            const message: Message = {
+              id: "",
+              senderID: "",
+              date: "Just now",
+              body: this.textMessage,
+              isTeacher: false
+            }
+            this.messageList.push(message);
+            this.textMessageRef.nativeElement.value = "";
+          }, error => {
+            this.errorMessage(error.status);
+          }
+        );
+      }
     }
   }
 

@@ -37,7 +37,7 @@ export class ChatEditCheckerComponent implements OnInit {
   }
 
   getCheckers() {
-    console.log(this.selectExeId);
+    console.log(this.selectedCourse);
     if(this.selectExeId === "") { return; }
     let url = 'https://localhost:5001/Teacher/GetCheckers?courseid=' + this.selectedCourse.id;
     this.httpClient.get(url, 

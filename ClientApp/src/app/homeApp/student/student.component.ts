@@ -68,7 +68,7 @@ export class StudentComponent implements OnInit {
   getExeInfo() { }
 
   getCourseList() {
-    let url = 'https://localhost:5001/Student/CourseList?token=' + this.token;
+    let url = 'https://localhost:5001/Student/CourseList';
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {
@@ -95,7 +95,7 @@ export class StudentComponent implements OnInit {
 
   gradeLoad() {
     this.gradeColumns = ['courseName', 'courseNumber', 'exeName', 'gradeNumber'];
-    let url = 'https://localhost:5001/Student/GradesList?token=' + this.token;
+    let url = 'https://localhost:5001/Student/GradesList';
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {

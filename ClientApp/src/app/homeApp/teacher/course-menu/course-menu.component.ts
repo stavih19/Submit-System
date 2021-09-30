@@ -39,7 +39,7 @@ export class CourseMenuComponent implements OnInit {
   @Output() errorMessageText = new EventEmitter<string>();
 
   getExercises() {
-    let url = 'https://localhost:5001/Teacher/AllExercises?token=' + this.token + '&courseid=' + this.selectedCourse.id;
+    let url = 'https://localhost:5001/Teacher/AllExercises?courseid=' + this.selectedCourse.id;
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {
@@ -53,7 +53,7 @@ export class CourseMenuComponent implements OnInit {
   }
 
   getTeachers() {
-    let url = 'https://localhost:5001/Teacher/GetTeachers?token=' + this.token + '&courseid=' + this.selectedCourse.id;
+    let url = 'https://localhost:5001/Teacher/GetTeachers?courseid=' + this.selectedCourse.id;
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {
@@ -66,7 +66,7 @@ export class CourseMenuComponent implements OnInit {
   }
 
   getCheckers() {
-    let url = 'https://localhost:5001/Teacher/GetTeachers?token=' + this.token + '&courseid=' + this.selectedCourse.id;
+    let url = 'https://localhost:5001/Teacher/GetCheckers?courseid=' + this.selectedCourse.id;
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {
