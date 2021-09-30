@@ -37,11 +37,13 @@ DECLARE @Tal AS VARCHAR(10) = '184140232';
 DECLARE @Amit AS VARCHAR(10) = '250283520';
 DECLARE @Dana VARCHAR(32) = N'576888444';
 DECLARE @Alon VARCHAR(32) = N'248202842';
+DECLARE @Tomer VARCHAR(32) = N'240812481';
 INSERT INTO Users VALUES (@Danny, 'IjHzX+F5umurQ2u7ADFzi6qYz4U=$Jwv9yeDBSZw=$1000', N'דני דני', 'dana@gmail.com'),
                         (@Yosi, 'IjHzX+F5umurQ2u7ADFzi6qYz4U=$Jwv9yeDBSZw=$1000', N'יוסי יוסי', 'yosi@gmail.com'),
                         (@Tal, 'IjHzX+F5umurQ2u7ADFzi6qYz4U=$Jwv9yeDBSZw=$1000', N'טל טל', 'Tal@gmail.com'),
                         (@Amit, 'IjHzX+F5umurQ2u7ADFzi6qYz4U=$Jwv9yeDBSZw=$1000', N'עמית עמית', 'Amit@gmail.com'),
-                        (@Dana, 'IjHzX+F5umurQ2u7ADFzi6qYz4U=$Jwv9yeDBSZw=$1000', N'דנה דנה', 'Dana@gmail.com');
+                        (@Dana, 'IjHzX+F5umurQ2u7ADFzi6qYz4U=$Jwv9yeDBSZw=$1000', N'דנה דנה', 'Dana@gmail.com'),
+                        (@Tomer, 'IjHzX+F5umurQ2u7ADFzi6qYz4U=$Jwv9yeDBSZw=$1000', N'תומר תומר', 'tomer@gmail.com');
 
 INSERT INTO Courses VALUES (@course_id1, 89111, @course_name1, 2021, 0),
                             (@course_id2, 89112, @course_name2, 2021, 0),
@@ -49,7 +51,10 @@ INSERT INTO Courses VALUES (@course_id1, 89111, @course_name1, 2021, 0),
 
 INSERT INTO Student_Course VALUES (@Yosi,@course_id1), (@Yosi, @course_id2), (@Danny, @course_id3), (@Dana, @course_id1), (@Alon, @course_id1);
 
-INSERT INTO Checker_Course VALUES (@Tal, @course_id1), (@Tal, @course_id2), (@Tal, @course_id3);
+INSERT INTO Checker_Course VALUES (@Tal, @course_id1), (@Tal, @course_id2), (@Tal, @course_id3),
+                                (@Tomer, @course_id1), (@Tomer, @course_id2), (@Tomer, @course_id3);
+
+INSERT INTO Checker_Exercise VALUES (@Tomer, @exercise1), (@Tomer, @exercise2);
 
 INSERT INTO Metargel_Course VALUES (@Yosi,@course_id3), (@Danny,@course_id1);
 INSERT INTO Exercise VALUES (@exercise1, 'ex1', @course_id1, '?', 2, 'Courses\89111_2021\Exercises\ex1\', '10_20', 'python3', 60, 20, 1, 1, 250, 10, null, GETDATE()),
