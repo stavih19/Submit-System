@@ -571,7 +571,6 @@ namespace Submit_System.Controllers
             catch {}
             return HandleDatabaseOutput(_access.DeleteExercise(exerciseId));
         }
-
     }
 }
 

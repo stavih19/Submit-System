@@ -20,15 +20,19 @@ DECLARE @course_id3 AS VARCHAR(32) = N'89115_2021';
 DECLARE @exercise1 AS VARCHAR(32) = N'89111_2021_ex1';
 DECLARE @exercise2 AS VARCHAR(32) = N'89111_2021_ex2';
 DECLARE @exercise3 AS VARCHAR(32) = N'89115_2021_ex1';
+DECLARE @exercise4 AS VARCHAR(32) = N'89115_2021_ex0';
 DECLARE @sub1 AS VARCHAR(32) = N'576888433_89111_2021_ex1';
 DECLARE @sub15 AS VARCHAR(32) = N'576888444_89111_2021_ex1';
 DECLARE @sub12 AS VARCHAR(32) = N'250283520_89111_2021_ex1';
 DECLARE @sub2 AS VARCHAR(32) = N'576888433_89111_2021_ex2';
 DECLARE @sub3 AS VARCHAR(32) = N'123767888_89115_2021_ex1';
+DECLARE @sub4 AS VARCHAR(32) = N'123767888_89115_2021_ex0';
 DECLARE @date1time AS DATETIME = DATEADD(day,14, GETDATE());
 DECLARE @date2time AS DATETIME = DATEADD(day,28, GETDATE());
 DECLARE @chat1 AS VARCHAR(32) = N'B576888433_89111_2021_ex1';
 DECLARE @chat2 AS VARCHAR(32) = N'A576888433_89111_2021_ex2';
+DECLARE @chat3 AS VARCHAR(32) = N'A123767888_89115_2021_ex1';
+DECLARE @chat4 AS VARCHAR(32) = N'B123767888_89115_2021_ex0';
 DECLARE @Tal AS VARCHAR(10) = '184140232';
 DECLARE @Amit AS VARCHAR(10) = '250283520';
 DECLARE @Dana VARCHAR(32) = N'576888444';
@@ -50,6 +54,7 @@ INSERT INTO Checker_Course VALUES (@Tal, @course_id1), (@Tal, @course_id2), (@Ta
 INSERT INTO Metargel_Course VALUES (@Yosi,@course_id3), (@Danny,@course_id1);
 INSERT INTO Exercise VALUES (@exercise1, 'ex1', @course_id1, '?', 2, 'Courses\89111_2021\Exercises\ex1\', '10_20', 'python3', 60, 20, 1, 1, 250, 10, null, GETDATE()),
                             (@exercise2, 'ex2', @course_id1, '?', 2, 'Courses\89111_2021\Exercises\ex2\', '10_20', 'python3', 60, 20, 1, 1, 250, 10, null, GETDATE()),
+                            (@exercise4, 'ex0', @course_id3, '?', 2, 'Courses\89115_2021\Exercises\ex0\', '10_20', 'python3', 60, 20, 1, 1, 250, 10, null, GETDATE()),
                             (@exercise3, 'ex1', @course_id3, '?', 2, 'Courses\89115_2021\Exercises\ex1\', '10_20', 'python3', 60, 20, 1, 1, 250, 10, null, GETDATE());
 
 
@@ -69,21 +74,25 @@ INSERT INTO Submission Values (@sub1, @exercise1, 'Courses\89111_2021\Exercises\
                                 (@sub15, @exercise1, 'Courses\89111_2021\Exercises\ex1\Submissions\' + @Dana, -1, -1, -1, '?', 1, @date1, GETDATE(), 0, null),
                                 (@sub12, @exercise1, 'Courses\89111_2021\Exercises\ex1\Submissions\' + @Amit, -1, -1, -1, '?', 3, @date1, GETDATE(), 0, null),
                                 (@sub2, @exercise2, 'Courses\89111_2021\Exercises\ex2\Submissions\576888433', -1,-1, -1, '?', 0, @date2, null , 0, null),
-                                (@sub3, @exercise3, 'Courses\89115_2021\Exercises\ex1\Submissions\123767888', -1,-1, -1, '?', 0, @date3, null, 0, null);
+                                (@sub3, @exercise3, 'Courses\89115_2021\Exercises\ex1\Submissions\123767888', -1,-1, -1, '?', 0, @date3, null, 0, null),
+                                (@sub4, @exercise4, 'Courses\89115_2021\Exercises\ex0\Submissions\123767888', 100,100, 100, '?', 0, @date3, GETDATE(), 0, null)
 
 INSERT INTO Submitters VALUES (@Yosi, @sub1, 1, @exercise1),
                                 (@Dana, @sub15, 1, @exercise1),
                                 (@Amit, @sub12, 1, @exercise1),
                                 (@Yosi, @sub2, 1, @exercise2),
-                                (@Danny, @sub3, 1, @exercise3);
-INSERT INTO Chat VALUES (@chat1, @sub1, 1, 1), (@chat2, @sub2, 0, 0);
+                                (@Danny, @sub3, 1, @exercise3),
+                                (@Danny, @sub4, 1, @exercise4);
+INSERT INTO Chat VALUES (@chat1, @sub1, 1, 1), (@chat2, @sub2, 0, 0), (@chat3, @sub3, 0, 0), (@chat4, @sub4, 0, 1);
 INSERT INTO Message
     (chat_id,attached_file,message_text,sender_user_id,message_status,course_id,
      from_teacher, sender_name)
     VALUES (@chat1,null,N'אני רוצה הארכה',@Yosi,0,'?', 0, N'יוסי יוסי'),
             (@chat1,null,N'אוקי',@Danny,0,'?', 1, N'יוסי יוסי'),
             (@chat2,null,N'אני רוצה לערער',@Yosi,0,'?', 0, N'יוסי יוסי'),
-            (@chat2,null,N'אוקי',@Danny,0,'?', 1, N'דני דני');
+            (@chat2,null,N'אוקי',@Danny,0,'?', 1, N'דני דני'),
+            (@chat3,null,N'אני רוצה הארכה',@Danny,0,'?', 0, N'דני דני'),
+            (@chat4,null,N'אני רוצה לערער',@Danny,0,'?', 0, N'דני דני');
 INSERT INTO Test([weight], input, expected_output, output_file_name, arguments_string,
         timeout_in_seconds, main_source_file, additional_files_location, exercise_id, type)
 VALUES (100, '', 'the number is 5*50=250', 'stdout', '50', 60, 'aaa.py', null, @exercise1, 0)
