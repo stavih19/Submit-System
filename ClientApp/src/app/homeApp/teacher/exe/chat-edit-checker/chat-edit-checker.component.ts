@@ -14,7 +14,8 @@ import { UserLabel } from 'src/Modules/Teacher/user-label';
 export class ChatEditCheckerComponent implements OnInit {
   selectedCourse: Course;
   selectExeId: string;
-  checkersNamesList: UserLabel[];
+  allCheckersNamesList: UserLabel[];
+  checkersNamesList:  UserLabel[];
   checkerId: string;
   token: string;
 
@@ -26,7 +27,7 @@ export class ChatEditCheckerComponent implements OnInit {
     this.appService.tokenStorage.subscribe(token => this.token = token);
   }
 
-  displayedColumns: string[] = ["name", "delete"];
+  displayedColumns: string[] = ["delete", "name"];
 
   ngOnInit() {
     this.getCheckers();
@@ -36,15 +37,43 @@ export class ChatEditCheckerComponent implements OnInit {
     this.addChecker(this.checkerId);
   }
 
-  getCheckers() {
+  getAllCheckers() {
     console.log(this.selectedCourse);
     if(this.selectExeId === "") { return; }
     let url = 'https://localhost:5001/Teacher/GetCheckers?courseid=' + this.selectedCourse.id;
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {
+        this.allCheckersNamesList = [];
+        let allCheckersNamesListTemp: UserLabel[] = JSON.parse(data);
+        let isExist: boolean = false;
+        allCheckersNamesListTemp.forEach(maybeRelateChecker => {
+          this.checkersNamesList.forEach(relateChecker => {
+            if(maybeRelateChecker.id === relateChecker.id) {
+              isExist = true;
+            }
+          });
+          if(!isExist) {
+            this.allCheckersNamesList.push(maybeRelateChecker);
+          }
+          isExist = false;
+        });
+        console.log(this.allCheckersNamesList);
+      }, error => {
+        console.log(error);
+      }
+    );
+  }
+
+  getCheckers() {
+    if(this.selectExeId === "") { return; }
+    let url = 'https://localhost:5001/Teacher/ExerciseCheckers?exerciseId=' + this.selectExeId;
+    this.httpClient.get(url, 
+    {responseType: 'text'}).toPromise().then(
+      data => {
         this.checkersNamesList = JSON.parse(data);
         console.log(this.checkersNamesList);
+        this.getAllCheckers();
       }, error => {
         console.log(error);
       }
@@ -52,11 +81,10 @@ export class ChatEditCheckerComponent implements OnInit {
   }
 
   addChecker(newID: string) {
-    let url = 'https://localhost:5001/Teacher/AddExChecker?exercise=' + this.selectExeId + '&checkerId=' + newID;
+    let url = 'https://localhost:5001/Teacher/AddExerciseChecker?exerciseId=' + this.selectExeId + '&checkerId=' + newID;
     this.httpClient.post(url,
     {responseType: 'text'}).toPromise().then(
       data => {
-        data = JSON.parse(data.toString());
         this.getCheckers();
         console.log(data);
       }, error => {
@@ -66,12 +94,13 @@ export class ChatEditCheckerComponent implements OnInit {
   }
 
   deleteChecker(id: string) {
-    let url = 'https://localhost:5001/Teacher/RemoveExChecker?exercise=' + this.selectExeId + '&checkerId=' + id;
-    this.httpClient.post(url,
+    console.log(id);
+    let url = 'https://localhost:5001/Teacher/RemoveExerciseChecker?exerciseId=' + this.selectExeId + '&checkerid=' + id;
+    this.httpClient.delete(url,
     {responseType: 'text'}).toPromise().then(
       data => {
-        data = JSON.parse(data.toString());
         console.log(data);
+        this.getCheckers();
       }, error => {
         console.log(error);
       }

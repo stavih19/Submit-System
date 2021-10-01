@@ -8,7 +8,7 @@
             <mat-form-field appearance="fill">
                 <mat-label>ת.ז</mat-label>
                 <mat-select (selectionChange)="changeClient($event.value)">
-                  <mat-option *ngFor="let checker of checkersNamesList" [value]="checker.id">
+                  <mat-option *ngFor="let checker of allCheckersNamesList" [value]="checker.id">
                     {{ checker.name }}
                   </mat-option>
                 </mat-select>
