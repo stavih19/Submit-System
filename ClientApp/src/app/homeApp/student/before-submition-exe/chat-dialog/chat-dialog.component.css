@@ -21,6 +21,7 @@
     border-style: ridge;
     height: 50%;
     padding-top: 20px;
+    overflow-y: scroll;
 }
 
 .newMessage {

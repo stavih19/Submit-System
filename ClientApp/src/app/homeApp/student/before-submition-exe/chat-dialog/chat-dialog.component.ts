@@ -89,11 +89,10 @@ export class ChatDialogComponent implements OnInit, AfterContentInit {
     if(confirm("Send this message?")) {
       this.updateCloseModal(true);
 
-      const params: MessageInput = {
+      const params = {
         chatID: "",
         text: this.textMessage,
-        attachedFile: { } as SubmitFile,
-        filePath: ""
+        attachedFile: null
       }
 
       if(this.chatID == null) {
@@ -118,6 +117,8 @@ export class ChatDialogComponent implements OnInit, AfterContentInit {
           }
         );
       } else {
+        params.chatID = this.chatID.id;
+
         let url = 'https://localhost:5001/Student/NewMessage?chatId=' + this.chatID.id;
         this.httpClient.post(url, params,
         {responseType: 'text'}).toPromise().then(
