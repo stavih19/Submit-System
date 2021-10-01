@@ -12,7 +12,6 @@ namespace Submit_System.Controllers
     [ServiceFilter(typeof(AuthFilter))]
     public class ExerciseController : AbstractController
     {
-
         private readonly ILogger<ExerciseController> _logger;
         public ExerciseController(ILogger<ExerciseController> logger, DatabaseAccess access) : base(access)
         {
@@ -573,4 +572,3 @@ namespace Submit_System.Controllers
         }
     }
 }
-

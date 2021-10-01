@@ -87,7 +87,13 @@ namespace Submit_System.Controllers
             {
                 return HandleDatabaseOutput(res);
             }
-            return AutoTest(submitId, 0);
+            (Submission submission, DBCode code) = _access.GetSubmission(submitId);
+            if(code != DBCode.OK)
+            {
+                return HandleDatabaseOutput(code);
+            }
+            int type = ((int) submission.SubmissionStatus > (int) SubmissionState.Unchecked) ? 1 : 0;
+            return AutoTest(submitId, type);
         }
         [Route("Checker/RunResult")]
         [HttpGet]
@@ -150,9 +156,9 @@ namespace Submit_System.Controllers
             msg.Text = HttpUtility.HtmlEncode(msg.Text);
             string path = Path.Combine("Requests", msg.ChatID);
             // Create a randomly generated directory name. This prevents collisions if attached files have the same name
-            path = FileUtils.CreateUniqueDirectory(path, "Attachment_");
-            if(msg?.AttachedFile != null)
+            if(!String.IsNullOrEmpty(msg?.AttachedFile?.Name) && !String.IsNullOrEmpty(msg?.AttachedFile?.Content))
             {
+                path = FileUtils.CreateUniqueDirectory(path, "Attachment_");
                 msg.FilePath = Path.Combine(path, msg.AttachedFile.Name);
                 msg.AttachedFile.CreateFile(path);
             }
