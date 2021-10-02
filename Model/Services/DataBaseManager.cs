@@ -444,7 +444,7 @@ namespace Submit_System
                 SqlDataReader dataReader = command.ExecuteReader();
                 if(!dataReader.Read()){
                     try{cnn.Close();}catch{}
-                    return (null,1,"Submission does not exist");
+                    return (null,2,"Submission does not exist");
                 }
                 sub.ID = dataReader.GetValue(0).ToString();
                 sub.ExerciseID = dataReader.GetValue(1).ToString();
@@ -456,7 +456,7 @@ namespace Submit_System
                 sub.SubmissionStatus = (int)dataReader.GetValue(7);
                 sub.SubmissionDateId = (int)dataReader.GetValue(8);
                 Object time = dataReader.GetValue(9);
-                sub.TimeSubmitted = (time != DBNull.Value) ? (DateTime) time : DateTime.MinValue;
+                sub.TimeSubmitted = (time != DBNull.Value) ? (DateTime) time : new DateTime(1970, 1, 1);
                 sub.HasCopied = (int)dataReader.GetValue(10) == 1;
                 sub.CurrentCheckerId = dataReader.GetValue(11)?.ToString();
                 sub.Filenames = FileUtils.GetRelativePaths(sub.FilesLocation);
@@ -643,7 +643,7 @@ namespace Submit_System
                 return (err,s);
             }
             if(e == null){
-                return (1,"Exercise does not exists");
+                return (2,"Exercise does not exist");
             }
             SqlConnection cnn  = new SqlConnection(connetionString);
             try{cnn.Open();} catch {return (3,"Connection failed");}
@@ -711,7 +711,7 @@ namespace Submit_System
                 return (err,s);
             }
             if(sb == null){
-                return (1,"Submission does not exists");
+                return (2,"Submission does not exists");
             }
             SqlConnection cnn  = new SqlConnection(connetionString);
             try{cnn.Open();} catch {return (3,"Connection failed");}
