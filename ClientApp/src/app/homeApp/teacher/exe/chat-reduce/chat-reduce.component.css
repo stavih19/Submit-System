@@ -11,7 +11,7 @@
     column-gap: 30px;
     grid-template-areas:
     'header header header header header'
-    'button student team reduce date'
+    'button noneInput reduce reduce reduce'
     'content content content content content';
 }
 .headerGrid { 
@@ -26,11 +26,8 @@
 .reduceInput {
     grid-area: reduce;
 }
-.teamInput { 
-    grid-area: team; 
-}
-.studentInput { 
-    grid-area: student; 
+.noneInput { 
+    grid-area: noneInput; 
 }
 .addInput { 
     grid-area: button;

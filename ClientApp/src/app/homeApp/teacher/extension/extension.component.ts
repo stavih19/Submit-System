@@ -6,9 +6,13 @@ import { ApprovalService } from 'src/app/approval.service';
 import { Chat } from 'src/Modules/chat';
 import { ExtenstionRequest } from 'src/Modules/Extenstion/extenstion-request';
 import { Message } from 'src/Modules/message';
+import { SubmitDate } from 'src/Modules/Reduce/submit-date';
 import { TeacherDateDisplay } from 'src/Modules/Reduce/teacher-date-display';
+import { RequestLabel } from 'src/Modules/Teacher/request-label';
+import { RequestLabelMainPage } from 'src/Modules/Teacher/request-label-table';
 
 import { ChatDialogComponent } from '../../student/before-submition-exe/chat-dialog/chat-dialog.component';
+import { ChatDialogTeacherComponent } from './chat-dialog-teacher/chat-dialog-teacher.component';
 
 @Component({
   selector: 'app-extension',
@@ -26,17 +30,19 @@ export class ExtensionComponent implements OnInit {
   id: string = "";
   modalRef: any;
   chatID: Chat;
+  requests: RequestLabel[];
+  teams: string[];
+  selectedDate: Date;
+  reduceNumber: number;
+  teacherStatus: string;
 
-  @Input() selectExe: any;
+  @Input() selectExe: RequestLabelMainPage;
   @Input() headerText: string;
   @ViewChild("alert", {static: false}) alert: ElementRef;
   @ViewChild("approveButton", {static: false}) approveButton: ElementRef;
 
-  selectedOption: string = "01";
-
   reduceTable: TeacherDateDisplay[] = [];
   submitionColumns: string[] = ["teamDate", "teamName"];
-  preTeamSelect: string = this.selectedOption;
 
   constructor(
     private httpClient: HttpClient,
@@ -44,84 +50,91 @@ export class ExtensionComponent implements OnInit {
     public dialog: MatDialog,
   ) { 
     this.appService.tokenStorage.subscribe(token => this.token = token);
+    this.appService.theacherStatusStorage.subscribe(status => this.teacherStatus = status);
   }
 
-  ngOnInit() { }
+  ngOnInit() {
+    this.selectedDate = new Date();
+    let tommorow = new Date();
+    this.selectedDate.setDate(tommorow.getDate() + 1);
+    this.getExtensions();
+  }
+
+  getExtensions() {
+    let url = 'https://localhost:5001/Teacher/GetExtensions?exerciseId=' + this.selectExe.exerciseID;
+    this.httpClient.get(url,
+    {responseType: 'text'}).toPromise().then(
+      data => {
+        this.requests = JSON.parse(data);
+        console.log(this.requests);
+      }, error => {
+        this.errorMessagefunc(error.status);
+      }
+    );
+  }
 
   onDeny(request: ExtenstionRequest) {
     const params = {
       msg: this.textMessage
     }
 
-    /*let url = 'https://localhost:5001/Student/NewMessage?userid=' + this.token + '&chatId=' + this.chatID.id;
-    this.httpClient.post(url, params,
+    let url = 'https://localhost:5001/Teacher/RejectRequest?chatId=' + this.selectExe.chatID;
+    this.httpClient.post(url,
     {responseType: 'text'}).toPromise().then(
       data => {
         console.log(data);
-        const message = {
-          id: "",
-          senderID: "",
-          date: new Date(),
-          body: this.textMessage,
-          isTeacher: false
-        }
-        this.messageList.push(message);
+        this.getExtensions();
       }, error => {
         this.errorMessagefunc(error.status);
       }
-    )*/
+    )
 
     this.alertMessage("Deny message was sent");
   }
 
   onApprove(request: ExtenstionRequest) {
-    const params = {
-      msg: this.textMessage
+    const params: SubmitDate = {
+      date: this.selectedDate,
+      id: 0,
+      exerciseID: this.selectExe.exerciseID,
+      group: 0,
+      reduction: this.reduceNumber,
     }
 
-    /*let url = 'https://localhost:5001/Student/NewMessage?userid=' + this.token + '&chatId=' + this.chatID.id;
+    let url = 'https://localhost:5001/Teacher/AcceptExtension?chatId=' + this.selectExe.chatID;
     this.httpClient.post(url, params,
     {responseType: 'text'}).toPromise().then(
       data => {
         console.log(data);
-        const message = {
-          id: "",
-          senderID: "",
-          date: new Date(),
-          body: this.textMessage,
-          isTeacher: false
-        }
-        this.messageList.push(message);
+        this.getExtensions();
       }, error => {
         this.errorMessagefunc(error.status);
       }
-    )*/
+    )
 
     this.alertMessage("Approve message was sent");
   }
 
   async onReplay(request: ExtenstionRequest) {
-    this.getChatID(this.selectExe.exID);
-    const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
-    await sleep(100);
-    const modalRef =  this.dialog.open(ChatDialogComponent);
+    await this.getChatID(this.selectExe.exerciseID);
+
+    const modalRef =  this.dialog.open(ChatDialogTeacherComponent);
     this.modalRef = modalRef;
 
     modalRef.componentInstance.chatID = this.chatID;
-    modalRef.componentInstance.teacherName = request.name;
-    modalRef.componentInstance.exeName = this.selectExe.name;
+    //modalRef.componentInstance.
   }
 
-  teamSelected(request: ExtenstionRequest) {
-    console.log(request);
-    console.log(this.selectedOption);
-    let approveButton = document.getElementById(request.id.toString()) as HTMLButtonElement;
-    if(request.team !== this.selectedOption) {
-      approveButton.disabled = false;
-    } else {
-      approveButton.disabled = true;
-    }
-  }
+  // teamSelected(request: ExtenstionRequest) {
+  //   console.log(request);
+  //   console.log(this.selectedOption);
+  //   let approveButton = document.getElementById(request.id.toString()) as HTMLButtonElement;
+  //   if(request.team !== this.selectedOption) {
+  //     approveButton.disabled = false;
+  //   } else {
+  //     approveButton.disabled = true;
+  //   }
+  // }
 
   changeIsToShowAlert(isToShowAlert: boolean) {
     this.isToShowAlert = isToShowAlert;
@@ -180,5 +193,9 @@ export class ExtensionComponent implements OnInit {
         this.errorMessagefunc(error.status);
       }
     )
+  }
+
+  onDateSelect(id: string) {
+    (<HTMLInputElement> document.getElementById(id)).disabled = false;
   }
 }

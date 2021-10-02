@@ -3,20 +3,11 @@
 </div>
 <form [formGroup]="checkoutForm" class="example-form" (ngSubmit)="onSubmit()">
     <div class="addExtenstionLine">
-        <span class="headerGrid">הוסף הפחתה</span>
-        <div class="dateInput">
-            <mat-form-field appearance="fill">
-                <mat-label style="text-align: right;">תאריך</mat-label>
-                <input matInput [matDatepicker]="picker" formControlName="date" 
-                (dateChange)="dateChanged($event)">
-                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-                <mat-datepicker #picker></mat-datepicker>
-            </mat-form-field>
-        </div>
+        <span class="headerGrid">הוסף רשימת הפחתות</span>
         <div calss="reduceInput">
             <mat-form-field class="example-full-width">
                 <mat-label>הפחתת ניקוד</mat-label>
-                <input matInput placeholder="מספר" value="" type="number" formControlName="reducePoints">
+                <input matInput placeholder="10,20,..." value="" formControlName="reducePoints">
             </mat-form-field>
         </div>
         <div class="addInput">

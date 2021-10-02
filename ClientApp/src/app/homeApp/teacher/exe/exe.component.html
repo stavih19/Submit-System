@@ -78,13 +78,13 @@
         <button *ngIf="teacherStatus === 'edit'" mat-raised-button color="primary" (click)="edit()">עדכן</button>
     </div>
 </div>
-<br>
+<!-- <br>
 <div class="row" *ngIf="theacherStatus === ''">
     <button mat-raised-button color="warn" type="submit"
     (click)="getAutoChecks()">
         בדיקה אוטומטית
     </button>
-</div>
+</div> -->
 <app-auto-check *ngIf="theacherStatus === 'autoCheck'"
     [selectExelabel]="selectExelabel">
 

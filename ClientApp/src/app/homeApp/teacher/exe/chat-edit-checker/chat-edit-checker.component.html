@@ -6,7 +6,7 @@
         <span class="headerGrid">הוסף בודק</span>
         <div class="dateInput">
             <mat-form-field appearance="fill">
-                <mat-label>ת.ז</mat-label>
+                <mat-label>בודק</mat-label>
                 <mat-select (selectionChange)="changeClient($event.value)">
                   <mat-option *ngFor="let checker of allCheckersNamesList" [value]="checker.id">
                     {{ checker.name }}
