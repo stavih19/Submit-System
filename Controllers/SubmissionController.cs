@@ -44,6 +44,18 @@ namespace Submit_System.Controllers
             var a = _access.GetMesssages(chatId);
             return HandleDatabaseOutput(a);
         }
+        [Route("Teacher/MessageList")]
+        [HttpGet]
+        public ActionResult<List<Message>> GetMessagesTeacher(string chatId)
+        {
+            DBCode res = _access.CheckChatPerm(chatId, Role.Teacher);
+            if(res != DBCode.OK)
+            {
+                return HandleDatabaseOutput(res);
+            }
+            var a = _access.GetMesssages(chatId);
+            return HandleDatabaseOutput(a);
+        }
         [HttpGet]
         [Route("Student/MessageFile")]
         public ActionResult StudentGetMessageFile(int messageId)

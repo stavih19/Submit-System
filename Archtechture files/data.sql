@@ -22,8 +22,8 @@ DECLARE @exercise2 AS VARCHAR(32) = N'89111_2021_ex2';
 DECLARE @exercise3 AS VARCHAR(32) = N'89115_2021_ex1';
 DECLARE @exercise4 AS VARCHAR(32) = N'89115_2021_ex0';
 DECLARE @sub1 AS VARCHAR(32) = N'576888433_89111_2021_ex1';
-DECLARE @sub15 AS VARCHAR(32) = N'576888444_89111_2021_ex1';
-DECLARE @sub12 AS VARCHAR(32) = N'250283520_89111_2021_ex1';
+DECLARE @sub35 AS VARCHAR(32) = N'576888444_89115_2021_ex1';
+DECLARE @sub32 AS VARCHAR(32) = N'250283520_89115_2021_ex1';
 DECLARE @sub2 AS VARCHAR(32) = N'576888433_89111_2021_ex2';
 DECLARE @sub3 AS VARCHAR(32) = N'123767888_89115_2021_ex1';
 DECLARE @sub4 AS VARCHAR(32) = N'123767888_89115_2021_ex0';
@@ -49,10 +49,11 @@ INSERT INTO Courses VALUES (@course_id1, 89111, @course_name1, 2021, 0),
                             (@course_id2, 89112, @course_name2, 2021, 0),
                             (@course_id3, 89115, @course_name3, 2021, 0);
 
-INSERT INTO Student_Course VALUES (@Yosi,@course_id1), (@Yosi, @course_id2), (@Danny, @course_id3), (@Dana, @course_id1), (@Alon, @course_id1);
+INSERT INTO Student_Course VALUES (@Yosi,@course_id1), (@Yosi, @course_id2), (@Danny, @course_id3), (@Dana, @course_id3), (@Alon, @course_id1),
+                                (@Amit, @course_id3)
 
 INSERT INTO Checker_Course VALUES (@Tal, @course_id1), (@Tal, @course_id2), (@Tal, @course_id3),
-                                (@Tomer, @course_id1), (@Tomer, @course_id2), (@Tomer, @course_id3);
+                                (@Tomer, @course_id1), (@Tomer, @course_id2), (@Tomer, @course_id3), (@Yosi,@course_id3);
 
 INSERT INTO Checker_Exercise VALUES (@Tomer, @exercise1), (@Tomer, @exercise2);
 
@@ -76,15 +77,15 @@ VALUES (@exercise3, @date1time, 0, 0);
 DECLARE @date3 as int = IDENT_CURRENT('Submission_Dates');
 
 INSERT INTO Submission Values (@sub1, @exercise1, 'Courses\89111_2021\Exercises\ex1\Submissions\576888433', 100, 100, 100, '?', 2, @date1, GETDATE(), 0, null),
-                                (@sub15, @exercise1, 'Courses\89111_2021\Exercises\ex1\Submissions\' + @Dana, -1, -1, -1, '?', 1, @date1, GETDATE(), 0, null),
-                                (@sub12, @exercise1, 'Courses\89111_2021\Exercises\ex1\Submissions\' + @Amit, -1, -1, -1, '?', 3, @date1, GETDATE(), 0, null),
+                                (@sub35, @exercise3, 'Courses\89115_2021\Exercises\ex1\Submissions\' + @Dana, -1, -1, -1, '?', 1, @date1, GETDATE(), 0, null),
+                                (@sub32, @exercise3, 'Courses\89115_2021\Exercises\ex1\Submissions\' + @Amit, -1, -1, -1, '?', 3, @date1, GETDATE(), 0, null),
                                 (@sub2, @exercise2, 'Courses\89111_2021\Exercises\ex2\Submissions\576888433', -1,-1, -1, '?', 0, @date2, null , 0, null),
                                 (@sub3, @exercise3, 'Courses\89115_2021\Exercises\ex1\Submissions\123767888', -1,-1, -1, '?', 0, @date3, null, 0, null),
                                 (@sub4, @exercise4, 'Courses\89115_2021\Exercises\ex0\Submissions\123767888', 100,100, 100, '?', 0, @date3, GETDATE(), 0, null)
 
 INSERT INTO Submitters VALUES (@Yosi, @sub1, 1, @exercise1),
-                                (@Dana, @sub15, 1, @exercise1),
-                                (@Amit, @sub12, 1, @exercise1),
+                                (@Dana, @sub35, 1, @exercise3),
+                                (@Amit, @sub32, 1, @exercise3),
                                 (@Yosi, @sub2, 1, @exercise2),
                                 (@Danny, @sub3, 1, @exercise3),
                                 (@Danny, @sub4, 1, @exercise4);
@@ -101,5 +102,7 @@ INSERT INTO Message
 INSERT INTO Test([weight], input, expected_output, output_file_name, arguments_string,
         timeout_in_seconds, main_source_file, additional_files_location, exercise_id, type)
 VALUES (100, '', 'The number is 50*50=2500', 'stdout', '50', 60, 'aaa.py', null, @exercise1, 0),
-        (100, '', 'The number is 50*50=2500', 'stdout', '50', 60, 'aaa.py', null, @exercise1, 1)
+        (100, '', 'The number is 50*50=2500', 'stdout', '50', 60, 'aaa.py', null, @exercise1, 1),
+        (100, '', 'Hello world', 'stdout', '', 60, 'ex1.py', null, @exercise3, 0),
+        (100, '', 'Hello world', 'stdout', '', 60, 'ex1.py', null, @exercise3, 1);
 GO
