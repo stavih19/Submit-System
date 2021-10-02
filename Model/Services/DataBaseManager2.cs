@@ -1032,8 +1032,8 @@ namespace Submit_System
             );
             if(lst != null)
             {
-                lst.OrderBy((CheckerExInfo element)
-                    => ((element.ToCheck > 0 || element.Appeals > 0) ? 0 : 1 ));
+                lst = lst.OrderBy((element)
+                    => (element.ToCheck > 0 || element.Appeals > 0) ? 0 : 1).ToList();
             }
             return (lst, code);
         }  

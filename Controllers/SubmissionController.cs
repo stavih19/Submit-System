@@ -156,10 +156,10 @@ namespace Submit_System.Controllers
             {
                 return HandleDatabaseOutput(res);
             }
-            return PostMessage(msg);
+            return PostMessage(msg, false);
         }
         [NonAction]
-        protected ActionResult<int> PostMessage(MessageInput msg)
+        protected ActionResult<int> PostMessage(MessageInput msg, bool isTeacher)
         {
             if(msg?.ChatID == null || (msg?.Text == null && msg?.AttachedFile == null))
             {
@@ -174,7 +174,7 @@ namespace Submit_System.Controllers
                 msg.FilePath = Path.Combine(path, msg.AttachedFile.Name);
                 msg.AttachedFile.CreateFile(path);
             }
-            (int id, DBCode code) = _access.InsertMessage(msg, false);
+            (int id, DBCode code) = _access.InsertMessage(msg, isTeacher);
             if(code != DBCode.OK)
             {
                 return HandleDatabaseOutput(code);
@@ -207,7 +207,7 @@ namespace Submit_System.Controllers
             {
                 return HandleDatabaseOutput(res);
             }
-            return PostMessage(msg);
+            return PostMessage(msg, true);
         }
         [Route("Student/Appeal")]
         [HttpPost]        
@@ -228,7 +228,7 @@ namespace Submit_System.Controllers
                 return HandleDatabaseOutput(code);
             }
             msg.ChatID = id;
-            PostMessage(msg);
+            PostMessage(msg, false);
             return id;
     
         }
@@ -251,7 +251,7 @@ namespace Submit_System.Controllers
                 return HandleDatabaseOutput(code);
             }
             msg.ChatID = id;
-            PostMessage(msg);
+            PostMessage(msg, false);
             return id;
         }
         public void SendResults(SubmitInfo info, List<User> submitters) 

@@ -55,7 +55,7 @@ INSERT INTO Student_Course VALUES (@Yosi,@course_id1), (@Yosi, @course_id2), (@D
 INSERT INTO Checker_Course VALUES (@Tal, @course_id1), (@Tal, @course_id2), (@Tal, @course_id3),
                                 (@Tomer, @course_id1), (@Tomer, @course_id2), (@Tomer, @course_id3), (@Yosi,@course_id3);
 
-INSERT INTO Checker_Exercise VALUES (@Tomer, @exercise1), (@Tomer, @exercise2);
+INSERT INTO Checker_Exercise VALUES (@Tomer, @exercise1), (@Tomer, @exercise2), (@Yosi, @exercise3), (@Yosi, @exercise4);
 
 INSERT INTO Metargel_Course VALUES (@Yosi,@course_id3), (@Danny,@course_id1);
 INSERT INTO Exercise VALUES (@exercise1, 'ex1', @course_id1, '?', 2, 'Courses\89111_2021\Exercises\ex1\', '10_20', 'python3', 60, 20, 1, 1, 250, 10, null, GETDATE()),
