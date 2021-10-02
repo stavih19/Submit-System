@@ -15,7 +15,7 @@ export class TeacherComponent implements OnInit {
   exeStatus: string;
   theacherStatus: string;
   selectedCourse: Course;
-  selectExe: any;
+  selectExe: RequestLabelMainPage;
   selectExelabel: any;
   headerText: string;
   teacherName: string;
@@ -64,11 +64,10 @@ export class TeacherComponent implements OnInit {
   }
 
   getAppeals(row) {
-    console.log("appeal");
     this.selectExe = row;
     this.teacherName = row.teacherName;
     this.headerText = "בקשות ערעור";
-    this.appService.updateTheacherStatus("extenstion");
+    this.appService.updateTheacherStatus("appeal");
   }
 
   getExtenstions(row) {

@@ -128,6 +128,7 @@ export class ExeComponent implements OnInit {
     const modalRef = this.dialog.open(ChatReduceComponent);
     modalRef.componentInstance.selectedCourse = this.selectedCourse;
     modalRef.componentInstance.selectExeId = this.exeID;
+    modalRef.componentInstance.exeObject = this.exeObject;
   }
 
   reduceTeams() {

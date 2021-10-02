@@ -34,11 +34,10 @@ export class ChatEditCheckerComponent implements OnInit {
   }
 
   onSubmit() {
-    this.addChecker(this.checkerId);
+    this.addCheckerRelate(this.checkerId);
   }
 
   getAllCheckers() {
-    console.log(this.selectedCourse);
     if(this.selectExeId === "") { return; }
     let url = 'https://localhost:5001/Teacher/GetCheckers?courseid=' + this.selectedCourse.id;
     this.httpClient.get(url, 
@@ -66,6 +65,7 @@ export class ChatEditCheckerComponent implements OnInit {
   }
 
   getCheckers() {
+    console.log(this.selectExeId);
     if(this.selectExeId === "") { return; }
     let url = 'https://localhost:5001/Teacher/ExerciseCheckers?exerciseId=' + this.selectExeId;
     this.httpClient.get(url, 
@@ -80,7 +80,7 @@ export class ChatEditCheckerComponent implements OnInit {
     );
   }
 
-  addChecker(newID: string) {
+  addCheckerRelate(newID: string) {
     let url = 'https://localhost:5001/Teacher/AddExerciseChecker?exerciseId=' + this.selectExeId + '&checkerId=' + newID;
     this.httpClient.post(url,
     {responseType: 'text'}).toPromise().then(

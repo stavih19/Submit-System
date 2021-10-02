@@ -33,5 +33,7 @@ export class ChatRecudeTeamsComponent implements OnInit {
       "name": this.checkoutForm.value.name,
       "reducePoints": this.checkoutForm.value.reducePoints,
     };
+
+    
   }
 }

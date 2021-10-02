@@ -45,6 +45,7 @@ import { AutoCheckComponent } from './homeApp/teacher/auto-check/auto-check.comp
 import { ChatDeclarationComponent } from './homeApp/student/before-submition-exe/chat-declaration/chat-declaration.component';
 import { MainExeComponent } from './homeApp/checker/main-exe/main-exe.component';
 import { ExeDetailComponent } from './homeApp/checker/exe-detail/exe-detail.component';
+import { ChatDialogTeacherComponent } from './homeApp/teacher/extension/chat-dialog-teacher/chat-dialog-teacher.component';
 
 @NgModule({
   declarations: [
@@ -75,7 +76,8 @@ import { ExeDetailComponent } from './homeApp/checker/exe-detail/exe-detail.comp
     AutoCheckComponent,
     ChatDeclarationComponent,
     MainExeComponent,
-    ExeDetailComponent
+    ExeDetailComponent,
+    ChatDialogTeacherComponent
   ],
   entryComponents: [
     ChatDialogComponent,
@@ -85,7 +87,8 @@ import { ExeDetailComponent } from './homeApp/checker/exe-detail/exe-detail.comp
     ChatEditTeacherComponent,
     ChatAutoChecksComponent,
     ChatAdvancedChecksComponent,
-    ChatDeclarationComponent
+    ChatDeclarationComponent,
+    ChatDialogTeacherComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

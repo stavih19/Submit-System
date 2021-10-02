@@ -9,11 +9,11 @@ import { StudentExInfo } from 'src/Modules/Student/student-exInfo';
 import { SubmitFile } from 'src/Modules/Teacher/submit-file';
 
 @Component({
-  selector: 'app-chat-dialog',
-  templateUrl: './chat-dialog.component.html',
-  styleUrls: ['./chat-dialog.component.css']
+  selector: 'app-chat-dialog-teacher',
+  templateUrl: './chat-dialog-teacher.component.html',
+  styleUrls: ['./chat-dialog-teacher.component.css']
 })
-export class ChatDialogComponent implements OnInit, AfterContentInit {
+export class ChatDialogTeacherComponent implements OnInit {
   chatID: Chat;
   selectedExeInfo: StudentExInfo;
   headerMessage: string;

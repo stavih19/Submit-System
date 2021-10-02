@@ -5,10 +5,10 @@
 <div class="content">
     <div class="requestFrame">
         <div class="requestBox" *ngFor="let request of requests">
-            <div class="name">שם: {{ request.name }}</div>
-            <div class="id">ת.ז: {{ request.id }}</div>
-            <div class="textContent">{{ request.text }}</div>
-            <div class="file">{{ request.file }}</div>
+            <div class="name">שם: {{ request.studentName }}</div>
+            <div class="id">ת.ז: {{ request.studentID }}</div>
+            <div class="textContent">{{ request.message }}</div>
+            <!-- <div class="file">{{ request.file }}</div> -->
             <div class="menuRequest">
                 <div class="deny">
                     <button mat-raised-button class="btn btn-danger" type="button"
@@ -16,26 +16,29 @@
                 </div>
                 <div class="approve">
                     <button mat-raised-button class="btn btn-success" type="button"
-                    (click)="onApprove(request)" [id]="request.id" disabled="true">אשר</button>
+                    (click)="onApprove(request)" [id]="request.studentID" [disabled]="teacherStatus === 'extenstion'">אשר</button>
                 </div>
                 <div class="response">
                     <button mat-raised-button class="btn btn-secondary" type="button"
                     (click)="onReplay(request)">הגב</button>
                 </div>
-                <div class="date">
+                <div *ngIf="teacherStatus === 'extenstion'" class="date">
                     <mat-form-field appearance="fill">
-                        <mat-label>team</mat-label>
-                        <mat-select [(ngModel)]="selectedOption" (selectionChange)="teamSelected(request)">
-                        <mat-option *ngFor="let team of teams" [value]="team">
-                            {{ team }}
-                        </mat-option>
-                        </mat-select>
+                        <mat-label>תאריך חדש</mat-label>
+                        <input matInput [matDatepicker]="picker" [(ngModel)]="selectedDate"
+                        (change)="onDateSelect(request.studentID)">
+                        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                        <mat-datepicker #picker></mat-datepicker>
+                    </mat-form-field>
+                    <mat-form-field class="example-full-width">
+                        <mat-label class="inputHeader">הפחתה</mat-label>
+                        <input matInput placeholder="" value="" type="number" [(ngModel)]="reduceNumber" (change)="onDateSelect(request.studentID)">
                     </mat-form-field>
                 </div>
             </div>
         </div>
     </div>
-    <div class="reducePoints">
+    <!-- <div class="reducePoints">
         <table mat-table [dataSource]="reduceTable" class="mat-elevation-z8">
             <ng-container matColumnDef="teamDate">
                 <th mat-header-cell *matHeaderCellDef class="dateHeader">
@@ -58,5 +61,5 @@
                 (dblclick)="getLastExe(row)" class="rowTable">
             </tr>
         </table>    
-    </div>
+    </div> -->
 </div>
