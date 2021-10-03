@@ -97,7 +97,7 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
       reader.onload = ()=> {
         this.fileBefore = reader.result.toString();
         let submitFile: FileSubmit = {
-          content: reader.result.toString(),
+          content: reader.result.toString().split(',')[1],
           name: file.name
         }
         this.fileContainer.push(submitFile);
@@ -179,7 +179,7 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
     }
   }
 
-  async onSelect(exe: ExerciseLabel) {
+  async onSelect(exe: any) {
     const sleep = (delay: number) => new Promise((resolve) => setTimeout(resolve, delay));
     console.log("wait");
     await sleep(100);
@@ -188,12 +188,14 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
     console.log(this.selectedExe);
     console.log(exe.id);
 
-    let url = 'https://localhost:5001/Student/SubmissionDetails?exerciseId=' + exe.id;
+    let id = exe.id;
+    if(id === undefined) { id = exe.exID; }
+    let url = 'https://localhost:5001/Student/SubmissionDetails?exerciseId=' + id;
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {
-          this.selectedExeInfo = JSON.parse(data);
-          this.selectedExeInfo.filenames.forEach(fileName => {
+        this.selectedExeInfo = JSON.parse(data);
+        this.selectedExeInfo.filenames.forEach(fileName => {
           this.uploadFileList.push(fileName);
           //const file = this.getFilebyName(fileName);
         });
@@ -299,7 +301,7 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
   }
 
   eraseUploadFile(fileToDelete: any) {
-    console.log("earse");
+    if(this.exeStatus === "נבדק") { return; }
     const index = this.uploadFileList.indexOf(fileToDelete);
     if(index > -1) {
       this.uploadFileList.splice(index, 1);
@@ -345,7 +347,7 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
 
   lastFileRun() {
     let submissionID = this.selectedExeInfo.submissionID;
-    let url = 'https://localhost:5001/Student/RunResult?token=' + this.token + '&submitId=' + submissionID;
+    let url = 'https://localhost:5001/Student/RunResult?submitId=' + submissionID;
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {
@@ -385,9 +387,7 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
   }
 
   downloadFiles() {
-    let extensionChat = this.selectedExeInfo.extensionChat;
-    if(extensionChat === null) { return; }
-    let url = 'https://localhost:5001/Student/Download?userid=' + this.token + '&submissionId=' + extensionChat.id;
+    let url = 'https://localhost:5001/Student/Download?submissionId=' + this.selectedExeInfo.submissionID;
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {

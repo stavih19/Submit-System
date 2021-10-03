@@ -133,7 +133,7 @@ export class TeacherComponent implements OnInit {
   }
 
   extenstionLoad() {
-    let url = 'https://localhost:5001/Teacher/GetTeacherExtensions';
+    let url = 'https://localhost:5001/Teacher/GetTeacherAppeals';
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {

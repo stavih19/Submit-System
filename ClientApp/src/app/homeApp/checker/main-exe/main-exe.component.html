@@ -10,10 +10,10 @@
     <div class="checkExeTabel">
         תרגילים לבדיקה
         <div class="box">
-            <div *ngFor="let exeName of exeToCheck; let i = index" class="exeBox">
+            <div *ngFor="let exe of exeToCheck" class="exeBox">
                 <span class="exeLabel list-group-item list-group-item-action"
-                    (click)="getExeDetails(exeName)">
-                    {{ exeName }}
+                    (click)="getExeDetails(exe)">
+                    {{ exe }}
                     <!--<span class="editExe" (click)="editExe(i)">...</span>
                     <span class="close" (click)="deleteExe(i)">&times;</span>-->
                 </span>
@@ -37,7 +37,7 @@
     <div class="reCheckExeTabel">
         תרגילים לבדיקה חוזרת
         <div class="box">
-            <div *ngFor="let reCheck of reChecks; let i = index" class="nameBox">
+            <div *ngFor="let reCheck of reChecks" class="nameBox">
                 <span class="list-group-item list-group-item-action"
                     (click)="getExeDetails(reCheck)">
                     <!--<span class="close" (click)="deleteTeacher(i)">&times;</span>-->

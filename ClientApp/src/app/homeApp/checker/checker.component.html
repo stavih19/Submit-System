@@ -80,7 +80,7 @@
                     <div class="col-12 headerLabel">שם הקורס</div>
                 </div>
                 </th>
-                <td mat-cell *matCellDef="let element" class="contentText"> {{element.courseName}} </td>
+                <td mat-cell *matCellDef="let element" class="contentText"> {{ element.courseName }} </td>
             </ng-container>
             <ng-container matColumnDef="courseNumber">
                 <th mat-header-cell *matHeaderCellDef>
@@ -88,7 +88,7 @@
                     <div class="col-12 headerLabel">מס' הקורס</div>
                 </div> 
                 </th>
-                <td mat-cell *matCellDef="let element" class="contentText"> {{element.courseNumber}} </td>
+                <td mat-cell *matCellDef="let element" class="contentText"> {{ element.courseNumber }} </td>
             </ng-container>
             <ng-container matColumnDef="exeName">
                 <th mat-header-cell *matHeaderCellDef>
@@ -96,7 +96,7 @@
                     <div class="col-12 headerLabel">שם התרגיל</div>
                 </div> 
                 </th>
-                <td mat-cell *matCellDef="let element" class="contentText"> {{element.name}} </td>
+                <td mat-cell *matCellDef="let element" class="contentText"> {{ element.exName }} </td>
             </ng-container>
             <ng-container matColumnDef="gradeAmount">
                 <th mat-header-cell *matHeaderCellDef>
@@ -104,7 +104,7 @@
                     <div class="col-12 amountHeader">כמות תרגילים</div>
                 </div> 
                 </th>
-                <td mat-cell *matCellDef="let element" class="AmountText"> {{element.exeAmount}} </td>
+                <td mat-cell *matCellDef="let element" class="AmountText"> {{ element.toCheck }} </td>
             </ng-container>
             <tr mat-header-row *matHeaderRowDef="gradeColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: gradeColumns;"
@@ -119,6 +119,7 @@
     </div>
     <div class="row headersLine">{{ selectedCourse.name }}</div>
     <app-main-exe [selectedCourse]="selectedCourse"
+        [selectExe]="selectExe"
         (isToShowAlert)="changeIsToShowAlert($event)"
         (color)="changeColorAlert($event)"
         (errorMessageText)="changeMessageAlert($event)"
@@ -126,16 +127,16 @@
 
     </app-main-exe>
 </div>
-<div *ngIf="exeStatus!=='' && exeStatus!=='exeDetails'">
+<div *ngIf="exeStatus !== '' && exeStatus!=='exeDetails'">
     <div *ngIf="isToShowAlert" #alert class="alert" role="alert" id="alertEle">
         {{ errorMessage }}
     </div>
     <div class="row headersLine">{{ selectedCourse.name }}</div>
     <app-main-exe [selectedCourse]="selectedCourse"
+        [selectExe]="selectExe"
         (isToShowAlert)="changeIsToShowAlert($event)"
         (color)="changeColorAlert($event)"
-        (errorMessageText)="changeMessageAlert($event)"
-        [selectExe]="selectExe">
+        (errorMessageText)="changeMessageAlert($event)">
 
     </app-main-exe>
 </div>

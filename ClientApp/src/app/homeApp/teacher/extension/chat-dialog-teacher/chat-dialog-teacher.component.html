@@ -11,7 +11,7 @@
         </div>
         <div class="mesasgeConverstion" #mesasgeConverstion>
             <div *ngFor="let message of messageList">
-                <div class="row" *ngIf="!message.isTeacher">
+                <div class="row" *ngIf="message.isTeacher">
                     <div class="col-7"></div>
                     <div class="col-4">
                         <div class="studentMessage">
@@ -25,7 +25,7 @@
                     <div class="col-1"></div>
                 </div>
                 <br>
-                <div class="row" *ngIf="message.isTeacher">
+                <div class="row" *ngIf="!message.isTeacher">
                     <div class="col-1"></div>
                     <div class="col-4">
                         <div class="teacherMessage">

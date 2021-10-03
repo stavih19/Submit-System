@@ -14,7 +14,7 @@ import { SubmitFile } from 'src/Modules/Teacher/submit-file';
   styleUrls: ['./chat-dialog-teacher.component.css']
 })
 export class ChatDialogTeacherComponent implements OnInit {
-  chatID: Chat;
+  chatID: string;
   selectedExeInfo: StudentExInfo;
   headerMessage: string;
   teacherName: string;
@@ -68,11 +68,12 @@ export class ChatDialogTeacherComponent implements OnInit {
 
   fillConverstionMessages() {
     if(this.chatID == null) {
+      console.log("start");
       this.messageList = [];
       return;
     }
 
-    let url = 'https://localhost:5001/Student/MessageList?chatId=' + this.chatID.id
+    let url = 'https://localhost:5001/Teacher/MessageList?chatId=' + this.chatID;
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {
@@ -93,43 +94,26 @@ export class ChatDialogTeacherComponent implements OnInit {
         text: this.textMessage,
         attachedFile: null
       }
+      params.chatID = this.chatID;
 
-      if(this.chatID == null) {
-        let url = 'https://localhost:5001/Student/ExtensionRequest?submissionid=' + this.selectedExeInfo.submissionID;
-        this.httpClient.post(url, params,
-        {responseType: 'text'}).toPromise().then(
-          data => {
-            console.log(data);
-            this.fillConverstionMessages();
-            this.textMessageRef.nativeElement.value = "";
-
-            this.chatID = JSON.parse(data);
-          }, error => {
-            this.errorMessage(error.status);
+      let url = 'https://localhost:5001/Teacher/NewMessage?chatId=' + this.chatID;
+      this.httpClient.post(url, params,
+      {responseType: 'text'}).toPromise().then(
+        data => {
+          console.log(data);
+          const message: Message = {
+            id: "",
+            senderID: "",
+            date: "Just now",
+            body: this.textMessage,
+            isTeacher: false
           }
-        );
-      } else {
-        params.chatID = this.chatID.id;
-
-        let url = 'https://localhost:5001/Student/NewMessage?chatId=' + this.chatID.id;
-        this.httpClient.post(url, params,
-        {responseType: 'text'}).toPromise().then(
-          data => {
-            console.log(data);
-            const message: Message = {
-              id: "",
-              senderID: "",
-              date: "Just now",
-              body: this.textMessage,
-              isTeacher: false
-            }
-            this.messageList.push(message);
-            this.textMessageRef.nativeElement.value = "";
-          }, error => {
-            this.errorMessage(error.status);
-          }
-        );
-      }
+          this.messageList.push(message);
+          this.textMessageRef.nativeElement.value = "";
+        }, error => {
+          this.errorMessage(error.status);
+        }
+      );
     }
   }
 

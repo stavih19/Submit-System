@@ -60,6 +60,7 @@ export class StudentComponent implements OnInit {
   }
 
   getAfterEXE(row: ExerciseGradeDisplay) {
+    console.log(row);
     this.selectExe = row;
     this.teacherName = "";
     this.appService.updateExeStatus("before");

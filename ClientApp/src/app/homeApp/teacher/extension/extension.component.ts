@@ -57,11 +57,32 @@ export class ExtensionComponent implements OnInit {
     this.selectedDate = new Date();
     let tommorow = new Date();
     this.selectedDate.setDate(tommorow.getDate() + 1);
-    this.getExtensions();
+
+    if(this.teacherStatus === "extenstion") {
+      this.getExtensions();
+    } else if(this.teacherStatus === "appeal"){
+      this.getAppeals();
+    }
   }
 
   getExtensions() {
+    console.log(this.selectExe);
     let url = 'https://localhost:5001/Teacher/GetExtensions?exerciseId=' + this.selectExe.exerciseID;
+    console.log(url);
+    this.httpClient.get(url,
+    {responseType: 'text'}).toPromise().then(
+      data => {
+        this.requests = JSON.parse(data);
+        console.log(this.requests);
+      }, error => {
+        this.errorMessagefunc(error.status);
+      }
+    );
+  }
+
+  getAppeals() {
+    let url = 'https://localhost:5001/Teacher/GetAppeals?exerciseId=' + this.selectExe.exerciseID;
+    console.log(url);
     this.httpClient.get(url,
     {responseType: 'text'}).toPromise().then(
       data => {
@@ -82,8 +103,8 @@ export class ExtensionComponent implements OnInit {
     this.httpClient.post(url,
     {responseType: 'text'}).toPromise().then(
       data => {
-        console.log(data);
         this.getExtensions();
+        console.log(data);
       }, error => {
         this.errorMessagefunc(error.status);
       }
@@ -101,6 +122,8 @@ export class ExtensionComponent implements OnInit {
       reduction: this.reduceNumber,
     }
 
+    console.log(params);
+
     let url = 'https://localhost:5001/Teacher/AcceptExtension?chatId=' + this.selectExe.chatID;
     this.httpClient.post(url, params,
     {responseType: 'text'}).toPromise().then(
@@ -116,25 +139,11 @@ export class ExtensionComponent implements OnInit {
   }
 
   async onReplay(request: ExtenstionRequest) {
-    await this.getChatID(this.selectExe.exerciseID);
-
     const modalRef =  this.dialog.open(ChatDialogTeacherComponent);
     this.modalRef = modalRef;
 
-    modalRef.componentInstance.chatID = this.chatID;
-    //modalRef.componentInstance.
+    modalRef.componentInstance.chatID = this.selectExe.chatID;
   }
-
-  // teamSelected(request: ExtenstionRequest) {
-  //   console.log(request);
-  //   console.log(this.selectedOption);
-  //   let approveButton = document.getElementById(request.id.toString()) as HTMLButtonElement;
-  //   if(request.team !== this.selectedOption) {
-  //     approveButton.disabled = false;
-  //   } else {
-  //     approveButton.disabled = true;
-  //   }
-  // }
 
   changeIsToShowAlert(isToShowAlert: boolean) {
     this.isToShowAlert = isToShowAlert;
@@ -179,20 +188,6 @@ export class ExtensionComponent implements OnInit {
 
   updateShowAlert(displayFlag: boolean) {
     this.changeIsToShowAlert(displayFlag);
-  }
-
-  getChatID(exeId: string) {
-    let url = 'https://localhost:5001/Student/SubmissionDetails?userid=' + this.token + '&exerciseId=' + exeId;
-    this.httpClient.get(url,
-    {responseType: 'text'}).toPromise().then(
-      data => {
-        console.log(data);
-        let submissionDetails = JSON.parse(data);
-        this.chatID = submissionDetails.extensionChat;
-      }, error => {
-        this.errorMessagefunc(error.status);
-      }
-    )
   }
 
   onDateSelect(id: string) {

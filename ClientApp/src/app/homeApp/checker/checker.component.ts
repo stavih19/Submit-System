@@ -77,12 +77,14 @@ export class CheckerComponent implements OnInit {
     {responseType: 'text'}).toPromise().then(
       data => {
         let exeToCheckListTemp: CheckerExInfo[] = JSON.parse(data);
+        console.log(exeToCheckListTemp);
         this.exeToCheckList = [];
         exeToCheckListTemp.forEach(element => {
           if(element.toCheck > 0) {
             this.exeToCheckList.push(element);
           }
         });
+        
         console.log(this.exeToCheckList);
       }, error => {
         console.log(error);
@@ -114,6 +116,7 @@ export class CheckerComponent implements OnInit {
     this.selectedCourse = course;
     if(this.exeToCheckList.length > 0) {
       this.selectExe = this.exeToCheckList[0];
+      console.log(this.selectExe);
       this.appService.updateExeStatus("exeMain");
     }
   }
@@ -143,7 +146,7 @@ export class CheckerComponent implements OnInit {
   getExeDetails(row: CheckerExInfo) {
     this.selectedCourse.name = row.courseName;
     this.selectExe = row;
-    console.log(row);
+    console.log(this.selectExe);
     this.appService.updateExeStatus("exeMain");
   }
 
