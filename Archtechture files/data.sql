@@ -77,10 +77,10 @@ VALUES (@exercise3, @date1time, 0, 0);
 DECLARE @date3 as int = IDENT_CURRENT('Submission_Dates');
 
 INSERT INTO Submission Values (@sub1, @exercise1, 'Courses\89111_2021\Exercises\ex1\Submissions\576888433', 100, 100, 100, '?', 2, @date1, GETDATE(), 0, null),
-                                (@sub35, @exercise3, 'Courses\89115_2021\Exercises\ex1\Submissions\' + @Dana, -1, -1, -1, '?', 1, @date1, GETDATE(), 0, null),
+                                (@sub35, @exercise3, 'Courses\89115_2021\Exercises\ex1\Submissions\' + @Dana, -1, -1, -1, '?', 2, @date1, GETDATE(), 0, null),
                                 (@sub32, @exercise3, 'Courses\89115_2021\Exercises\ex1\Submissions\' + @Amit, -1, -1, -1, '?', 3, @date1, GETDATE(), 0, null),
                                 (@sub2, @exercise2, 'Courses\89111_2021\Exercises\ex2\Submissions\576888433', -1,-1, -1, '?', 0, @date2, null , 0, null),
-                                (@sub3, @exercise3, 'Courses\89115_2021\Exercises\ex1\Submissions\123767888', -1,-1, -1, '?', 0, @date3, null, 0, null),
+                                (@sub3, @exercise3, 'Courses\89115_2021\Exercises\ex1\Submissions\123767888', -1,-1, -1, '?', 1, @date3, null, 0, null),
                                 (@sub4, @exercise4, 'Courses\89115_2021\Exercises\ex0\Submissions\123767888', 100,100, 100, '?', 0, @date3, GETDATE(), 0, null)
 
 INSERT INTO Submitters VALUES (@Yosi, @sub1, 1, @exercise1),

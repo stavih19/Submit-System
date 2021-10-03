@@ -1098,15 +1098,16 @@ namespace Submit_System
             // S.style_grade,
             // S.manual_final_grade
             (GradeCalculator calc, DBCode code) = SingleRecordQuery(sql, parameters, (SqlDataReader dataReader) => {
+                    var timeSubmitted = dataReader.GetValue(2);
                     var calc = new GradeCalculator {
                         AutoWeight = (int) dataReader.GetValue(0),
                         StyleWeight = (int) dataReader.GetValue(1),
-                        TimeSubmitted = (DateTime) dataReader.GetValue(2),
                         Reductions = Exercise.ParseLateSettings(dataReader.GetValue(3).ToString()),
                         AutoGrade = (int) dataReader.GetValue(4),
                         StyleGrade = (int) dataReader.GetValue(5),
                         ManualGrade = (int) dataReader.GetValue(6),
                     };
+                    if(timeSubmitted != DBNull.Value) calc.TimeSubmitted = (DateTime) timeSubmitted; 
                     dateId = (int) dataReader.GetValue(7);
                     exerciseId = dataReader.GetValue(8).ToString();
                     return calc;
