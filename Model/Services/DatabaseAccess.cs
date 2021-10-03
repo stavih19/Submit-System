@@ -218,7 +218,7 @@ namespace Submit_System {
             {
                 return (null, code);
             }
-            if(!CryptoUtils.Verify(password, user.PasswordHash))
+            if(!CryptoUtils.KDFVerify(password, user.PasswordHash))
             {
                 return (null, DBCode.NotFound);
             }

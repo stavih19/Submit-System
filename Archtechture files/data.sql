@@ -103,6 +103,8 @@ INSERT INTO Test([weight], input, expected_output, output_file_name, arguments_s
         timeout_in_seconds, main_source_file, additional_files_location, exercise_id, type)
 VALUES (100, '', 'The number is 50*50=2500', 'stdout', '50', 60, 'aaa.py', null, @exercise1, 0),
         (100, '', 'The number is 50*50=2500', 'stdout', '50', 60, 'aaa.py', null, @exercise1, 1),
+        (100, '', 'The number is 50*50=2500', 'stdout', '50', 60, 'aaa.py', null, @exercise2, 0),
+        (100, '', 'The number is 50*50=2500', 'stdout', '50', 60, 'aaa.py', null, @exercise2, 1),
         (100, '', 'Hello world', 'stdout', '', 60, 'ex1.py', 'Courses\89115_2021\Exercises\ex1\Runfiles\Test_1', @exercise3, 0),
         (100, '', 'Hello world', 'stdout', '', 60, 'ex1.py', 'Courses\89115_2021\Exercises\ex1\Runfiles\Test_2', @exercise3, 1);
 GO

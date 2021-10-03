@@ -37,6 +37,11 @@ namespace Submit_System
             }
             return String.Format(FORMAT, Convert.ToBase64String(hash), Convert.ToBase64String(salt), iter.ToString());
         }
+        /// <summary>
+        /// Hashes input with SHA256
+        /// </summary>
+        /// <param name="str">the string</param>
+        /// <returns>Base64 string representation of hash</returns>
         public static string Sha256Hash(string str)
         {
             byte[] result_bytes;
@@ -82,7 +87,7 @@ namespace Submit_System
         /// <param name="password">The input password</param>
         /// <param name="storedHash">The database hash</param>
         /// <returns>True if they equal, false otherwise</returns>
-        public static bool Verify(string password, string storedHash)
+        public static bool KDFVerify(string password, string storedHash)
         {
             string[] components = storedHash.Split(SEP);
             if(components.Length != 3) { return false; }
@@ -122,11 +127,11 @@ namespace Submit_System
                 var salt = GetRandomBytes(8);
                 var iter = 10000;
                 var hash = Hash(pass, salt, iter);
-                if(Verify(pass, hash))
+                if(KDFVerify(pass, hash))
                 {
                     count++;
                 }
-                if(!Verify(fakePass, hash)) {
+                if(!KDFVerify(fakePass, hash)) {
                     count2++;
                 }
             }

@@ -28,7 +28,6 @@ namespace Submit_System
             IConfigurationSection section = MyConfig.Configuration.GetSection("Moss");
             MaxConcurrentRequests = section.GetValue<int>("MaxConcurrentRequests");
         }
-        // private const string RESULTS = "https://moss.stanford.edu/results/";
         private class MossRequestor : IDisposable
         {
             private static readonly int _userID; //  756989629
@@ -51,11 +50,10 @@ namespace Submit_System
             ///     Constructor. Takes MossData object.
             /// </summary>
             /// <param name="d">The parameters of the moss request.</param>
-            public MossRequestor(MossData d, bool test = false)
+            public MossRequestor(MossData d)
             {
                 _data = d;
                 socket = new ApiSocket();
-                socket.TestMode = test;
             }
             /// <summary>
             ///     Attempts to connect to moss.stanford.edu.
@@ -177,10 +175,6 @@ namespace Submit_System
         /// </exception>
         /// <exception href="FileNotFoundException">
         ///     IIf the submission or base file folder aren't found.
-        /// </exception>
-        /// <exception href="Exception">
-        ///     If the Moss server returns a result that isn't a working link.
-        /// </exception>
         /// <returns>The results URL</returns>
         public string SendRequest(MossData data, bool testMode = false)
         {
@@ -202,7 +196,7 @@ namespace Submit_System
             data.MatchesShow = (data.MatchesShow < 1 ? DEF_SHOW : data.MatchesShow);
             string result;
             sema.WaitOne();
-            using(MossRequestor request = new MossRequestor(data, testMode))
+            using(MossRequestor request = new MossRequestor(data))
             {        
                     request.Connect();
                     request.SendHeader();
@@ -213,7 +207,6 @@ namespace Submit_System
             sema.Release();
             if (!CheckUrl(result))
             {
-                // Console.WriteLine(result);
                 throw new Exception(result);
             }
             return result;

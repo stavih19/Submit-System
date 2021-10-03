@@ -74,7 +74,7 @@ namespace Submit_System {
                     builder.Append(Check_Style_Result.Output);
                 }
             }
-            builder = builder.Replace("\r\n", "<br>").Replace("\n", "<br>");
+            builder = builder.Replace("\r\n", "").Replace("\n", "");
             return builder.ToString();
         }   
     }
