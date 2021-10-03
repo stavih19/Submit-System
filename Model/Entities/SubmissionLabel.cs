@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 using System.Collections.Generic;
 namespace Submit_System {
     public enum SubmissionState { Unsubmitted, Unchecked, Checked, Appeal, AppealChecked }
-    public enum CheckState { NA, CheckedByYou, NotBeingChecked, CheckedByOther }
+    public enum CheckState { CheckedByYou, NotBeingChecked, CheckedByOther }
     public class SubmissionLabel {
         public SubmissionLabel()
         {

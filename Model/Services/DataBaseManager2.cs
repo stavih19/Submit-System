@@ -999,7 +999,7 @@ namespace Submit_System
         }
         public static (string, DBCode) GetTestDir(int testId)
         {
-            string sql = "SELECT test_files_location FROM Tests WHERE test_id = @ID";
+            string sql = "SELECT additional_files_location FROM Test WHERE test_id = @ID";
             SqlParameter[] parameters = { CreateParameter("@ID", SqlDbType.Int, testId)};
             return SingleRecordQuery(sql, parameters, (SqlDataReader dataReader) => dataReader.GetValue(0).ToString());
         }  

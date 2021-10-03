@@ -504,6 +504,10 @@ namespace Submit_System.Controllers
         [Route("Teacher/GetRunFile")]
         public ActionResult GetRunFile(int testId, string file)
         {
+            if(file == null)
+            {
+                return BadRequest();
+            }
             DBCode code = _access.CheckTestPerm(testId, Role.Teacher);
             if(code != DBCode.OK)
             {

@@ -540,11 +540,11 @@ namespace Submit_System.Controllers
                 return HandleDatabaseOutput(res);
             }
             (Exercise ex, DBCode code) = _access.GetExercise(data.ExerciseID);
-            data.Language = ex.ProgrammingLanguage;
             if(code != DBCode.OK)
             {
                 return HandleDatabaseOutput(code);
             }
+            data.Language = ex.ProgrammingLanguage;
             if(data.Language.StartsWith("python"))
             {
                 data.Language = "python";

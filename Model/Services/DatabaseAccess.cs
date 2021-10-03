@@ -726,10 +726,12 @@ namespace Submit_System {
             dict.Remove(SubmissionState.Unsubmitted.ToString());
             foreach(var list in dict.Values)
             {
-                    list.ForEach(label => label.CheckState = GetCheckState(label.CurrentChecker));
-                    list.OrderBy(label => (int) label.CheckState);
+                list.ForEach(label => label.CheckState = GetCheckState(label.CurrentChecker));
+                list.Sort(delegate(SubmissionLabel x, SubmissionLabel y)
+                {
+                    return x.CheckState.CompareTo(y.CheckState);
+                });
             }
-            
             return (dict, code);
         }
         /// <summary>
