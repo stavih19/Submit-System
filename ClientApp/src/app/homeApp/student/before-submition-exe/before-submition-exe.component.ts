@@ -83,7 +83,6 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
   }
 
   ngOnInit() {
-    
   }
 
   fileBefore: string;
@@ -93,6 +92,7 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
     console.log(this.uploadFileList);
     this.fileContainer = [];
     this.uploadFileList.forEach(file => {
+      console.log(file);
       const reader = new FileReader();
       reader.onload = ()=> {
         this.fileBefore = reader.result.toString();
@@ -135,6 +135,7 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
         "Content": file.content
       });
     });
+    console.log(files);
 
     if(files.length === 0) {
       this.errorMessage("No files to send", "alert-danger");
@@ -172,6 +173,8 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
   }
 
   isSubmitCheckFunc() {
+    console.log(this.uploadFileList.length === 0);
+    console.log(this.additionalSubmitors.nativeElement.value === "");
     if(this.uploadFileList.length === 0 || this.additionalSubmitors.nativeElement.value === "") {
       this.isSubmitCheck = true;
     } else if(this.uploadFileList.length !== 0 && this.additionalSubmitors.nativeElement.value !== ""){
@@ -193,12 +196,12 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
     let url = 'https://localhost:5001/Student/SubmissionDetails?exerciseId=' + id;
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
-      data => {
+      async data => {
         this.selectedExeInfo = JSON.parse(data);
         this.selectedExeInfo.filenames.forEach(fileName => {
-          this.uploadFileList.push(fileName);
-          //const file = this.getFilebyName(fileName);
+          this.getFilebyName(fileName, false);
         });
+        await sleep(1000);
         console.log(this.uploadFileList);
         
         const state = this.selectedExeInfo.state;
@@ -221,6 +224,7 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
           
         }
         this.fileSubmittersValue();
+        this.isSubmitCheckFunc();
 
         this.detailColumns[0].status = this.exeStatus;
         console.log(this.additionalSubmitors.nativeElement.value);
@@ -232,14 +236,22 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
     )
   }
 
-  getFilebyName(file: string) {
+  getFilebyName(file: string, toDownload: boolean) {
     let submissionID = this.selectedExeInfo.submissionID;
     let url = 'https://localhost:5001/Student/GetFile?userid=' + this.token + '&submissionId=' + submissionID + "&file=" + file;
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {     
-        data = data.toString();
-        this.downloadAttributes(file, data);
+        let dataStr = data.toString();
+        if(toDownload) {
+          this.downloadAttributes(file, dataStr);
+        } else {
+          console.log(dataStr);
+          var blob = new Blob([dataStr], { type: 'text/plain' });
+          var fileObj = new File([blob], file, {type: "text/plain"});
+          console.log(fileObj);
+          this.uploadFileList.push(fileObj);
+        }
       }, error => {
         this.errorMessage(error.status + "   try again", "alert-danger");
       }
@@ -247,7 +259,7 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
   }
 
   downloadFile(file: string) {
-    this.getFilebyName(file);
+    this.getFilebyName(file, true);
   }
 
   fileSubmittersValue() {
@@ -320,12 +332,13 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
     const state = this.selectedExeInfo.state;
     if(state === 2) {
       modalRef.componentInstance.headerMessage = "הגש ערעור";
+      modalRef.componentInstance.chatID = this.selectedExeInfo.appealChat;
     } else {
       modalRef.componentInstance.headerMessage = "בקש הארכה";
+      modalRef.componentInstance.chatID = this.selectedExeInfo.extensionChat;
     }
     console.log(this.selectedExeInfo);
     modalRef.componentInstance.selectedExeInfo = this.selectedExeInfo;
-    modalRef.componentInstance.chatID = this.selectedExeInfo.extensionChat;
     modalRef.componentInstance.teacherName = this.teacherName;
     modalRef.componentInstance.exeName = this.selectExe.name;
   }

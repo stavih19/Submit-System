@@ -75,6 +75,8 @@ export class ExeComponent implements OnInit {
     if(this.teacherStatus === "edit") {
       this.getEditExe();
     }
+
+    console.log(this.exeObject.HelpFiles);
   }
 
   getEditExe() {
@@ -103,6 +105,17 @@ export class ExeComponent implements OnInit {
         "Content": reader.result.toString()
       }
       this.exeObject.HelpFiles.push(submitFile);
+
+      console.log(this.exeObject.HelpFiles);
+      let url = 'https://localhost:5001/Teacher/AddHelpFiles?exerciseId=' + this.exeID;
+      this.httpClient.post(url, this.exeObject.HelpFiles, 
+      {responseType: 'text'}).toPromise().then(
+        data => {
+          console.log(data.toString());
+        }, error => {
+          console.log(error);
+        }
+      );
     };
     reader.readAsDataURL(file);
   }

@@ -48,44 +48,39 @@
         <button mat-raised-button color="primary" (click)="openAutoChecks()">ערוך רשימה</button>
     </div>
     <div class="belongTeacher">
-        9.
+        8.
         שייך בודקים
         <button mat-raised-button color="primary" (click)="openEditChekers()">שייך</button>
     </div>
     <div class="reducePoints">
-        10.
+        9.
         הפחתות ניקוד
         <button mat-raised-button color="primary" (click)="openReduceModal()">קבע הפחתות</button>
     </div>
-    <div class="reduceTeams">
+    <!-- <div class="reduceTeams">
         11.ערוך קבוצות איחור
         <button mat-raised-button color="primary" (click)="reduceTeams()">קבוצות איחור</button>
-    </div>
+    </div> -->
     <div class="exefiles">
-        <input type="file" name="file-1[]" (change)="onFileChoose($event)"
-        id="file-1" class="inputfile inputfile-1" style="visibility: hidden;"
-        #file1>
         <label for="file-1" class="btn btn-primary" type="button" color="primary">
             בחר קבצים
         </label>
         <div>
             {{ uploadFileName }}
         </div>
+        <input type="file" name="file-1[]" (change)="onFileChoose($event)"
+        id="file-1" class="inputfile inputfile-1" style="visibility: hidden;"
+        #file1>
     </div>
     <br>
     <div class="createButton">
-        <button *ngIf="teacherStatus !== 'edit'" mat-raised-button color="primary" (click)="creat()">צור</button>
-        <button *ngIf="teacherStatus === 'edit'" mat-raised-button color="primary" (click)="edit()">עדכן</button>
+        <button *ngIf="teacherStatus !== 'edit'" class="createUpdateButton" mat-raised-button color="primary" (click)="creat()">צור</button>
+        <button *ngIf="teacherStatus === 'edit'" class="createUpdateButton" mat-raised-button color="primary" (click)="edit()">עדכן</button>
     </div>
 </div>
-<!-- <br>
-<div class="row" *ngIf="theacherStatus === ''">
-    <button mat-raised-button color="warn" type="submit"
-    (click)="getAutoChecks()">
-        בדיקה אוטומטית
-    </button>
-</div> -->
 <app-auto-check *ngIf="theacherStatus === 'autoCheck'"
     [selectExelabel]="selectExelabel">
 
 </app-auto-check>
+<div class="tempInput"></div>
+<div class="tempInput2"></div>

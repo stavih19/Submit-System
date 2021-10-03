@@ -83,7 +83,7 @@
                 <div *ngFor="let file of uploadFileList">
                     <span class="close times fileSpan"
                     (click)="eraseUploadFile(file)" style="cursor: pointer;">x&nbsp;&nbsp;</span>
-                    <span class="fileName" (click)="downloadFile(file)">{{ file }}</span>
+                    <span class="fileName" (click)="downloadFile(file)">{{ file.name }}</span>
                 </div>
             </div>
             <div class="row">

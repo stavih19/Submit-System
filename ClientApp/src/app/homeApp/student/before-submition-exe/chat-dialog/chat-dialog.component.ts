@@ -85,6 +85,14 @@ export class ChatDialogComponent implements OnInit, AfterContentInit {
   }
 
   sendMessage() {
+    if(this.headerMessage === "בקש הארכה") {
+      this.sendExtenstion();
+    } else if(this.headerMessage === "הגש ערעור") {
+      this.sendAppeal();
+    }
+  }
+
+  sendAppeal() {
     if(confirm("Send this message?")) {
       this.updateCloseModal(true);
 
@@ -94,7 +102,57 @@ export class ChatDialogComponent implements OnInit, AfterContentInit {
         attachedFile: null
       }
 
-      if(this.chatID == null) {
+      console.log(this.chatID);
+      if(this.chatID === null) {
+        let url = 'https://localhost:5001/Student/Appeal?submissionid=' + this.selectedExeInfo.submissionID;
+        this.httpClient.post(url, params,
+        {responseType: 'text'}).toPromise().then(
+          data => {
+            console.log(data);
+            this.fillConverstionMessages();
+            this.textMessageRef.nativeElement.value = "";
+
+            //this.chatID = JSON.parse(data);
+          }, error => {
+            this.errorMessage(error.status);
+          }
+        );
+      } else {
+        params.chatID = this.chatID.id;
+
+        let url = 'https://localhost:5001/Student/NewMessage?chatId=' + this.chatID.id;
+        this.httpClient.post(url, params,
+        {responseType: 'text'}).toPromise().then(
+          data => {
+            console.log(data);
+            const message: Message = {
+              id: "",
+              senderID: "",
+              date: "Just now",
+              body: this.textMessage,
+              isTeacher: false
+            }
+            this.messageList.push(message);
+            this.textMessageRef.nativeElement.value = "";
+          }, error => {
+            this.errorMessage(error.status);
+          }
+        );
+      }
+    }
+  }
+
+  sendExtenstion() {
+    if(confirm("Send this message?")) {
+      this.updateCloseModal(true);
+
+      const params = {
+        chatID: "",
+        text: this.textMessage,
+        attachedFile: null
+      }
+
+      if(this.chatID === null) {
         let url = 'https://localhost:5001/Student/ExtensionRequest?submissionid=' + this.selectedExeInfo.submissionID;
         this.httpClient.post(url, params,
         {responseType: 'text'}).toPromise().then(

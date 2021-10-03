@@ -86,6 +86,7 @@ export class ChatReduceComponent implements OnInit {
       await sleep(100);
       jump++;
     });
+    this.checkoutForm.reset();
   }
 
   deleteReduction(id: number) {

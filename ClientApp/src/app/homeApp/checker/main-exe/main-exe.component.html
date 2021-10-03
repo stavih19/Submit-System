@@ -13,7 +13,7 @@
             <div *ngFor="let exe of exeToCheck" class="exeBox">
                 <span class="exeLabel list-group-item list-group-item-action"
                     (click)="getExeDetails(exe)">
-                    {{ exe }}
+                    {{ names.get(exe.id) }}
                     <!--<span class="editExe" (click)="editExe(i)">...</span>
                     <span class="close" (click)="deleteExe(i)">&times;</span>-->
                 </span>
@@ -26,7 +26,7 @@
             <div *ngFor="let exe of alreadyChecked" class="exeBox">
                 <span class="list-group-item list-group-item-action"
                     (click)="getExeDetails(exe)">
-                    {{ exe }}
+                    {{ names.get(exe.id) }}
                 </span>
             </div>
         </div>
@@ -41,7 +41,7 @@
                 <span class="list-group-item list-group-item-action"
                     (click)="getExeDetails(reCheck)">
                     <!--<span class="close" (click)="deleteTeacher(i)">&times;</span>-->
-                    {{ reCheck }}
+                    {{ names.get(reCheck.id) }}
                 </span>
             </div>
         </div>

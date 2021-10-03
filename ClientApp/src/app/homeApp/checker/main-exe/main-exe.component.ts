@@ -5,6 +5,7 @@ import { CheckerExInfo } from 'src/Modules/Checker/checker-ex-info';
 import { ExeToCheck } from 'src/Modules/Checker/exe-to-check';
 import { SubmissionLabel } from 'src/Modules/Checker/submission-label';
 import { Course } from 'src/Modules/course';
+import { UserLabel } from 'src/Modules/Teacher/user-label';
 
 @Component({
   selector: 'app-main-exe',
@@ -13,11 +14,11 @@ import { Course } from 'src/Modules/course';
 })
 export class MainExeComponent implements OnInit {
   exeToCheck: SubmissionLabel[];
-  exeToCheckNames: string[][];
-  alreadyChecked: string[] = ["שמחה", "יוסי"];
-  reChecks: string[] = [];
+  alreadyChecked: SubmissionLabel[];
+  reChecks: SubmissionLabel[];
   exeStatus: string;
   token: string;
+  names: Map<string, string> = new Map();
 
   @Input() selectedCourse: Course;
   @Input() selectExe: CheckerExInfo;
@@ -37,8 +38,8 @@ export class MainExeComponent implements OnInit {
 
   ngOnInit() {
     this.getExeToCheck();
-    this.getExeCheckerd();
     this.getExereChecked();
+    this.getExereReChecked();
   }
 
   getExeToCheck() {
@@ -46,10 +47,9 @@ export class MainExeComponent implements OnInit {
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {
-        this.exeToCheckNames = [];
         this.exeToCheck = JSON.parse(data)["Unchecked"];
-        this.exeToCheck.forEach(exe => {
-          //this.exeToCheckNames.push(exe.submitters)
+        this.exeToCheck.forEach(element => {
+          this.names.set(element.id, this.toStringNames(element.submitters));
         });
         console.log(this.exeToCheck);
       }, error => {
@@ -58,17 +58,16 @@ export class MainExeComponent implements OnInit {
     );
   }
 
-  getExeCheckerd() {
-    let url = 'https://localhost:5001/Checker/SubmissionLabels?exerciseId=' + this.selectExe.exID;
-    this.httpClient.get(url, 
-    {responseType: 'text'}).toPromise().then(
-      data => {
-        this.alreadyChecked = JSON.parse(data)["Checked"];
-        console.log(this.alreadyChecked);
-      }, error => {
-        console.log(error);
+  toStringNames(submitters: UserLabel[]) {
+    let names: string = "";
+    submitters.forEach(element => {
+      if(names === "") {
+        names += element.name;
+      } else {
+        names +=  "," + element.name;
       }
-    );
+    });
+    return names;
   }
 
   getExereChecked() {
@@ -76,7 +75,26 @@ export class MainExeComponent implements OnInit {
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {
+        this.alreadyChecked = JSON.parse(data)["Checked"];
+        this.alreadyChecked.forEach(element => {
+          this.names.set(element.id, this.toStringNames(element.submitters));
+        });
+        console.log(this.alreadyChecked);
+      }, error => {
+        console.log(error);
+      }
+    );
+  }
+
+  getExereReChecked() {
+    let url = 'https://localhost:5001/Checker/SubmissionLabels?exerciseId=' + this.selectExe.exID;
+    this.httpClient.get(url, 
+    {responseType: 'text'}).toPromise().then(
+      data => {
         this.reChecks = JSON.parse(data)["Appeal"];
+        this.reChecks.forEach(element => {
+          this.names.set(element.id, this.toStringNames(element.submitters));
+        });
         console.log(this.reChecks);
       }, error => {
         console.log(error);

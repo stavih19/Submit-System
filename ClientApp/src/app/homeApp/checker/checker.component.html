@@ -113,7 +113,7 @@
         </table>     
     </div>
 </div>
-<div *ngIf="exeStatus!=='' && exeStatus!=='exeDetails'">
+<div *ngIf="exeStatus !== '' && exeStatus!=='exeDetails'">
     <div *ngIf="isToShowAlert" #alert class="alert" role="alert" id="alertEle">
         {{ errorMessage }}
     </div>
@@ -127,7 +127,7 @@
 
     </app-main-exe>
 </div>
-<div *ngIf="exeStatus !== '' && exeStatus!=='exeDetails'">
+<!-- <div *ngIf="exeStatus !== '' && exeStatus!=='exeDetails'">
     <div *ngIf="isToShowAlert" #alert class="alert" role="alert" id="alertEle">
         {{ errorMessage }}
     </div>
@@ -139,4 +139,4 @@
         (errorMessageText)="changeMessageAlert($event)">
 
     </app-main-exe>
-</div>
+</div> -->

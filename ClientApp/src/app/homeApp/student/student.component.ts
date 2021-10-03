@@ -46,7 +46,22 @@ export class StudentComponent implements OnInit {
   }
 
   onSelect(course: Course): void {
-    //this.selectedCourse = course;
+    this.exeToDo.forEach(exe => {
+      if(exe.courseID === course.id) {
+        this.selectExe = this.exeToDo[0];
+        this.teacherName = this.exeToDo[0].teacherName;
+        this.appService.updateExeStatus("before")
+        return;
+      }
+    });
+    this.gradeDataSource.forEach(exe => {
+      if(exe.courseID === course.id) {
+        this.selectExe = this.gradeDataSource[0];
+        this.teacherName = "";
+        this.appService.updateExeStatus("before")
+        return;
+      }
+    });
   }
 
   SelectFirstExe(course: Course) {

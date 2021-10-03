@@ -106,7 +106,7 @@ export class TeacherComponent implements OnInit {
 
   getAppealsLoad() {
     this.requestColumns = ["courseName", "courseNumber", "exeName", "studentName"];
-    let url = 'https://localhost:5001/Teacher/GetTeacherExtensions';
+    let url = 'https://localhost:5001/Teacher/GetTeacherAppeals';
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {
@@ -133,7 +133,7 @@ export class TeacherComponent implements OnInit {
   }
 
   extenstionLoad() {
-    let url = 'https://localhost:5001/Teacher/GetTeacherAppeals';
+    let url = 'https://localhost:5001/Teacher/GetTeacherExtensions';
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {

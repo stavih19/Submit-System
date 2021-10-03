@@ -5,13 +5,13 @@
     display: grid;
     row-gap: 10px;
     grid-template-areas: 
-    'input1 input2'
-    'input3 input4'
-    'input5 input6'
-    'input13 input13'
-    'input7 input8'
-    'input9 input10'
-    'input11 input12';
+    'input1 input2 input2'
+    'input3 input4 input4'
+    'input5 input6 input6'
+    'input13 input13 input13'
+    'input7 input8 input9'
+    'temp input11 temp2'
+    /* 'input11 input12'; */
 }
 .exeName { grid-area: input1; }
 .submitDate { grid-area: input2; }
@@ -28,6 +28,11 @@
 .example-full-width {
     text-align: right;
 }
+.tempInput { grid-area: temp; }
+.tempInput2 { grid-area: temp2; }
 .createButton {
     text-align: center;
+}
+.createUpdateButton {
+    width: 150px;
 }
