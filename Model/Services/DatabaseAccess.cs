@@ -801,6 +801,7 @@ namespace Submit_System {
         }
         public (Dictionary<string, bool>, DBCode) ValidateSubmitters(string exerciseId, List<string> submitters)
         {
+            submitters.Remove(UserID);
             var subDict = new Dictionary<string, string>();
             var dict = new Dictionary<string ,bool>();
             ((string submissionId, int type), DBCode code) = Convert(DataBaseManager.ReadSubmissionIdAndTypeOfStudentInExercise(UserID, exerciseId));
@@ -817,6 +818,8 @@ namespace Submit_System {
             {
                 return (null, code);
             }
+            var ids = currentSubmitters.Select((x)=>x.ID);
+            submitters = submitters.Except(ids).ToList();
             (Exercise exercise, DBCode codea) = GetExercise(exerciseId);
             if(codea != DBCode.OK)
             {

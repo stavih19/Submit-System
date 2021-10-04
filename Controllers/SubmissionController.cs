@@ -528,12 +528,37 @@ namespace Submit_System.Controllers
         }
         [HttpPost]
         [Route("Teacher/CopyCheck")]
-        public ActionResult<string> CopyCheck([FromBody] MossData data)
+        public ActionResult<string> CopyCheckTeacher([FromBody] MossData data)
         {
             if(data?.ExerciseID == null)
             {
                 return BadRequest("no exercise");
+            }     
+            DBCode res = _access.CheckExercisePermission(data.ExerciseID, Role.Teacher);
+            if(res != DBCode.OK)
+            {
+                return HandleDatabaseOutput(res);
             }
+            return CopyCheck(data);
+        }
+        [HttpPost]
+        [Route("Checker/CopyCheck")]
+        public ActionResult<string> CopyCheckChecker([FromBody] MossData data)
+        {
+            if(data?.ExerciseID == null)
+            {
+                return BadRequest("no exercise");
+            }     
+            DBCode res = _access.CheckExercisePermission(data.ExerciseID, Role.Checker);
+            if(res != DBCode.OK)
+            {
+                return HandleDatabaseOutput(res);
+            }
+            return CopyCheck(data);
+        }
+        [NonAction]
+        private ActionResult<string> CopyCheck([FromBody] MossData data)
+        {
             DBCode res = _access.CheckExercisePermission(data.ExerciseID, Role.Teacher);
             if(res != DBCode.OK)
             {
@@ -578,6 +603,21 @@ namespace Submit_System.Controllers
         public ActionResult MarkCopy([FromBody] CopyForm copy)
         {
             DBCode res = _access.CheckExercisePermission(copy.ExerciseID, Role.Teacher);
+            if(res != DBCode.OK)
+            {
+                return HandleDatabaseOutput(res);
+            }
+            if(IsAnyNull(copy?.User1, copy?.User2, copy?.ExerciseID))
+            {
+                return BadRequest("fields are null");
+            }
+            return HandleDatabaseOutput(_access.MarkCopy(copy));
+        }
+        [HttpPost]
+        [Route("Checker/SetCopied")]
+        public ActionResult MarkCopyChecker([FromBody] CopyForm copy)
+        {
+            DBCode res = _access.CheckExercisePermission(copy.ExerciseID, Role.Checker);
             if(res != DBCode.OK)
             {
                 return HandleDatabaseOutput(res);

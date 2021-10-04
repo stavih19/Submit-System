@@ -52,12 +52,12 @@ INSERT INTO Courses VALUES (@course_id1, 89111, @course_name1, 2021, 0),
 INSERT INTO Student_Course VALUES (@Yosi,@course_id1), (@Yosi, @course_id2), (@Danny, @course_id3), (@Dana, @course_id3), (@Alon, @course_id1),
                                 (@Amit, @course_id3)
 
-INSERT INTO Checker_Course VALUES (@Tal, @course_id1), (@Tal, @course_id2), (@Tal, @course_id3),
+INSERT INTO Checker_Course VALUES (@Tal, @course_id1), (@Tal, @course_id2), (@Tal, @course_id3), (@Yosi,@course_id1), (@Yosi,@course_id1),
                                 (@Tomer, @course_id1), (@Tomer, @course_id2), (@Tomer, @course_id3), (@Yosi,@course_id3);
 
-INSERT INTO Checker_Exercise VALUES (@Tomer, @exercise1), (@Tomer, @exercise2), (@Yosi, @exercise3), (@Yosi, @exercise4);
+INSERT INTO Checker_Exercise VALUES (@Tomer, @exercise1), (@Tomer, @exercise2), (@Yosi, @exercise3), (@Yosi, @exercise4), (@Yosi,@course_id1);
 
-INSERT INTO Metargel_Course VALUES (@Yosi,@course_id3), (@Danny,@course_id1);
+INSERT INTO Metargel_Course VALUES (@Yosi,@course_id3), (@Danny,@course_id1), (@Yosi, @course_id1);
 INSERT INTO Exercise VALUES (@exercise1, 'ex1', @course_id1, '?', 2, 'Courses\89111_2021\Exercises\ex1\', '10_20', 'python3', 60, 20, 1, 1, 250, 10, null, GETDATE()),
                             (@exercise2, 'ex2', @course_id1, '?', 2, 'Courses\89111_2021\Exercises\ex2\', '10_20', 'python3', 60, 20, 1, 1, 250, 10, null, GETDATE()),
                             (@exercise4, 'ex0', @course_id3, '?', 2, 'Courses\89115_2021\Exercises\ex0\', '10_20', 'python3', 60, 20, 1, 1, 250, 10, null, GETDATE()),
