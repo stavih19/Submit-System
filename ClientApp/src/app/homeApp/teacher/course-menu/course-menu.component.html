@@ -20,7 +20,8 @@
             <div *ngFor="let pair of allExeList | keyvalue">
                 שנה: <span class="year">{{ pair.key }}</span>
                 <div *ngFor="let exe of pair.value" class="exeBox">
-                    <span class="list-group-item list-group-item-action">
+                    <span [id]="exe.id" class="list-group-item list-group-item-action"
+                        (click)="setExeRestore(exe)">
                         {{ exe.name }}
                     </span>
                 </div>

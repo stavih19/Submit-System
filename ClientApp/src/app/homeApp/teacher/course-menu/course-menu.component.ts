@@ -3,6 +3,7 @@ import { ElementRef, EventEmitter, Input, Output } from '@angular/core';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ApprovalService } from 'src/app/approval.service';
 import { Course } from 'src/Modules/course';
+import { ExerciseLabel } from 'src/Modules/exercise-label';
 
 @Component({
   selector: 'app-course-menu',
@@ -10,8 +11,9 @@ import { Course } from 'src/Modules/course';
   styleUrls: ['./course-menu.component.css']
 })
 export class CourseMenuComponent implements OnInit {
+  exeRestore: ExerciseLabel;
   token: string;
-  allExeList: any;
+  allExeList: Map<string, ExerciseLabel[]>;
   exeNameList: any[];
   teacherNamesList: string[];
   checkersNamesList: string[];
@@ -82,9 +84,38 @@ export class CourseMenuComponent implements OnInit {
     this.appService.updateTheacherStatus("create");
   }
 
+  setExeRestore(exe: ExerciseLabel) {
+    console.log(exe);
+    this.exeRestore = exe;
+
+    this.exeNameList.forEach(iterateExe => {
+      document.getElementById(iterateExe.id).style.background = "white";
+    });
+    document.getElementById(exe.id).style.background = "#eee";
+  }
+
   reCreateExe() {
-    // Change UI page; TODO
-    // same as cerate
+    console.log(this.exeRestore);
+    if(this.exeRestore === undefined) {
+      return;
+    }
+
+    let url = 'https://localhost:5001/Teacher/CopyExercise?courseid=' + this.selectedCourse.id + '&oldExerciseId=' + this.exeRestore.id + '&exerciseName=' + this.exeRestore.name + "new";
+    console.log(this.selectedCourse);
+    this.httpClient.get(url, 
+    {responseType: 'text'}).toPromise().then(
+      data => {
+        let newId = data;
+        console.log(newId);
+
+        document.getElementById(this.exeRestore.id).style.background = "white";
+        this.exeID.emit(newId);
+        this.exeName.emit(this.exeRestore.name);
+        this.appService.updateTheacherStatus("edit");
+      }, error => {
+        console.log(error);
+      }
+    );
   }
 
   editExe(index: number) {
@@ -167,6 +198,7 @@ export class CourseMenuComponent implements OnInit {
         console.log(data.toString());
         setTimeout(() => {
           this.getCheckers();
+          this.getExercises();
         }, 1000);
       }, error => {
         console.log(error);

@@ -6,9 +6,11 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./chat-declaration.component.css']
 })
 export class ChatDeclarationComponent implements OnInit {
-  data: string = "<a>click</a>";
+  data: string = '';
 
-  constructor() { }
+  constructor() {
+
+   }
 
   ngOnInit() {
     

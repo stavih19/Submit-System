@@ -83,6 +83,7 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
   }
 
   ngOnInit() {
+    
   }
 
   fileBefore: string;
@@ -364,15 +365,21 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {
-        console.log(data);
-        this.displayResults(data.toString());
+        console.log(JSON.parse(data));
+        this.displayResults(JSON.parse(data)["text"]);
       }, error => {
         this.errorMessage(error.status + "   try again", "alert-danger");
       }
     );
+    let a = {
+      "text": "Coding Style Test: Grade: 100",
+      "autoGrade": -1,
+      "styleGrade": 100
+    };
   }
 
   displayResults(data: string) {
+    //data = '{"text":"\nCoding Style Test:\n\nGrade: 100\n","autoGrade":-1,"styleGrade":100}';
     const modalRef =  this.dialog.open(ChatDeclarationComponent);
     this.modalRef = modalRef;
 

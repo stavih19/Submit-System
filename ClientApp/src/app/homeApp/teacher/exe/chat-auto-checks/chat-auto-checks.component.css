@@ -11,7 +11,7 @@
     column-gap: 30px;
     grid-template-areas:
     'header header header header header'
-    'student student team reduce date'
+    'student student date team reduce'
     'button button button button button'
     'content content content content content';
 }
@@ -22,7 +22,7 @@
     grid-area: header;
     text-align: right;
 }
-.name { 
+.weight { 
     grid-area: date;
     width: 30;
     height: 20;

@@ -7,6 +7,7 @@ import { HomeComponentComponent } from 'src/app/homeApp/home-component/home-comp
 import { ApprovalService } from "src/app/approval.service";
 import { error } from 'selenium-webdriver';
 import { TestInput } from 'src/Modules/Teacher/test-input';
+import { DataInput } from 'src/Modules/data-input';
 
 const hour: number = 3600000;
 @Component({
@@ -25,7 +26,9 @@ export class LoginComponent implements OnInit {
     private formBuilder: FormBuilder,
     private httpClient: HttpClient,
     private appService: ApprovalService,
-  ) { }
+  ) {
+    
+  }
 
   ngOnInit() {}
 
@@ -39,12 +42,16 @@ export class LoginComponent implements OnInit {
     this.httpClient.post('https://localhost:5001/User/Login', params,
     {responseType: 'text'}).toPromise().then(
       data => {
-        data = JSON.parse(data);
-        console.log(data);
+        let dataInput: DataInput = JSON.parse(data);
+        console.log(dataInput);
 
         this.appService.updateLoginStatus(true);
-        this.appService.updateUserName([data[0], data[1]]);
-        this.appService.updateToken(data[0]);
+        if(dataInput.isAdmin === false) {
+          this.appService.updateUserName(["false", dataInput.name]);
+        } else if(dataInput.isAdmin === true) {
+          this.appService.updateUserName(["true", dataInput.name]);
+        }
+        this.appService.updateToken(dataInput.name);
 
         this.checkoutForm.reset();
         setTimeout(() => {

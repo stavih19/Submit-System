@@ -100,9 +100,9 @@
     grid-area: buttons;
     display: grid;
     grid-template-areas: 
-    'auto style';
+    'auto style copy';
 }
-.checkButton, .styleButton {
+.checkButton, .styleButton, .copyButton{
     display: inline-block;
     margin: auto;
 }
@@ -111,4 +111,7 @@
 }
 .styleButton {
     grid-area: style;
+}
+.copyButton {
+    grid-area: copy;
 }

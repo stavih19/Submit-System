@@ -130,9 +130,9 @@ namespace Submit_System.Controllers
             var a = _access.GetExercise(exerciseId);
             return HandleDatabaseOutput(a);
         }
-        [HttpPost]
+        [HttpGet]
         [Route("Teacher/CopyExercise")]
-        public ActionResult<string> CopyExercise(string courseid, string oldExerciseId, [FromBody] string exerciseName)
+        public ActionResult<string> CopyExercise(string courseid, string oldExerciseId, string exerciseName) // [FromBody] string exerciseName)
         {
             DBCode code = _access.CheckCoursePermission(courseid, Role.Teacher);
             if(code != DBCode.OK)

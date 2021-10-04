@@ -4,14 +4,22 @@
     text-align: right;
     display: grid;
     row-gap: 10px;
+    
     grid-template-areas: 
-    'input1 input2 input2'
-    'input3 input4 input4'
-    'input5 input6 input6'
+    'input1 input2 input3'
+    'input4 input5 input6'
     'input13 input13 input13'
     'input7 input8 input9'
-    'temp input11 temp2'
-    /* 'input11 input12'; */
+    'temp input11 temp2';
+
+    padding: 50px;
+    grid-gap: 40px;
+    padding-top: 8px;
+}
+.exeName, .submitDate, .multiplePartners, .codeLanguage, .autoTestGradeWeight, .styleTestGradeWeight {
+    background-color: #eee;
+    padding: 10px 10px 10px 10px;
+    border-radius: 10px;
 }
 .exeName { grid-area: input1; }
 .submitDate { grid-area: input2; }
@@ -35,4 +43,6 @@
 }
 .createUpdateButton {
     width: 150px;
+    background-color: #4CAF50;
+    color: white;
 }

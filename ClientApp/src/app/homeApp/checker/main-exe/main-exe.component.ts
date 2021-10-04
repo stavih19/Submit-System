@@ -1,10 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { ApprovalService } from 'src/app/approval.service';
+import { MossData } from 'src/Modules/AutoChecks/moss-data';
 import { CheckerExInfo } from 'src/Modules/Checker/checker-ex-info';
 import { ExeToCheck } from 'src/Modules/Checker/exe-to-check';
 import { SubmissionLabel } from 'src/Modules/Checker/submission-label';
 import { Course } from 'src/Modules/course';
+import { Exercise } from 'src/Modules/Teacher/exercise';
 import { UserLabel } from 'src/Modules/Teacher/user-label';
 
 @Component({
@@ -112,5 +114,39 @@ export class MainExeComponent implements OnInit {
 
   styleCheck() {
 
+  }
+
+  copyCheck() {
+    let url = 'https://localhost:5001/Teacher/ExerciseDetails?exerciseId=' + this.selectExe.exID;
+    this.httpClient.get(url, 
+    {responseType: 'text'}).toPromise().then(
+      data => {
+        let details: Exercise = JSON.parse(data);
+        console.log(details);
+        this.copyCheckSend(details)
+      }, error => {
+        console.log(error);
+      }
+    );
+  }
+
+  copyCheckSend(details: Exercise) {
+    let data: MossData = {
+      comment: "",
+      exerciseID: this.selectExe.exID,
+      result: "",
+      maxFound: details.mossMaxTimesMatch,
+      matchesShow: details.mossMaxTimesMatch
+    };
+
+    let url = 'https://localhost:5001/Teacher/CopyCheck';
+    this.httpClient.post(url, data, 
+    {responseType: 'text'}).toPromise().then(
+      data => {
+        window.open(data.toString(), '_blank');
+      }, error => {
+        console.log(error);
+      }
+    );
   }
 }
