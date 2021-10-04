@@ -365,7 +365,7 @@ export class BeforeSubmitionExeComponent implements OnInit, AfterContentInit {
     this.httpClient.get(url, 
     {responseType: 'text'}).toPromise().then(
       data => {
-        console.log(JSON.parse(data));
+        console.log(JSON.parse(data)); 
         this.displayResults(JSON.parse(data)["text"]);
       }, error => {
         this.errorMessage(error.status + "   try again", "alert-danger");

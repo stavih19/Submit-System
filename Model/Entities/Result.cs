@@ -46,7 +46,7 @@ namespace Submit_System {
                 foreach(CheckResult testResult in Test_Results)
                 {
                     int grade = testResult.CalculateTestGrade(new BasicOutputComperator());
-                    grade *= testResult.Weight / 100;
+                    grade = (int) (grade * (double)(testResult.Weight) / 100);
                     builder.AppendLine("<hr>");
                     builder.AppendLine($"Test: Grade: {grade}/{testResult.Weight} | Run Time: {testResult.TimeInMs}ms");
                     builder.AppendLine("<u><h5>Input:</h5></u>");

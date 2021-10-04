@@ -20,7 +20,7 @@ namespace Submit_System {
             this.Weight = value;
             this.Input = input;
             this.ExpectedOutput = expected_output;
-            this.OutputFileName =output_file_name;
+            if(!string.IsNullOrEmpty(output_file_name))  this.OutputFileName =output_file_name;
             this.ArgumentsString = arguments_string;
             this.TimeoutInSeconds = timeout_in_seconds;
             this.MainSourseFile = main_sourse_file;
@@ -35,7 +35,7 @@ namespace Submit_System {
         public int Weight{get;set;}
         public string Input{get;set;}
         public string ExpectedOutput{get;set;}
-        public string OutputFileName{get;set;}
+        public string OutputFileName{get;set;} = "stdout";
         public string ArgumentsString{get;set;}
         public int TimeoutInSeconds{get;set;}
         public string MainSourseFile{get;set;}

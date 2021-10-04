@@ -131,8 +131,20 @@ namespace Submit_System.Controllers
             return HandleDatabaseOutput(a);
         }
         [HttpGet]
+        [Route("Checker/ExerciseDetails")]
+        public ActionResult<Exercise> GetExerciseDetailsChecker(string exerciseId)
+        {
+            DBCode code = _access.CheckExercisePermission(exerciseId, Role.Checker);
+            if(code != DBCode.OK)
+            {
+                return HandleDatabaseOutput(code);
+            }
+            var a = _access.GetExercise(exerciseId);
+            return HandleDatabaseOutput(a);
+        }
+        [HttpPost]
         [Route("Teacher/CopyExercise")]
-        public ActionResult<string> CopyExercise(string courseid, string oldExerciseId, string exerciseName) // [FromBody] string exerciseName)
+        public ActionResult<string> CopyExercise(string courseid, string oldExerciseId, [FromBody] string exerciseName)
         {
             DBCode code = _access.CheckCoursePermission(courseid, Role.Teacher);
             if(code != DBCode.OK)

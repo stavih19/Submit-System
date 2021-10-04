@@ -70,6 +70,7 @@ export class ChatAutoChecksComponent implements OnInit {
   async onSubmit() {
     this.newTest.test.input = this.checkoutForm.value.input;
     this.newTest.test.expectedOutput = this.checkoutForm.value.output;
+    this.newTest.test.weight = this.checkoutForm.value.name;
 
     if(this.newTest.test.exerciseID === null) { return; }
 

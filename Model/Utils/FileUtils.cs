@@ -155,6 +155,8 @@ namespace Submit_System
             {
                 foreach(var file in  files)
                 {
+                    int pos = file.Content.IndexOf(',');
+                    file.Content = file.Content.Substring(pos+1);
                     byte[] content = System.Convert.FromBase64String(file.Content);
                     if(Path.GetExtension(file.Name) == ".zip" && unzip)
                     {
